@@ -4,7 +4,15 @@ return {
 	},
 	mod_description = {
 		en = "Mark toxic players for your convenience.\n" ..
-			"Hotkeys only work during missions as they are indexed by the team hud panel {#under(true)}from bottom to top{#under(false)}."
+			"Hotkeys only work during missions.\n" ..
+			"Players are indexed by the team hud panel {#under(true)}from bottom to top{#under(false)},\n" ..
+			"which means teammate #1 will be the closest one to your avatar."
+	},
+	open_ratings = {
+		en = "Rated accounts dashboard"
+	},
+	rate_teammate = {
+		en = "Manual rating"
 	},
 	rate_teammate_1 = {
 		en = "Change rating of teammate #1"

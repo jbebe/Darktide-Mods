@@ -1,8 +1,8 @@
 local mod = get_mod("lovesmenot")
 local Missions = require("scripts/settings/mission/mission_templates")
 local HumanPlayer = require("scripts/managers/player/human_player")
-local utils = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/utils")
-mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/persistence")
+local utils = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/utils")
+mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/persistence")
 mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.hooks")
 mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.commands")
 
@@ -237,7 +237,7 @@ function mod.update_rating(self, teammate)
 end
 
 function mod.rate_teammate(self, teammateIndex)
-    if self:canRate() then
+    if not self:canRate() then
         return
     end
 
@@ -253,11 +253,17 @@ function mod.rate_teammate(self, teammateIndex)
     self:update_rating(selected)
 end
 
-function mod.rate_teammate_1(self) self:rate_teammate(1) end
+function mod.rate_teammate_1()
+    mod:rate_teammate(1)
+end
 
-function mod.rate_teammate_2(self) self:rate_teammate(2) end
+function mod.rate_teammate_2()
+    mod:rate_teammate(2)
+end
 
-function mod.rate_teammate_3(self) self:rate_teammate(3) end
+function mod.rate_teammate_3()
+    mod:rate_teammate(3)
+end
 
 --
 -- Type Hints

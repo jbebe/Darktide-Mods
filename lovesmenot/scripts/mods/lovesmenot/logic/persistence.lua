@@ -1,6 +1,6 @@
 local mod = get_mod("lovesmenot")
 local json = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/thirdparty/json")
-local utils = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/utils")
+local utils = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/utils")
 
 function mod.load_rating(self)
     local file = utils.io.open(self.ratingPath, "r")
@@ -8,7 +8,7 @@ function mod.load_rating(self)
         local rawContent = file:read("*all")
         file:close()
         -- ignore version as of now, no migration needed yet
-        mod.rating = json.decode(rawContent)
+        self.rating = json.decode(rawContent)
     else
         -- file does not exist
     end
