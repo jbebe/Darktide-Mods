@@ -1,0 +1,8 @@
+{
+    "Lua.completion.autoRequire": false,
+    "Lua.workspace.library": [
+        "../../source",
+        "../../../source"
+    ],
+    "Lua.workspace.maxPreload": 7000
+}
