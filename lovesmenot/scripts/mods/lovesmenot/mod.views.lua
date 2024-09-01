@@ -1,5 +1,9 @@
 local mod = get_mod("lovesmenot")
 local WwiseGameSyncSettings = require("scripts/settings/wwise_game_sync/wwise_game_sync_settings")
+local PlayerCharacterOptionsView = require(
+    "scripts/ui/views/player_character_options_view/player_character_options_view")
+local UIWidget = require("scripts/managers/ui/ui_widget")
+local ButtonPassTemplates = require("scripts/ui/pass_templates/button_pass_templates")
 
 --
 -- Ratings view
@@ -72,3 +76,60 @@ function mod.openRatings(self)
         Managers.ui:open_view(ratingsViewName, nil, nil, nil, nil, context)
     end
 end
+
+--
+-- Inspect view alteration
+--
+
+function PlayerCharacterOptionsView._on_rate_pressed(self)
+    mod:update_rating({
+        accountId = self._account_id,
+        name = self._player_info:profile().name,
+    })
+    mod:persistRating()
+end
+
+mod:hook(PlayerCharacterOptionsView, "_setup_buttons_interactions", function(func, self, ...)
+    func(self, ...)
+
+    local widgets_by_name = self._widgets_by_name
+    widgets_by_name.rate_button.content.hotspot.pressed_callback = callback(self, "_on_rate_pressed")
+    self._button_gamepad_navigation_list = {
+        widgets_by_name.inspect_button,
+        widgets_by_name.invite_button,
+        widgets_by_name.close_button,
+        widgets_by_name.rate_button,
+    }
+end)
+
+mod:hook(PlayerCharacterOptionsView, "init", function(func, self, ...)
+    func(self, ...)
+
+    local sceneGraphs = self._definitions.scenegraph_definition
+    sceneGraphs.rate_button = {
+        horizontal_alignment = "left",
+        parent = "player_panel",
+        vertical_alignment = "bottom",
+        size = {
+            380,
+            40,
+        },
+        position = {
+            60,
+            0,
+            13,
+        },
+    }
+
+    mod:add_global_localize_strings({
+        loc_ratings_character_options_rate = {
+            en = "Toggle player rating"
+        }
+    })
+
+    local widgets = self._definitions.widget_definitions
+    widgets.rate_button = UIWidget.create_definition(ButtonPassTemplates.terminal_button, "rate_button", {
+        visible = true,
+        original_text = Localize("loc_ratings_character_options_rate"),
+    })
+end)
