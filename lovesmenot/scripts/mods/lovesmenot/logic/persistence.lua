@@ -2,7 +2,7 @@ local mod = get_mod("lovesmenot")
 local json = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/thirdparty/json")
 local utils = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/utils")
 
-function mod.load_rating(self)
+function mod.loadRating(self)
     local file = utils.io.open(self.ratingPath, "r")
     if file ~= nil then
         local rawContent = file:read("*all")
@@ -16,7 +16,7 @@ end
 
 -- TODO: use coroutine debounce and save json more often
 -- (https://www.lua.org/pil/9.1.html)
-function mod.persist_rating(self)
+function mod.persistRating(self)
     if not self.rating then
         return
     end

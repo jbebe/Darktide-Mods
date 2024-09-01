@@ -32,8 +32,8 @@ return {
 				type = "keybind",
 				default_value = {},
 				keybind_trigger = "pressed",
-				keybind_type = "view_toggle",
-				view_name = "ratings_view"
+				keybind_type = "function_call",
+				function_name = "openRatings"
 			}
 		}
 	}
