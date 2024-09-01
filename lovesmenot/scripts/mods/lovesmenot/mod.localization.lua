@@ -11,6 +11,9 @@ return {
 	open_ratings = {
 		en = "Rated accounts dashboard"
 	},
+	ratings_title = {
+		en = "Rated accounts"
+	},
 	rate_teammate = {
 		en = "Manual rating"
 	},

@@ -24,26 +24,26 @@ local SYMBOLS = {
 
 -- Cached local player instance
 ---@class HumanPlayer
-mod.localPlayer = nil
+mod.localPlayer = mod.localPlayer or nil
 
 -- Whether the mod is loaded / ready
-mod.initialized = false
+mod.initialized = mod.initialized or false
 
 -- Rating object that stores ratings for players
 -- (State in memory that is parsed from and saved to lovesmenot.json)
-mod.rating = nil
+mod.rating = mod.rating or nil
 
 -- Path to the persisted rating object
 -- Versioned and extensible for future uses
-mod.ratingPath = utils.os.getenv('APPDATA') .. "\\Fatshark\\Darktide\\lovesmenot.json"
+mod.ratingPath = mod.ratingPath or utils.os.getenv('APPDATA') .. "\\Fatshark\\Darktide\\lovesmenot.json"
 
 -- Temporary table that stores the current teammates.
 -- Always updated to the latest one, so we can't rate a player that has left the game
-mod.teammates = nil
+mod.teammates = mod.teammates or nil
 
 -- Whether we are in a mission.
 -- (We are in a mission if a level is loaded and it is not of 'hub' type)
-mod.isInMission = false
+mod.isInMission = mod.isInMission or false
 
 --
 -- Getters
@@ -73,6 +73,7 @@ end
 
 mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/persistence")
 mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.hooks")
+mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.views")
 mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.commands")
 
 function mod.formatPlayerName(self, originalName, accountId)

@@ -1,5 +1,6 @@
 local mod = get_mod("lovesmenot")
 local json = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/thirdparty/json")
+local UIRenderer = mod:original_require("scripts/managers/ui/ui_renderer")
 
 mod:command("lmn_cmd", "Run simple functions (reset)", function(functionName)
     if functionName == "reset" then
@@ -21,4 +22,14 @@ end)
 
 mod:command("lmn_save", "Save state to file", function()
     mod:persistRating()
+end)
+
+mod:command("lmn_debug", "", function()
+    mod.debugging = not mod.debugging
+end)
+
+mod:hook_safe(UIRenderer, "begin_pass", function(self, ui_scenegraph, input_service, dt, render_settings)
+    if mod.debugging then
+        UIRenderer.debug_render_scenegraph(self, ui_scenegraph)
+    end
 end)
