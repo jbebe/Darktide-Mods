@@ -43,45 +43,52 @@ mod.on_game_state_changed = function(self, status, state_name)
     end
 end
 
-mod:add_global_localize_strings({
-    loc_ratings_view_display_name = {
-        en = "Ratings",
-    }
-})
+--
+-- Ratings view
+--
 
-mod:add_require_path("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings-view")
-mod:add_require_path("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings-view-definitions")
-mod:add_require_path("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings-view-settings")
-mod:register_view({
-    view_name = "ratings_view",
-    view_settings = {
-        init_view_function = function(ingame_ui_context)
-            return true
-        end,
-        class = "RatingsView",
-        disable_game_world = false,
-        display_name = "loc_ratings_view_display_name",
-        game_world_blur = 1.1,
-        load_always = true,
-        load_in_hub = true,
-        package = "packages/ui/views/options_view/options_view",
-        path = "lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings-view",
-        state_bound = true,
-        enter_sound_events = {
-            "wwise/events/ui/play_ui_enter_short"
+function mod.registerRatingsView(self)
+    self:add_global_localize_strings({
+        loc_ratings_view_display_name = {
+            en = "Ratings",
+        }
+    })
+
+    self:add_require_path("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view")
+    self:add_require_path("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view_definitions")
+    self:add_require_path("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view_settings")
+    self:register_view({
+        view_name = "ratings_view",
+        view_settings = {
+            init_view_function = function(ingame_ui_context)
+                return true
+            end,
+            class = "RatingsView",
+            disable_game_world = false,
+            display_name = "loc_ratings_view_display_name",
+            game_world_blur = 1.1,
+            load_always = true,
+            load_in_hub = true,
+            package = "packages/ui/views/options_view/options_view",
+            path = "lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view",
+            state_bound = true,
+            enter_sound_events = {
+                "wwise/events/ui/play_ui_enter_short"
+            },
+            exit_sound_events = {
+                "wwise/events/ui/play_ui_back_short"
+            },
+            wwise_states = {
+                options = "ingame_menu"
+            },
         },
-        exit_sound_events = {
-            "wwise/events/ui/play_ui_back_short"
-        },
-        wwise_states = {
-            options = "ingame_menu"
-        },
-    },
-    view_transitions = {},
-    view_options = {
-        close_all = true,
-        close_previous = true,
-        close_transition_time = nil,
-        transition_time = nil
-    }
-})
+        view_transitions = {},
+        view_options = {
+            close_all = true,
+            close_previous = true,
+            close_transition_time = nil,
+            transition_time = nil
+        }
+    })
+    self:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view")
+end

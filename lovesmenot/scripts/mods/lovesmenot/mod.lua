@@ -266,6 +266,12 @@ function mod.rate_teammate_3()
 end
 
 --
+-- Register views
+--
+
+mod:registerRatingsView()
+
+--
 -- Type Hints
 --
 
