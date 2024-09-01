@@ -39,6 +39,13 @@ local scenegraphDefinition = {
 		size = { 500, 50 },
 		position = { 0, -35, 1 }
 	},
+	description_text = {
+		vertical_alignment = "top",
+		parent = "title_divider",
+		horizontal_alignment = "left",
+		size = { 1000, 50 },
+		position = { 0, 35, 0 }
+	},
 	scrollbar = {
 		vertical_alignment = "center",
 		parent = "background",
@@ -106,6 +113,15 @@ local widgetDefinitions = {
 			style = table.clone(UIFontSettings.header_1)
 		}
 	}, "title_text"),
+	description_text = UIWidget.create_definition({
+		{
+			pass_type = "text",
+			value_id = "text_2",
+			style_id = "text_2",
+			value = mod:localize("ratings_description_text"),
+			style = table.clone(UIFontSettings.body_small)
+		}
+	}, "description_text"),
 	scrollbar = UIWidget.create_definition(ScrollbarPassTemplates.default_scrollbar, "scrollbar"),
 	grid_mask = UIWidget.create_definition({
 		{

@@ -14,6 +14,9 @@ return {
 	ratings_title = {
 		en = "Rated accounts"
 	},
+	ratings_description_text = {
+		en = "These are the accounts you rated so far. Click on any account to revoke your rating."
+	},
 	rate_teammate = {
 		en = "Manual rating"
 	},
