@@ -2,9 +2,6 @@ local mod = get_mod("lovesmenot")
 local Missions = require("scripts/settings/mission/mission_templates")
 local HumanPlayer = require("scripts/managers/player/human_player")
 local utils = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/utils")
-mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/persistence")
-mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.hooks")
-mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.commands")
 
 --
 -- Constants
@@ -73,6 +70,10 @@ end
 --
 -- Init
 --
+
+mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/persistence")
+mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.hooks")
+mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.commands")
 
 function mod.formatPlayerName(self, originalName, accountId)
     if not self.rating then

@@ -24,8 +24,3 @@ end)
 mod:command("lmn_save", "Save state to file", function()
     mod:persist_rating()
 end)
-
-mod:command("lmn_clear", "Clear logs that queued up due to an error", function()
-    ConstantElementNotificationFeed._queue_notifications = {}
-    mod:echo("Queue messages cleared")
-end)
