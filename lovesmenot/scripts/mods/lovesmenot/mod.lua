@@ -39,7 +39,7 @@ mod.ratingPath = mod.ratingPath or utils.os.getenv('APPDATA') .. "\\Fatshark\\Da
 
 -- Temporary table that stores the current teammates.
 -- Always updated to the latest one, so we can't rate a player that has left the game
-mod.teammates = mod.teammates or nil
+mod.teammates = mod.teammates or {}
 
 -- Whether we are in a mission.
 -- (We are in a mission if a level is loaded and it is not of 'hub' type)
@@ -243,7 +243,7 @@ function mod.rate_teammate(self, teammateIndex)
         return
     end
 
-    local selected
+    local selected = nil
     if teammateIndex == 1 and #self.teammates > 0 then
         selected = self.teammates[teammateIndex]
     elseif teammateIndex == 2 and #self.teammates > 1 then
@@ -252,7 +252,9 @@ function mod.rate_teammate(self, teammateIndex)
         selected = self.teammates[teammateIndex]
     end
 
-    self:update_rating(selected)
+    if selected then
+        self:update_rating(selected)
+    end
 end
 
 function mod.rate_teammate_1()

@@ -56,6 +56,20 @@ RatingsView._setup_category_config = function(self)
     local entries = {}
     local ratings = mod.rating.accounts
     local i = 1
+    mod:add_global_localize_strings({
+        loc_lovesmenot_ratings_entry_delete_title = {
+            en = "Rehabilitate Account",
+        },
+        loc_lovesmenot_ratings_entry_delete_description = {
+            en = "Do you want to remove the account from this list?",
+        },
+        loc_lovesmenot_ratings_entry_delete_yes = {
+            en = "Yes",
+        },
+        loc_lovesmenot_ratings_entry_delete_cancel = {
+            en = "Cancel",
+        },
+    })
     for accountId, info in pairs(ratings) do
         local title = string.format("loc_lovesmenot_ratings_entry_title_%d", i)
         local subtitle = string.format("loc_lovesmenot_ratings_entry_subtitle_%d", i)
@@ -68,16 +82,33 @@ RatingsView._setup_category_config = function(self)
             }
         })
         i = i + 1
-
         local entry = {
             widget_type = "settings_button",
             display_name = title,
             display_name2 = subtitle,
             pressed_function = function(parent, widget, entry)
-                mod:echo("entry clicked")
-            end,
-            select_function = function(parent, widget, entry)
-                mod:echo("entry selected")
+                local context = {
+                    title_text = "loc_lovesmenot_ratings_entry_delete_title",
+                    description_text = "loc_lovesmenot_ratings_entry_delete_description",
+                    options = {
+                        {
+                            close_on_pressed = true,
+                            text = "loc_lovesmenot_ratings_entry_delete_yes",
+                            callback = callback(function()
+                                mod.rating.accounts[accountId] = nil
+                                mod:persistRating()
+                                self:_reload()
+                            end),
+                        },
+                        {
+                            close_on_pressed = true,
+                            hotkey = "back",
+                            template_type = "terminal_button_small",
+                            text = "loc_lovesmenot_ratings_entry_delete_cancel",
+                        },
+                    },
+                }
+                Managers.event:trigger("event_show_ui_popup", context)
             end
         }
         entries[#entries + 1] = entry
@@ -122,7 +153,6 @@ RatingsView._setup_grid = function(self, widgets, alignment_list, grid_scenegrap
 end
 
 RatingsView._setup_content_widgets = function(self, content, scenegraph_id, callback_name)
-    local definitions = self._definitions
     local widget_definitions = {}
     local widgets = {}
     local alignment_list = {}
@@ -137,7 +167,6 @@ RatingsView._setup_content_widgets = function(self, content, scenegraph_id, call
         local pass_template = template.pass_template
 
         if pass_template and not widget_definitions[widget_type] then
-            local scenegraph_definition = definitions.scenegraph_definition
             widget_definitions[widget_type] = UIWidget.create_definition(pass_template, scenegraph_id, nil, size)
         end
 
@@ -247,8 +276,6 @@ end
 RatingsView.cb_on_category_pressed = function(self, widget, entry)
     local pressed_function = entry.pressed_function
 
-    mod:echo("show account data")
-
     if pressed_function then
         pressed_function(self, widget, entry)
     end
@@ -289,6 +316,13 @@ RatingsView.on_exit = function(self)
     end
 
     RatingsView.super.on_exit(self)
+end
+
+RatingsView._reload = function(self)
+    if self.ui_manager:view_active("ratings_view") and not self.ui_manager:is_view_closing("ratings_view") then
+        self.ui_manager:close_view("ratings_view", true)
+    end
+    self:_setup_category_config()
 end
 
 --

@@ -3,7 +3,6 @@ local mod = get_mod("lovesmenot")
 function mod.initMod(self)
     if self.initialized then return end
 
-    self:echo("initMod")
     self.initialized = true
     self.localPlayer = Managers.player:local_player_safe(1)
     self:loadRating()
@@ -36,7 +35,7 @@ function mod.on_game_state_changed(status, state_name)
         -- Mission ended
         if mod.initialized and mod.isInMission then
             mod.isInMission = false
-            mod.teammates = nil
+            mod.teammates = {}
             mod:persistRating()
         end
     end
