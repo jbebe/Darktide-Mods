@@ -61,6 +61,10 @@ local function restrictedViewsCheck()
 end
 
 function mod.openRatings(self)
+    if not mod.initialized then
+        mod:echo("Lovesmenot is not initialized")
+        return
+    end
     if Managers.ui:view_instance(ratingsViewName) then
         Managers.ui:close_view(ratingsViewName)
     elseif restrictedViewsCheck() and not Managers.ui:chat_using_input() then

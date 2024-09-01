@@ -1,6 +1,5 @@
 local mod = get_mod("lovesmenot")
 local DMF = get_mod("DMF")
-local RatingsView = class("RatingsView", "BaseView")
 local ViewElementInputLegend = mod:original_require(
     "scripts/ui/view_elements/view_element_input_legend/view_element_input_legend")
 local ScriptWorld = mod:original_require("scripts/foundation/utilities/script_world")
@@ -8,6 +7,8 @@ local UIWidget = mod:original_require("scripts/managers/ui/ui_widget")
 local UIWidgetGrid = mod:original_require("scripts/ui/widget_logic/ui_widget_grid")
 local UIRenderer = mod:original_require("scripts/managers/ui/ui_renderer")
 local UIFonts = mod:original_require("scripts/managers/ui/ui_fonts")
+
+local RatingsView = class("RatingsView", "BaseView")
 
 --
 -- Init
@@ -52,18 +53,26 @@ RatingsView.on_enter = function(self)
 end
 
 RatingsView._setup_category_config = function(self)
-    mod:add_global_localize_strings({
-        loc_lovesmenot_ratings_entry_title = {
-            en = "test text",
-        },
-    })
-
     local entries = {}
-    for i = 1, 100 do
+    local ratings = mod.rating.accounts
+    local i = 1
+    for accountId, info in pairs(ratings) do
+        local title = string.format("loc_lovesmenot_ratings_entry_title_%d", i)
+        local subtitle = string.format("loc_lovesmenot_ratings_entry_subtitle_%d", i)
+        mod:add_global_localize_strings({
+            [title] = {
+                en = string.sub(accountId, 1, 40),
+            },
+            [subtitle] = {
+                en = string.format("Status: %s", info.rating),
+            }
+        })
+        i = i + 1
+
         local entry = {
             widget_type = "settings_button",
-            display_name = "loc_lovesmenot_ratings_entry_title",
-            display_name2 = "loc_lovesmenot_ratings_entry_title",
+            display_name = title,
+            display_name2 = subtitle,
             pressed_function = function(parent, widget, entry)
                 mod:echo("entry clicked")
             end,
