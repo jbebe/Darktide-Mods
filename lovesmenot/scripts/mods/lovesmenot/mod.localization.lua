@@ -32,6 +32,9 @@ return {
 	rating_value_avoid = {
 		en = "avoid"
 	},
+	rating_value_prefer = {
+		en = "prefer"
+	},
 	rate_notification_text_set = {
 		en = "%s is now marked as: %s"
 	},

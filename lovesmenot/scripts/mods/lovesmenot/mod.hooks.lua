@@ -1,10 +1,16 @@
 local mod = get_mod("lovesmenot")
 
 function mod.initMod(self)
-    if self.initialized then return end
+    if self.initialized then
+        return
+    end
 
-    self.initialized = true
     self.localPlayer = Managers.player:local_player_safe(1)
+    if self.localPlayer == nil then
+        -- account not yet available, retry later
+        return
+    end
+    self.initialized = true
     self:loadRating()
     self.isInMission = mod:_isInMission()
 end

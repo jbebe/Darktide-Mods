@@ -3,20 +3,51 @@ local Missions = require("scripts/settings/mission/mission_templates")
 local HumanPlayer = require("scripts/managers/player/human_player")
 local utils = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/utils")
 
+-- Don't know where to put yet
+local function startsWith(haystack, needle)
+    return haystack:sub(1, #needle) == needle
+end
+
 --
 -- Constants
 --
 
 mod.VERSION = 1
 
-local RATING = {
-    AVOID = "avoid"
+local RATINGS = {
+    AVOID = "avoid",
+    PREFER = "prefer",
 }
 
 local SYMBOLS = {
-    SKULL = "\u{e01e}",
-    CHECK = "\u{e001}"
+    CHECK = "\u{e001}",
+    FLAME = "\u{e020}",
+    WREATH = "\u{e041}",
 }
+
+local COLORS = {
+    ORANGE = "255,75,20",
+    GREEN = "133,237,0",
+}
+
+local function colorize(color, text)
+    return "{#color(" .. color .. ")}" .. text .. "{#reset()}"
+end
+
+local NAME_PREFIX = {
+    [RATINGS.AVOID] = colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. " ",
+    [RATINGS.PREFER] = colorize(COLORS.GREEN, SYMBOLS.WREATH) .. " ",
+}
+
+local function cleanRating(text)
+    for _, prefix in pairs(NAME_PREFIX) do
+        if startsWith(text, prefix) then
+            return text:sub(#prefix)
+        end
+    end
+
+    return text
+end
 
 --
 -- Properties
@@ -24,26 +55,26 @@ local SYMBOLS = {
 
 -- Cached local player instance
 ---@class HumanPlayer
-mod.localPlayer = mod.localPlayer or nil
+mod.localPlayer = nil
 
 -- Whether the mod is loaded / ready
-mod.initialized = mod.initialized or false
+mod.initialized = false
 
 -- Rating object that stores ratings for players
 -- (State in memory that is parsed from and saved to lovesmenot.json)
-mod.rating = mod.rating or nil
+mod.rating = nil
 
 -- Path to the persisted rating object
 -- Versioned and extensible for future uses
-mod.ratingPath = mod.ratingPath or utils.os.getenv('APPDATA') .. "\\Fatshark\\Darktide\\lovesmenot.json"
+mod.ratingPath = utils.os.getenv('APPDATA') .. "\\Fatshark\\Darktide\\lovesmenot.json"
 
 -- Temporary table that stores the current teammates.
 -- Always updated to the latest one, so we can't rate a player that has left the game
-mod.teammates = mod.teammates or {}
+mod.teammates = {}
 
 -- Whether we are in a mission.
 -- (We are in a mission if a level is loaded and it is not of 'hub' type)
-mod.isInMission = mod.isInMission or false
+mod.isInMission = false
 
 --
 -- Getters
@@ -76,22 +107,44 @@ mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.hooks")
 mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.views")
 mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.commands")
 
-function mod.formatPlayerName(self, originalName, accountId)
+function mod.formatPlayerName(self, oldText, accountId)
     if not self.rating then
-        return originalName
+        -- rating is not available, skip
+        return oldText, false
     end
 
     local accData = self.rating.accounts[accountId]
     if not accData then
-        return originalName
+        local textRaw = cleanRating(oldText)
+        if oldText == textRaw then
+            -- default player name, unchanged
+            return oldText, false
+        end
+
+        -- default player name, changed from rated
+        return textRaw, true
     end
 
-    -- clean originalName (color, etc.)
-    if accData.rating == RATING.AVOID then
-        return "{#color(255,20,20)}" .. SYMBOLS.SKULL .. "{#reset()} " .. originalName
+    local rating = accData.rating
+    local ratingPrefix = NAME_PREFIX[rating]
+    if startsWith(oldText, ratingPrefix) then
+        -- prefix already applied
+        return oldText, false
+    else
+        -- prefix is different, replace it, mark it dirty
+        local textRaw = cleanRating(oldText)
+        --mod:echo(("clean name: %s -> %s"):format(oldText, textRaw))
+        -- strip icon from vanilla name: "{color}<unicode>{reset} <name>" -> "<name>"
+        textRaw = textRaw
+            :gsub('^%b{}', '')
+            :gsub('^\u{e01a}', '')
+            :gsub('^\u{e01b}', '')
+            :gsub('^\u{e01c}', '')
+            :gsub('^\u{e01d}', '')
+            :gsub('^%b{}', '')
+            :gsub('^ ', '')
+        return ratingPrefix .. textRaw, true
     end
-
-    error('Unsupported rating type:' .. tostring(accData.rating))
 end
 
 --
@@ -109,7 +162,7 @@ mod:hook_safe(CLASS.LobbyView, "_sync_player", function(self, unique_id, player)
     local slot = spawnSlots[slotId]
     local content = slot.panel_widget.content
 
-    content.character_name = mod:formatPlayerName(player:profile().name, player._account_id)
+    content.character_name, _ = mod:formatPlayerName(content.character_name, player._account_id)
 end)
 
 -- Player joins midgame
@@ -123,6 +176,7 @@ mod:hook_safe(CLASS.HudElementTeamPanelHandler, "update",
         for _, data in ipairs(self._player_panels_array) do
             local player = data.player
             local accountId = player._telemetry_subject.account_id
+            assert(mod.initialized)
             if accountId ~= mod.localPlayer._account_id then
                 local characterName = player:profile().name
                 table.insert(remotePlayers, {
@@ -135,13 +189,16 @@ mod:hook_safe(CLASS.HudElementTeamPanelHandler, "update",
                 local content = widget.content
 
                 -- change name
-                content.text = mod:formatPlayerName(characterName, accountId)
-                widget.dirty = true
+                local newName, isDirty = mod:formatPlayerName(content.text, accountId)
+                if isDirty then
+                    content.text = newName
+                    widget.dirty = isDirty
 
-                -- expand name container
-                local container_size = widget.style.text.size
-                if container_size then
-                    container_size[1] = 500
+                    -- expand name container
+                    local container_size = widget.style.text.size
+                    if container_size then
+                        container_size[1] = 500
+                    end
                 end
             end
         end
@@ -173,10 +230,15 @@ mod:hook_safe(CLASS.HudElementNameplates, "update", function(self)
             local player_deleted = player.__deleted
 
             if not player_deleted then
-                local content = marker.widget.content
+                local widget = marker.widget
+                local content = widget.content
 
-                content.header_text = mod:formatPlayerName(player:profile().name, player._telemetry_subject.account_id)
-                marker.tl_modified = true
+                local newName, isDirty =
+                    mod:formatPlayerName(content.header_text, player._telemetry_subject.account_id)
+                if isDirty then
+                    content.header_text = newName
+                    widget.dirty = true
+                end
             end
         end
     end
@@ -197,8 +259,11 @@ mod:hook_safe(CLASS.EndView, "_set_character_names", function(self)
                 local account_id = slot.account_id
 
                 if account_id ~= mod.localPlayer._account_id then
-                    local player_info = slot.player_info
-                    content.character_name = mod:formatPlayerName(player_info:profile().name, account_id)
+                    local newName, isDirty = mod:formatPlayerName(content.character_name, account_id)
+                    if isDirty then
+                        content.character_name = newName
+                        widget.dirty = true
+                    end
                 end
             end
         end
@@ -218,22 +283,27 @@ function mod.update_rating(self, teammate)
     end
 
     local message
+    local isError = false
     if not self.rating.accounts[teammate.accountId] then
         -- account has not been rated yet, create object
-        self.rating.accounts[teammate.accountId] = {
-            rating = RATING.AVOID
-        }
+        self.rating.accounts[teammate.accountId] = { rating = RATINGS.AVOID }
         message = mod:localize("rate_notification_text_set", teammate.name, mod:localize("rating_value_avoid"))
-        message = "{#color(255,20,20)}" .. SYMBOLS.SKULL .. "{#reset()} " .. message
+        message = colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. " " .. message
+        isError = true
+    elseif self.rating.accounts[teammate.accountId].rating == RATINGS.AVOID then
+        -- account hasn been rated, cycle to prefer
+        self.rating.accounts[teammate.accountId].rating = RATINGS.PREFER
+        message = mod:localize("rate_notification_text_set", teammate.name, mod:localize("rating_value_prefer"))
+        message = colorize(COLORS.GREEN, SYMBOLS.WREATH) .. " " .. message
     else
         -- account was rated, remove from table
         self.rating.accounts[teammate.accountId] = nil
         message = mod:localize("rate_notification_text_unset", teammate.name)
-        message = SYMBOLS.CHECK .. " " .. message
+        message = colorize(COLORS.GREEN, SYMBOLS.CHECK) .. " " .. message
     end
 
     -- user feedback
-    utils.direct_notification(message)
+    utils.direct_notification(message, isError)
 
     -- update team panel to show changes
 end
@@ -283,7 +353,7 @@ local __rating = {
     version = mod.VERSION,
     accounts = {
         ["3cc1cf49-8b7a-4fe7-bc03-7c65ad899962"] = {
-            rating = RATING.AVOID
+            rating = RATINGS.AVOID
         }
     }
 }

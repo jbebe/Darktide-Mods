@@ -2,15 +2,24 @@ local DMF = get_mod("DMF")
 local UISoundEvents = require("scripts/settings/ui/ui_sound_events")
 local utils = {}
 
-function utils.direct_notification(message)
+function utils.direct_notification(message, isError)
     if Managers.event then
-        Managers.event:trigger(
-            "event_add_notification_message",
-            "alert",
-            { text = message } or "",
-            nil,
-            UISoundEvents.default_click
-        )
+        if not isError then
+            Managers.event:trigger(
+                "event_add_notification_message",
+                "default",
+                message,
+                nil,
+                UISoundEvents.default_click)
+        else
+            Managers.event:trigger(
+                "event_add_notification_message",
+                "alert",
+                { text = message } or "",
+                nil,
+                UISoundEvents.default_click
+            )
+        end
     end
 end
 
@@ -22,8 +31,7 @@ function utils.traceback()
         if info.what == "C" then
             print(level, "C function")
         else
-            print(string.format("[%s]:%d",
-                info.short_src, info.currentline))
+            print(("[%s]:%d"):format(info.short_src, info.currentline))
         end
         level = level + 1
     end

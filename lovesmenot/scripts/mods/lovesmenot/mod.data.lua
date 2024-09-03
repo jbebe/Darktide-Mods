@@ -14,13 +14,13 @@ return {
 
 					for i = 1, 3 do
 						table.insert(widgets, {
-							setting_id = string.format("rate_teammate_%d", i),
+							setting_id = ("rate_teammate_%d"):format(i),
 							type = "keybind",
 							default_value = {},
 							keybind_global = false,
 							keybind_trigger = "pressed",
 							keybind_type = "function_call",
-							function_name = string.format("rate_teammate_%d", i),
+							function_name = ("rate_teammate_%d"):format(i),
 						})
 					end
 

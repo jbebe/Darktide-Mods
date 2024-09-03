@@ -71,14 +71,14 @@ RatingsView._setup_category_config = function(self)
         },
     })
     for accountId, info in pairs(ratings) do
-        local title = string.format("loc_lovesmenot_ratings_entry_title_%d", i)
-        local subtitle = string.format("loc_lovesmenot_ratings_entry_subtitle_%d", i)
+        local title = ("loc_lovesmenot_ratings_entry_title_%d"):format(i)
+        local subtitle = ("loc_lovesmenot_ratings_entry_subtitle_%d"):format(i)
         mod:add_global_localize_strings({
             [title] = {
-                en = string.sub(accountId, 1, 40),
+                en = accountId:sub(1, 40),
             },
             [subtitle] = {
-                en = string.format("Status: %s", info.rating),
+                en = ("Status: %s"):format(info.rating),
             }
         })
         i = i + 1
@@ -220,6 +220,9 @@ end
 
 RatingsView.draw = function(self, dt, t, input_service, layer)
     self:_draw_elements(dt, t, self._ui_renderer, self._render_settings, input_service)
+
+    self._category_content_grid:update(dt, t, input_service)
+
     local widgets_by_name = self._widgets_by_name
     local grid_interaction_widget = widgets_by_name.grid_interaction
     self:_draw_grid(self._category_content_grid, self._category_content_widgets, grid_interaction_widget, dt, t,
