@@ -46,6 +46,12 @@ return {
 	lovesmenot_ratingsview_delete_no = {
 		en = "Cancel",
 	},
+	lovesmenot_ratingsview_griditem_title = {
+		en = "%s %s | %s %s"
+	},
+	lovesmenot_ratingsview_griditem_subtitle = {
+		en = "Operative: %s (%s) | Status: %s"
+	},
 
 	-- Ingame text
 	lovesmenot_ingame_rating_avoid = {

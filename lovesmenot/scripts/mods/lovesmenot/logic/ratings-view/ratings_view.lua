@@ -65,6 +65,15 @@ local RATINGS = {
     prefer = "\u{e041}",
 }
 
+local COLORS = {
+    avoid = "255,75,20",
+    prefer = "133,237,0",
+}
+
+local function colorize(color, text)
+    return "{#color(" .. color .. ")}" .. text .. "{#reset()}"
+end
+
 RatingsView._setup_category_config = function(self)
     local entries = {}
     local ratings = mod.rating and mod.rating.accounts or {}
@@ -84,11 +93,12 @@ RatingsView._setup_category_config = function(self)
         local ratingText = mod:localize('lovesmenot_ingame_rating_' .. info.rating)
         mod:add_global_localize_strings({
             [title] = {
-                en = ("%s %s (%s)"):format(platformIcon, info.name, playerAvailability),
+                en = mod:localize('lovesmenot_ratingsview_griditem_title',
+                    colorize(COLORS[info.rating], ratingIcon), ratingText, platformIcon, info.name),
             },
             [subtitle] = {
-                en = ("Rating: %s %s | Last character: %s (%s)"):format(
-                    ratingIcon, ratingText, info.characterName, info.characterType),
+                en = mod:localize('lovesmenot_ratingsview_griditem_subtitle',
+                    info.characterName, info.characterType, playerAvailability),
             }
         })
         local entry = {
