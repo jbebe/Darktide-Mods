@@ -82,9 +82,15 @@ end
 --
 
 function PlayerCharacterOptionsView._on_rate_pressed(self)
+    local playerInfo = self._player_info
+    local accountName = playerInfo._presence:account_name()
+    local platform = playerInfo:platform() or 'unknown'
     mod:update_rating({
-        accountId = self._account_id,
-        name = self._player_info:profile().name,
+        accountId = playerInfo:account_id(),
+        name = accountName,
+        platform = platform,
+        characterName = playerInfo:profile().name,
+        characterType = playerInfo:profile().archetype.name,
     })
     mod:persistRating()
 end

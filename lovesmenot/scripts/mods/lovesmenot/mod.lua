@@ -179,9 +179,15 @@ mod:hook_safe(CLASS.HudElementTeamPanelHandler, "update",
             assert(mod.initialized)
             if accountId ~= mod.localPlayer._account_id then
                 local characterName = player:profile().name
+                local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
+                local accountName = playerInfo._presence:account_name()
+                local platform = playerInfo:platform() or 'unknown'
                 table.insert(remotePlayers, {
                     accountId = accountId,
-                    name = characterName
+                    name = accountName,
+                    platform = platform,
+                    characterName = characterName,
+                    characterType = player:profile().archetype.name,
                 })
 
                 local panel = data.panel
@@ -284,28 +290,31 @@ function mod.update_rating(self, teammate)
 
     local message
     local isError = false
+    local copy = table.clone(teammate)
     if not self.rating.accounts[teammate.accountId] then
         -- account has not been rated yet, create object
-        self.rating.accounts[teammate.accountId] = { rating = RATINGS.AVOID }
-        message = mod:localize("rate_notification_text_set", teammate.name, mod:localize("rating_value_avoid"))
+        copy.rating = RATINGS.AVOID
+        self.rating.accounts[teammate.accountId] = copy
+        message = mod:localize("lovesmenot_ingame_notification_set", teammate.characterName,
+            mod:localize("lovesmenot_ingame_rating_avoid"))
         message = colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. " " .. message
         isError = true
     elseif self.rating.accounts[teammate.accountId].rating == RATINGS.AVOID then
         -- account hasn been rated, cycle to prefer
-        self.rating.accounts[teammate.accountId].rating = RATINGS.PREFER
-        message = mod:localize("rate_notification_text_set", teammate.name, mod:localize("rating_value_prefer"))
+        copy.rating = RATINGS.PREFER
+        self.rating.accounts[teammate.accountId] = copy
+        message = mod:localize("lovesmenot_ingame_notification_set", teammate.characterName,
+            mod:localize("lovesmenot_ingame_rating_prefer"))
         message = colorize(COLORS.GREEN, SYMBOLS.WREATH) .. " " .. message
     else
         -- account was rated, remove from table
         self.rating.accounts[teammate.accountId] = nil
-        message = mod:localize("rate_notification_text_unset", teammate.name)
+        message = mod:localize("lovesmenot_ingame_notification_unset", teammate.characterName)
         message = colorize(COLORS.GREEN, SYMBOLS.CHECK) .. " " .. message
     end
 
     -- user feedback
     utils.direct_notification(message, isError)
-
-    -- update team panel to show changes
 end
 
 function mod.rate_teammate(self, teammateIndex)
@@ -327,15 +336,15 @@ function mod.rate_teammate(self, teammateIndex)
     end
 end
 
-function mod.rate_teammate_1()
+function mod.lovesmenot_settings_hotkey_1_title()
     mod:rate_teammate(1)
 end
 
-function mod.rate_teammate_2()
+function mod.lovesmenot_settings_hotkey_2_title()
     mod:rate_teammate(2)
 end
 
-function mod.rate_teammate_3()
+function mod.lovesmenot_settings_hotkey_3_title()
     mod:rate_teammate(3)
 end
 
@@ -353,13 +362,20 @@ local __rating = {
     version = mod.VERSION,
     accounts = {
         ["3cc1cf49-8b7a-4fe7-bc03-7c65ad899962"] = {
-            rating = RATINGS.AVOID
+            rating = RATINGS.AVOID,
+            name = 'mysteamacc12321',
+            platform = 'steam',
+            characterName = "xXxD3sTr0yeRxXx",
+            characterType = 'Psyker',
         }
     }
 }
 local __teammates = {
     {
         accountId = "3cc1cf49-8b7a-4fe7-bc03-7c65ad899962",
-        name = "xXxD3sTr0yeRxXx"
+        name = 'mysteamacc12321',
+        platform = 'steam',
+        characterName = "xXxD3sTr0yeRxXx",
+        characterType = 'Psyker',
     }
 }

@@ -1,44 +1,63 @@
 return {
-	mod_title = {
+	-- Meta
+	lovesmenot_mod_title = {
 		en = "Loves me, loves me not"
 	},
-	mod_description = {
-		en = "Mark toxic players for your convenience.\n" ..
+	lovesmenot_mod_description = {
+		en = "Mark toxic or good players for your convenience.\n" ..
 			"Hotkeys only work during missions.\n" ..
-			"Players are indexed by the team hud panel {#under(true)}from bottom to top{#under(false)},\n" ..
-			"which means teammate #1 will be the closest one to your avatar."
+			"Players are indexed by the team hud panel {#under(true)}from bottom-up{#under(false)}.\n" ..
+			"(Teammate #1 will be on the bottom, closest to your avatar)"
 	},
-	open_ratings = {
-		en = "Rated accounts dashboard"
+
+	-- Settings
+	lovesmenot_settings_open_ratings = {
+		en = "Open accounts dashboard"
 	},
-	ratings_title = {
-		en = "Rated accounts"
-	},
-	ratings_description_text = {
-		en = "These are the accounts you rated so far. Click on any account to revoke your rating."
-	},
-	rate_teammate = {
+	lovesmenot_settings_hotkey_group_title = {
 		en = "Manual rating"
 	},
-	rate_teammate_1 = {
+	lovesmenot_settings_hotkey_1_title = {
 		en = "Change rating of teammate #1"
 	},
-	rate_teammate_2 = {
+	lovesmenot_settings_hotkey_2_title = {
 		en = "Change rating of teammate #2"
 	},
-	rate_teammate_3 = {
+	lovesmenot_settings_hotkey_3_title = {
 		en = "Change rating of teammate #3"
 	},
-	rating_value_avoid = {
-		en = "avoid"
+
+	-- Accounts dashboard
+	lovesmenot_ratingsview_title = {
+		en = "Accounts Dashboard"
 	},
-	rating_value_prefer = {
-		en = "prefer"
+	lovesmenot_ratingsview_description = {
+		en = "These are the accounts you rated so far. Click on any account to revoke your rating."
 	},
-	rate_notification_text_set = {
+	lovesmenot_ratingsview_delete_title = {
+		en = "Rehabilitate Account",
+	},
+	lovesmenot_ratingsview_delete_description = {
+		en = "Do you want to remove the account from this list?",
+	},
+	lovesmenot_ratingsview_delete_yes = {
+		en = "Yes",
+	},
+	lovesmenot_ratingsview_delete_no = {
+		en = "Cancel",
+	},
+
+	-- Ingame text
+	lovesmenot_ingame_rating_avoid = {
+		en = "Avoid"
+	},
+	lovesmenot_ingame_rating_prefer = {
+		en = "Prefer"
+	},
+	lovesmenot_ingame_notification_set = {
 		en = "%s is now marked as: %s"
 	},
-	rate_notification_text_unset = {
+	lovesmenot_ingame_notification_unset = {
 		en = "%s is now unmarked"
-	}
+	},
 }

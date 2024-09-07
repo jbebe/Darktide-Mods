@@ -25,6 +25,13 @@ local scenegraphDefinition = {
 		size = { grid_width, grid_height },
 		position = { 180, 240, 1 }
 	},
+	background_icon = {
+		horizontal_alignment = "center",
+		parent = "screen",
+		vertical_alignment = "center",
+		size = { 1250, 1250 },
+		position = { 0, 0, 0 },
+	},
 	title_divider = {
 		vertical_alignment = "top",
 		parent = "screen",
@@ -94,10 +101,39 @@ local widgetDefinitions = {
 		{
 			pass_type = "rect",
 			style = {
-				color = { 160, 0, 0, 0 }
-			}
-		}
+				color = Color.black(100, true),
+			},
+		},
+		{
+			pass_type = "texture",
+			value = "content/ui/materials/backgrounds/terminal_basic",
+			style = {
+				horizontal_alignemt = "center",
+				scale_to_material = true,
+				vertical_alignemnt = "center",
+				size_addition = {
+					40,
+					40,
+				},
+				offset = {
+					-20,
+					-20,
+					0,
+				},
+				color = Color.terminal_grid_background_gradient(100, true),
+			},
+		},
 	}, "screen"),
+	background_icon = UIWidget.create_definition({
+		{
+			pass_type = "slug_icon",
+			value = "content/ui/vector_textures/symbols/cog_skull_01",
+			style = {
+				offset = { 0, 0, 0 },
+				color = { 60, 0, 0, 0 },
+			},
+		},
+	}, "background_icon"),
 	title_divider = UIWidget.create_definition({
 		{
 			pass_type = "texture",
@@ -109,7 +145,7 @@ local widgetDefinitions = {
 			value_id = "text",
 			style_id = "text",
 			pass_type = "text",
-			value = mod:localize("ratings_title"),
+			value = mod:localize("lovesmenot_ratingsview_title"),
 			style = table.clone(UIFontSettings.header_1)
 		}
 	}, "title_text"),
@@ -118,7 +154,7 @@ local widgetDefinitions = {
 			pass_type = "text",
 			value_id = "text_2",
 			style_id = "text_2",
-			value = mod:localize("ratings_description_text"),
+			value = mod:localize("lovesmenot_ratingsview_description"),
 			style = table.clone(UIFontSettings.body_small)
 		}
 	}, "description_text"),

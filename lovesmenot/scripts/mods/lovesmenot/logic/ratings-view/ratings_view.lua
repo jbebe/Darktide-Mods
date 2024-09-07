@@ -7,6 +7,7 @@ local UIWidget = mod:original_require("scripts/managers/ui/ui_widget")
 local UIWidgetGrid = mod:original_require("scripts/ui/widget_logic/ui_widget_grid")
 local UIRenderer = mod:original_require("scripts/managers/ui/ui_renderer")
 local UIFonts = mod:original_require("scripts/managers/ui/ui_fonts")
+local localization = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.localization")
 
 local RatingsView = class("RatingsView", "BaseView")
 
@@ -52,48 +53,56 @@ RatingsView.on_enter = function(self)
     self:_setup_input_legend()
 end
 
+local PLATFORMS = {
+    steam = "\u{e06b}",
+    xbox = "\u{e06c}",
+    psn = "\u{e071}",
+    unknown = "\u{e06f}",
+}
+
+local RATINGS = {
+    avoid = "\u{e020}",
+    prefer = "\u{e041}",
+}
+
 RatingsView._setup_category_config = function(self)
     local entries = {}
-    local ratings = mod.rating.accounts
-    local i = 1
+    local ratings = mod.rating and mod.rating.accounts or {}
     mod:add_global_localize_strings({
-        loc_lovesmenot_ratings_entry_delete_title = {
-            en = "Rehabilitate Account",
-        },
-        loc_lovesmenot_ratings_entry_delete_description = {
-            en = "Do you want to remove the account from this list?",
-        },
-        loc_lovesmenot_ratings_entry_delete_yes = {
-            en = "Yes",
-        },
-        loc_lovesmenot_ratings_entry_delete_cancel = {
-            en = "Cancel",
-        },
+        lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
+        lovesmenot_ratingsview_delete_description = localization.lovesmenot_ratingsview_delete_description,
+        lovesmenot_ratingsview_delete_yes = localization.lovesmenot_ratingsview_delete_yes,
+        lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
     })
     for accountId, info in pairs(ratings) do
-        local title = ("loc_lovesmenot_ratings_entry_title_%d"):format(i)
-        local subtitle = ("loc_lovesmenot_ratings_entry_subtitle_%d"):format(i)
+        local title = "lovesmenot_ratingsview_griditem_title_" .. accountId
+        local subtitle = "lovesmenot_ratingsview_griditem_subtitle_" .. accountId
+        local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
+        local playerAvailability = playerInfo._presence._immaterium_entry.status
+        local platformIcon = PLATFORMS[info.platform]
+        local ratingIcon = RATINGS[info.rating]
+        local ratingText = mod:localize('lovesmenot_ingame_rating_' .. info.rating)
         mod:add_global_localize_strings({
             [title] = {
-                en = accountId:sub(1, 40),
+                en = ("%s %s (%s)"):format(platformIcon, info.name, playerAvailability),
             },
             [subtitle] = {
-                en = ("Status: %s"):format(info.rating),
+                en = ("Rating: %s %s | Last character: %s (%s)"):format(
+                    ratingIcon, ratingText, info.characterName, info.characterType),
             }
         })
-        i = i + 1
         local entry = {
             widget_type = "settings_button",
             display_name = title,
             display_name2 = subtitle,
             pressed_function = function(parent, widget, entry)
                 local context = {
-                    title_text = "loc_lovesmenot_ratings_entry_delete_title",
-                    description_text = "loc_lovesmenot_ratings_entry_delete_description",
+                    title_text = "lovesmenot_ratingsview_delete_title",
+                    description_text = "lovesmenot_ratingsview_delete_description",
                     options = {
                         {
                             close_on_pressed = true,
-                            text = "loc_lovesmenot_ratings_entry_delete_yes",
+                            text = "lovesmenot_ratingsview_delete_yes",
                             callback = callback(function()
                                 mod.rating.accounts[accountId] = nil
                                 mod:persistRating()
@@ -104,7 +113,7 @@ RatingsView._setup_category_config = function(self)
                             close_on_pressed = true,
                             hotkey = "back",
                             template_type = "terminal_button_small",
-                            text = "loc_lovesmenot_ratings_entry_delete_cancel",
+                            text = "lovesmenot_ratingsview_delete_no",
                         },
                     },
                 }
