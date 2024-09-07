@@ -1,7 +1,8 @@
 local mod = get_mod("lovesmenot")
 local Missions = require("scripts/settings/mission/mission_templates")
 local HumanPlayer = require("scripts/managers/player/human_player")
-local utils = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/utils")
+local utils = require("lovesmenot/scripts/mods/lovesmenot/logic/utils")
+local CONSTANTS = require('lovesmenot/scripts/mods/lovesmenot/constants')
 
 -- Don't know where to put yet
 local function startsWith(haystack, needle)
