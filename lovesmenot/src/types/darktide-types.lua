@@ -1,0 +1,138 @@
+---@meta
+
+---@class HumanPlayer
+---@field player_unit string | nil
+---@field viewport_name string
+---@field owned_units table
+---@field sensitivity number
+---@field aim_assist_data string
+---@field _telemetry_game_session any
+---@field _debug_name string
+---@field _session_id string
+---@field _unique_id string
+---@field _peer_id string
+---@field _local_player_id string
+---@field _account_id string Example: 9cbcc8dc-9c03-4c6c-ac44-c2dc793c588e
+---@field _cached_name string | nil
+---@field _orientation string
+---@field _game_state_object string | nil
+---@field _slot table
+---@field _is_spectating boolean
+---@field _spectated_by table
+---@field _wanted_spawn_point string | nil
+---@field type function
+---@field set_wanted_spawn_point function
+---@field wanted_spawn_point function
+---@field set_slot function
+---@field slot function
+---@field session_id function
+---@field connection_channel_id function
+---@field channel_id function
+---@field unique_id function
+---@field peer_id function
+---@field local_player_id function
+---@field account_id function
+---@field character_id function
+---@field is_human_controlled function
+---@field name function
+---@field set_profile function
+---@field profile function
+---@field has_local_profile function
+---@field archetype_name function
+---@field breed_name function
+---@field telemetry_game_session function
+---@field telemetry_subject function
+---@field destroy function
+---@field set_orientation function
+---@field get_orientation function
+---@field unit_is_alive function
+---@field _create_aim_assist_data function
+
+---@class Managers
+---@field wwise_game_sync table
+---@field data_service table
+---@field package_synchronization table
+---@field multiplayer_session table
+---@field transition table
+---@field world_level_despawn table
+---@field live_event table
+---@field time table
+---@field profile_synchronization table
+---@field telemetry_events table
+---@field connection table
+---@field bot table
+---@field grpc table
+---@field stats table
+---@field mechanism table
+---@field event table
+---@field state table
+---@field party_immaterium table
+---@field input table
+---@field progression table
+---@field account table
+---@field steam table
+---@field dlc table
+---@field save table
+---@field package table
+---@field dmf table
+---@field presence table
+---@field frame_table table
+---@field localization table
+---@field mod table
+---@field world table
+---@field error table
+---@field telemetry_reporters table
+---@field backend table
+---@field voting table
+---@field server_metrics table
+---@field token table
+---@field telemetry table
+---@field chat table
+---@field achievements table
+---@field destroy function
+---@field narrative table
+---@field ping table
+---@field frame_rate table
+---@field player table
+---@field url_loader table
+---@field loading table
+---@field ui table
+---@field font table
+
+---@class ModsFileType
+---@field exec_unsafe_with_return function
+---@field exec_with_return function
+---@field exec function
+---@field dofile function
+---@field read_content function
+---@field exec_unsafe function
+---@field read_content_to_table function
+---@field exists function
+
+---@class ModsHookType
+---@field enable function
+---@field set function
+---@field enable_by_file function
+---@field set_on_file function
+---@field _get_item_hook function
+---@field _get_func function
+---@field front function
+---@field _get_item function
+---@field _patch function
+---@field remove function
+
+---@class LuaType
+---@field os table
+---@field io table
+---@field ffi table
+---@field debug table
+---@field loadstring table
+
+---@class Mods
+---@field require_store table<string, table>
+---@field lua LuaType
+---@field original_class function
+---@field file ModsFileType
+---@field original_require function
+---@field message { notify: function, echo: function }
+---@field hook ModsHookType

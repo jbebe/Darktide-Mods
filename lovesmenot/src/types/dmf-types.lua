@@ -1,0 +1,65 @@
+---@meta
+
+---@class DmfMod
+---@field add_global_localize_strings fun(self: any, string: table<string, table<string, string>>): nil
+---@field new function
+---@field io_exec function
+---@field io_exec_unsafe function
+---@field io_exec_unsafe_with_return function
+---@field register_hud_element function
+---@field hook_origin function
+---@field dump_to_file function
+---@field notify function
+---@field io_dofile_unsafe function
+---@field io_dofile function
+---@field debug function
+---@field remove_require_path function
+---@field delete function
+---@field get_readable_name function
+---@field set function
+---@field is_enabled function
+---@field add_require_path function
+---@field get_require_store function
+---@field warning function
+---@field disable_all_hooks function
+---@field command_enable function
+---@field get_description function
+---@field persistent_table function
+---@field original_require function
+---@field __class_name "DMFMod"
+---@field get_name function
+---@field pcall function
+---@field package_status function
+---@field dtf function
+---@field enable_all_hooks function
+---@field io_read_content_to_table function
+---@field handle_transition function
+---@field unload_package function
+---@field load_package function
+---@field disable_all_commands function
+---@field error function
+---@field command function
+---@field dofile function
+---@field register_view function
+---@field init function
+---@field localize function
+---@field get function
+---@field get_internal_data function
+---@field io_read_content function
+---@field info function
+---@field remove_all_commands function
+---@field hook_safe function
+---@field enable_all_commands function
+---@field hook_enable function
+---@field command_disable function
+---@field hook_require function
+---@field dump function
+---@field io_exec_with_return function
+---@field command_remove function
+---@field chat_whisper function
+---@field echo_localized function
+---@field hook_disable function
+---@field hook function
+---@field echo function
+---@field update fun(dt: number): nil
+---@field on_game_state_changed fun(status: string, state: string): nil

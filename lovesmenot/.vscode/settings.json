@@ -1,8 +1,11 @@
 {
     "Lua.completion.autoRequire": false,
-    "Lua.workspace.library": [
-        "../../source",
-        "../../../source"
-    ],
-    "Lua.workspace.maxPreload": 7000
+    "Lua.diagnostics.globals": [
+        "Managers",
+        "get_mod",
+        "Mods",
+        "callback",
+        "Localize",
+        "CLASS",
+    ]
 }

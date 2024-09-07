@@ -7,7 +7,7 @@ local UIWidget = mod:original_require("scripts/managers/ui/ui_widget")
 local UIWidgetGrid = mod:original_require("scripts/ui/widget_logic/ui_widget_grid")
 local UIRenderer = mod:original_require("scripts/managers/ui/ui_renderer")
 local UIFonts = mod:original_require("scripts/managers/ui/ui_fonts")
-local localization = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/mod.localization")
+local localization = mod:io_dofile("lovesmenot/src/mod.localization")
 
 local RatingsView = class("RatingsView", "BaseView")
 
@@ -16,9 +16,9 @@ local RatingsView = class("RatingsView", "BaseView")
 --
 
 RatingsView.init = function(self, settings, context)
-    self._definitions = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view_definitions")
-    self._blueprints = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view_blueprints")
-    self._settings = mod:io_dofile("lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view_settings")
+    self._definitions = mod:io_dofile("lovesmenot/src/logic/ratings-view/ratings_view_definitions")
+    self._blueprints = mod:io_dofile("lovesmenot/src/logic/ratings-view/ratings_view_blueprints")
+    self._settings = mod:io_dofile("lovesmenot/src/logic/ratings-view/ratings_view_settings")
     RatingsView.super.init(self, self._definitions, settings or self._settings, context)
     self._allow_close_hotkey = true
     self._pass_draw = false
@@ -70,9 +70,7 @@ local COLORS = {
     prefer = "133,237,0",
 }
 
-local function colorize(color, text)
-    return "{#color(" .. color .. ")}" .. text .. "{#reset()}"
-end
+
 
 RatingsView._setup_category_config = function(self)
     local entries = {}

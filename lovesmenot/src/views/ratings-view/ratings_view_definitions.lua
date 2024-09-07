@@ -5,7 +5,7 @@ local UIFontSettings = mod:original_require("scripts/managers/ui/ui_font_setting
 local ScrollbarPassTemplates = mod:original_require("scripts/ui/pass_templates/scrollbar_pass_templates")
 
 local _view_settings = mod:io_dofile(
-	"lovesmenot/scripts/mods/lovesmenot/logic/ratings-view/ratings_view_settings")
+	"lovesmenot/src/logic/ratings-view/ratings_view_settings")
 local grid_size = _view_settings.grid_size
 local grid_width = grid_size[1]
 local grid_height = grid_size[2]
