@@ -1,18 +1,15 @@
 local constants = require "lovesmenot/src/constants"
 local langUtils = require "lovesmenot/src/utils/language"
+local styleUtils = require 'lovesmenot/src/utils/style'
 
 local RATINGS, COLORS, SYMBOLS =
     constants.RATINGS, constants.COLORS, constants.SYMBOLS
 
 ---@param controller LovesMeNot
 local function init(controller)
-    local function colorize(color, text)
-        return "{#color(" .. color .. ")}" .. text .. "{#reset()}"
-    end
-
     local NAME_PREFIX = {
-        [RATINGS.AVOID] = colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. " ",
-        [RATINGS.PREFER] = colorize(COLORS.GREEN, SYMBOLS.WREATH) .. " ",
+        [RATINGS.AVOID] = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. " ",
+        [RATINGS.PREFER] = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. " ",
     }
 
     local function cleanRating(text)

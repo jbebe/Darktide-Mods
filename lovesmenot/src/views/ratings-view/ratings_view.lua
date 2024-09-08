@@ -1,24 +1,45 @@
-local mod = get_mod("lovesmenot")
 local DMF = get_mod("DMF")
-local ViewElementInputLegend = mod:original_require(
-    "scripts/ui/view_elements/view_element_input_legend/view_element_input_legend")
-local ScriptWorld = mod:original_require("scripts/foundation/utilities/script_world")
-local UIWidget = mod:original_require("scripts/managers/ui/ui_widget")
-local UIWidgetGrid = mod:original_require("scripts/ui/widget_logic/ui_widget_grid")
-local UIRenderer = mod:original_require("scripts/managers/ui/ui_renderer")
-local UIFonts = mod:original_require("scripts/managers/ui/ui_fonts")
-local localization = mod:io_dofile("lovesmenot/src/mod.localization")
 
+local ViewElementInputLegend = require "scripts/ui/view_elements/view_element_input_legend/view_element_input_legend"
+local ScriptWorld = require "scripts/foundation/utilities/script_world"
+local UIWidget = require "scripts/managers/ui/ui_widget"
+local UIWidgetGrid = require "scripts/ui/widget_logic/ui_widget_grid"
+local UIRenderer = require "scripts/managers/ui/ui_renderer"
+local localization = require "lovesmenot/src/mod.localization"
+local CONSTANTS = require "lovesmenot/src/constants"
+local styleUtils = require 'lovesmenot/src/utils/style'
+
+---@class RatingsViewType: BaseViewType
+---@field _blueprints table
+---@field _category_alignment_list table
+---@field _category_content_grid table
+---@field _category_content_widgets table
+---@field _controller LovesMeNot
+---@field _input_legend_element table
+---@field _offscreen_viewport table
+---@field _offscreen_viewport_name string
+---@field _offscreen_world table
+---@field _render_scale table
+---@field _render_settings table
+---@field _selected_settings_widget table
+---@field _ui_offscreen_renderer table
+---@field _ui_scenegraph table
+---@field _using_cursor_navigation table
+---@field _widgets_by_name table
+---@field super table
+---@field ui_manager table
 local RatingsView = class("RatingsView", "BaseView")
 
 --
 -- Init
 --
 
-RatingsView.init = function(self, settings, context)
-    self._definitions = mod:io_dofile("lovesmenot/src/logic/ratings-view/ratings_view_definitions")
-    self._blueprints = mod:io_dofile("lovesmenot/src/logic/ratings-view/ratings_view_blueprints")
-    self._settings = mod:io_dofile("lovesmenot/src/logic/ratings-view/ratings_view_settings")
+---@param context RatingsViewContext
+function RatingsView:init(settings, context)
+    self._definitions = context.definitions
+    self._blueprints = context.blueprints
+    self._settings = context.settings
+    self._controller = context.controller
     RatingsView.super.init(self, self._definitions, settings or self._settings, context)
     self._allow_close_hotkey = true
     self._pass_draw = false
@@ -26,7 +47,7 @@ RatingsView.init = function(self, settings, context)
     self:_setup_offscreen_gui()
 end
 
-RatingsView._setup_offscreen_gui = function(self)
+function RatingsView:_setup_offscreen_gui()
     local ui_manager = Managers.ui
     local class_name = self.__class_name
     local timer_name = "ui"
@@ -45,7 +66,7 @@ RatingsView._setup_offscreen_gui = function(self)
         self._offscreen_world)
 end
 
-RatingsView.on_enter = function(self)
+function RatingsView:on_enter()
     RatingsView.super.on_enter(self)
 
     self._using_cursor_navigation = Managers.ui:using_cursor_navigation()
@@ -53,29 +74,18 @@ RatingsView.on_enter = function(self)
     self:_setup_input_legend()
 end
 
-local PLATFORMS = {
-    steam = "\u{e06b}",
-    xbox = "\u{e06c}",
-    psn = "\u{e071}",
-    unknown = "\u{e06f}",
-}
-
-local RATINGS = {
-    avoid = "\u{e020}",
-    prefer = "\u{e041}",
-}
-
-local COLORS = {
-    avoid = "255,75,20",
-    prefer = "133,237,0",
-}
-
-
-
-RatingsView._setup_category_config = function(self)
+function RatingsView:_setup_category_config()
+    local ratingsIconMap = {
+        [CONSTANTS.RATINGS.AVOID] = CONSTANTS.SYMBOLS.FLAME,
+        [CONSTANTS.RATINGS.PREFER] = CONSTANTS.SYMBOLS.WREATH,
+    }
+    local ratingsColorMap = {
+        [CONSTANTS.RATINGS.AVOID] = CONSTANTS.COLORS.ORANGE,
+        [CONSTANTS.RATINGS.PREFER] = CONSTANTS.COLORS.GREEN,
+    }
     local entries = {}
-    local ratings = mod.rating and mod.rating.accounts or {}
-    mod:add_global_localize_strings({
+    local ratings = self._controller.rating and self._controller.rating.accounts or {}
+    self._controller.dmf:add_global_localize_strings({
         lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
         lovesmenot_ratingsview_delete_description = localization.lovesmenot_ratingsview_delete_description,
         lovesmenot_ratingsview_delete_yes = localization.lovesmenot_ratingsview_delete_yes,
@@ -86,16 +96,16 @@ RatingsView._setup_category_config = function(self)
         local subtitle = "lovesmenot_ratingsview_griditem_subtitle_" .. accountId
         local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
         local playerAvailability = playerInfo._presence._immaterium_entry.status
-        local platformIcon = PLATFORMS[info.platform]
-        local ratingIcon = RATINGS[info.rating]
-        local ratingText = mod:localize('lovesmenot_ingame_rating_' .. info.rating)
-        mod:add_global_localize_strings({
+        local platformIcon = CONSTANTS.PLATFORMS[info.platform]
+        local ratingIcon = ratingsIconMap[info.rating]
+        local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. info.rating)
+        self._controller.dmf:add_global_localize_strings({
             [title] = {
-                en = mod:localize('lovesmenot_ratingsview_griditem_title',
-                    colorize(COLORS[info.rating], ratingIcon), ratingText, platformIcon, info.name),
+                en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_title',
+                    styleUtils.colorize(ratingsColorMap[info.rating], ratingIcon), ratingText, platformIcon, info.name),
             },
             [subtitle] = {
-                en = mod:localize('lovesmenot_ratingsview_griditem_subtitle',
+                en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_subtitle',
                     info.characterName, info.characterType, playerAvailability),
             }
         })
@@ -112,8 +122,8 @@ RatingsView._setup_category_config = function(self)
                             close_on_pressed = true,
                             text = "lovesmenot_ratingsview_delete_yes",
                             callback = callback(function()
-                                mod.rating.accounts[accountId] = nil
-                                mod:persistRating()
+                                self._controller.rating.accounts[accountId] = nil
+                                self._controller:persistRating()
                                 self:_reload()
                             end),
                         },
@@ -145,7 +155,7 @@ RatingsView._setup_category_config = function(self)
         grid_pivot_scenegraph_id)
 end
 
-RatingsView._setup_content_grid_scrollbar = function(self, grid, widget_id, grid_scenegraph_id, grid_pivot_scenegraph_id)
+function RatingsView:_setup_content_grid_scrollbar(grid, widget_id, grid_scenegraph_id, grid_pivot_scenegraph_id)
     local widgets_by_name = self._widgets_by_name
     local scrollbar_widget = widgets_by_name[widget_id]
 
@@ -157,7 +167,7 @@ RatingsView._setup_content_grid_scrollbar = function(self, grid, widget_id, grid
     grid:set_scrollbar_progress(0)
 end
 
-RatingsView._setup_grid = function(self, widgets, alignment_list, grid_scenegraph_id, spacing, use_is_focused)
+function RatingsView:_setup_grid(widgets, alignment_list, grid_scenegraph_id, spacing, use_is_focused)
     local ui_scenegraph = self._ui_scenegraph
     local direction = "down"
     local grid = UIWidgetGrid:new(widgets, alignment_list, ui_scenegraph, grid_scenegraph_id, direction, spacing, nil,
@@ -169,7 +179,7 @@ RatingsView._setup_grid = function(self, widgets, alignment_list, grid_scenegrap
     return grid
 end
 
-RatingsView._setup_content_widgets = function(self, content, scenegraph_id, callback_name)
+function RatingsView:_setup_content_widgets(content, scenegraph_id, callback_name)
     local widget_definitions = {}
     local widgets = {}
     local alignment_list = {}
@@ -214,7 +224,7 @@ RatingsView._setup_content_widgets = function(self, content, scenegraph_id, call
     return widgets, alignment_list
 end
 
-RatingsView._setup_input_legend = function(self)
+function RatingsView:_setup_input_legend()
     self._input_legend_element = self:_add_element(ViewElementInputLegend, "input_legend", 10)
     local legend_inputs = self._definitions.legend_inputs
     for i = 1, #legend_inputs do
@@ -223,7 +233,7 @@ RatingsView._setup_input_legend = function(self)
         local visibility_function = legend_input.visibility_function
         if legend_input.display_name == "loc_scoreboard_delete" then
             visibility_function = function()
-                return self.entry
+                return nil
             end
         end
         self._input_legend_element:add_entry(legend_input.display_name, legend_input.input_action, visibility_function,
@@ -235,7 +245,7 @@ end
 -- Present
 --
 
-RatingsView.draw = function(self, dt, t, input_service, layer)
+function RatingsView:draw(dt, t, input_service, layer)
     self:_draw_elements(dt, t, self._ui_renderer, self._render_settings, input_service)
 
     self._category_content_grid:update(dt, t, input_service)
@@ -247,11 +257,11 @@ RatingsView.draw = function(self, dt, t, input_service, layer)
     RatingsView.super.draw(self, dt, t, input_service, layer)
 end
 
-RatingsView._draw_elements = function(self, dt, t, ui_renderer, render_settings, input_service)
+function RatingsView:_draw_elements(dt, t, ui_renderer, render_settings, input_service)
     RatingsView.super._draw_elements(self, dt, t, ui_renderer, render_settings, input_service)
 end
 
-RatingsView._draw_grid = function(self, grid, widgets, interaction_widget, dt, t, input_service)
+function RatingsView:_draw_grid(grid, widgets, interaction_widget, dt, t, input_service)
     local is_grid_hovered = not self._using_cursor_navigation or interaction_widget.content.hotspot.is_hover or false
     local null_input_service = input_service:null_service()
     local render_settings = self._render_settings
@@ -277,7 +287,7 @@ RatingsView._draw_grid = function(self, grid, widgets, interaction_widget, dt, t
                     local is_active = hotspot.is_focused or hotspot.is_hover
 
                     if is_active and widget.content.entry and (widget.content.entry.tooltip_text or widget.content.entry.disabled_by and not table.is_empty(widget.content.entry.disabled_by)) then
-                        self:_set_tooltip_data(widget)
+                        --self:_set_tooltip_data(widget)
                     end
                 end
 
@@ -293,7 +303,7 @@ end
 -- Callbacks
 --
 
-RatingsView.cb_on_category_pressed = function(self, widget, entry)
+function RatingsView:cb_on_category_pressed(widget, entry)
     local pressed_function = entry.pressed_function
 
     if pressed_function then
@@ -301,7 +311,7 @@ RatingsView.cb_on_category_pressed = function(self, widget, entry)
     end
 end
 
-RatingsView.cb_on_back_pressed = function(self)
+function RatingsView:cb_on_back_pressed()
     self.ui_manager:close_view("ratings_view")
 end
 
@@ -343,25 +353,6 @@ RatingsView._reload = function(self)
         self.ui_manager:close_view("ratings_view", true)
     end
     self:_setup_category_config()
-end
-
---
--- Misc
---
-
-mod.shrink_text = function(self, text, style, max_width, ui_renderer)
-    if ui_renderer then
-        local width = max_width + 10
-        local fsize = (style.font_size or 20) + 1
-        while width > max_width - 20 do
-            fsize = fsize - 1
-            style.font_size = fsize
-            local font_type = style.font_type
-            local scale = ui_renderer.scale or 1
-            local scaled_font_size = UIFonts.scaled_size(fsize, scale)
-            width = UIRenderer.text_size(ui_renderer, text, font_type, scaled_font_size)
-        end
-    end
 end
 
 return RatingsView

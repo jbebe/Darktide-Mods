@@ -20,3 +20,9 @@
 -- ---@field rating RatingType | nil
 -- ---@field teammates table
 -- ---@field isInMission boolean
+
+---@class RatingsViewContext
+---@field controller LovesMeNot
+---@field blueprints table
+---@field definitions table
+---@field settings table

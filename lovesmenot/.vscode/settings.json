@@ -7,5 +7,8 @@
         "callback",
         "Localize",
         "CLASS",
+        "settings",
+        "Color",
+        "class",
     ]
 }

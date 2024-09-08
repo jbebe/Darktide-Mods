@@ -7,4 +7,5 @@ local ratingsViewSettings = {
     grid_spacing = { 0, 10 },
     grid_blur_edge_size = { 8, 8 },
 }
+
 return settings("RatingsViewSettings", ratingsViewSettings)

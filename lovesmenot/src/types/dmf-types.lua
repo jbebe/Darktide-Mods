@@ -30,7 +30,7 @@
 ---@field get_name function
 ---@field pcall function
 ---@field package_status function
----@field dtf function
+---@field dtf fun(data: any, filename: string, depth: number)
 ---@field enable_all_hooks function
 ---@field io_read_content_to_table function
 ---@field handle_transition function

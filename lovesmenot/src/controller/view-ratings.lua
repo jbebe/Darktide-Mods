@@ -1,3 +1,5 @@
+---@module 'lovemenot/src/types/types'
+
 local WwiseGameSyncSettings = require "scripts/settings/wwise_game_sync/wwise_game_sync_settings"
 
 ---@param controller LovesMeNot
@@ -5,16 +7,17 @@ local function init(controller)
     local ratingsViewName = "ratings_view"
 
     function controller:registerRatingsView()
-        controller.dmf:add_global_localize_strings({
+        self.dmf:add_global_localize_strings({
+            -- TODO: move to localization
             loc_ratings_view_display_name = {
                 en = "Ratings",
             }
         })
 
-        controller.dmf:add_require_path("lovesmenot/src/views/ratings-view/ratings_view")
-        controller.dmf:add_require_path("lovesmenot/src/views/ratings-view/ratings_view_definitions")
-        controller.dmf:add_require_path("lovesmenot/src/views/ratings-view/ratings_view_settings")
-        controller.dmf:register_view({
+        self.dmf:add_require_path("lovesmenot/src/views/ratings-view/ratings_view")
+        self.dmf:add_require_path("lovesmenot/src/views/ratings-view/ratings_view_definitions")
+        self.dmf:add_require_path("lovesmenot/src/views/ratings-view/ratings_view_settings")
+        self.dmf:register_view({
             view_name = ratingsViewName,
             display_name = "loc_ratings_view_display_name",
             view_settings = {
@@ -57,15 +60,21 @@ local function init(controller)
         return true
     end
 
-    function controller:openRatings()
+    function controller.dmf.openRatings()
         if not controller.initialized then
-            controller.dmf:echo("Lovesmenot is not initialized")
+            controller.dmf:error("Lovesmenot is not initialized")
             return
         end
         if Managers.ui:view_instance(ratingsViewName) then
             Managers.ui:close_view(ratingsViewName)
         elseif restrictedViewsCheck() and not Managers.ui:chat_using_input() then
-            local context = {}
+            ---@type RatingsViewContext
+            local context = {
+                controller = controller,
+                definitions = require 'lovesmenot/src/views/ratings-view/ratings_view_definitions' (controller),
+                blueprints = require 'lovesmenot/src/views/ratings-view/ratings_view_blueprints',
+                settings = require 'lovesmenot/src/views/ratings-view/ratings_view_settings',
+            }
             Managers.ui:open_view(ratingsViewName, nil, nil, nil, nil, context)
         end
     end
