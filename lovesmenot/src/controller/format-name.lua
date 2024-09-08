@@ -22,12 +22,14 @@ local function init(controller)
         end
 
         -- strip icon from vanilla name: "{color}<unicode>{reset} <name>" -> "<name>"
+        -- TODO: remove all smybols
         result = result
             :gsub('^%b{}', '')
-            :gsub('^\u{e01a}', '')
-            :gsub('^\u{e01b}', '')
-            :gsub('^\u{e01c}', '')
-            :gsub('^\u{e01d}', '')
+            :gsub('^' .. SYMBOLS.VETERAN, '')
+            :gsub('^' .. SYMBOLS.ZEALOT, '')
+            :gsub('^' .. SYMBOLS.PSYKER, '')
+            :gsub('^' .. SYMBOLS.OGRYN, '')
+            :gsub('^' .. SYMBOLS.TORSO, '')
             :gsub('^%b{}', '')
             :gsub('^ ', '')
 

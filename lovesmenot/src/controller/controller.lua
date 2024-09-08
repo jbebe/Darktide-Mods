@@ -5,6 +5,30 @@
 ---@type DmfMod
 local dmf = get_mod("lovesmenot")
 
+---@class TimersType
+---@field functions table<string, number>
+local timers = {
+    functions = {}
+}
+
+function timers:canRun(functionName, currentSecs, sleepSecs)
+    local lastTick = self.functions[functionName]
+    if not lastTick then
+        -- first call
+        self.functions[functionName] = currentSecs
+        return true
+    end
+
+    if (currentSecs - lastTick) >= sleepSecs then
+        -- called after delay achieved
+        self.functions[functionName] = currentSecs
+        return true
+    end
+
+    -- called before delay achieved
+    return false
+end
+
 ---@module 'lovemenot/src/constants'
 
 ---@alias PlatformType
@@ -61,6 +85,7 @@ local controller = {
     teammates = {},
     rating = nil,
     debugging = false,
+    timers = timers
 }
 
 function controller:canRate()

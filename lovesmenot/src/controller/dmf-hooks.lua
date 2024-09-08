@@ -17,12 +17,12 @@ local function init(controller)
         self.isInMission = gameUtils.isInRealMission()
     end
 
-    function controller.dmf.update(dt)
-        -- update() is called on every game tick.
-        -- We only call initMod if mod is not initialized.
-        -- This function might hang the main thread as it loads files from the FS
-        -- but it happens during the operator selection menu only.
-        controller:reinit()
+    ---@param initial_call boolean
+    function controller.dmf.on_enabled(initial_call)
+        -- init mod (again) on reload all mods
+        if not initial_call then
+            controller:reinit()
+        end
     end
 
     -- Main event handling

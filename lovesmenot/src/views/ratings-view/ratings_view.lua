@@ -6,7 +6,7 @@ local UIWidget = require "scripts/managers/ui/ui_widget"
 local UIWidgetGrid = require "scripts/ui/widget_logic/ui_widget_grid"
 local UIRenderer = require "scripts/managers/ui/ui_renderer"
 local localization = require "lovesmenot/src/mod.localization"
-local CONSTANTS = require "lovesmenot/src/constants"
+local constants = require "lovesmenot/src/constants"
 local styleUtils = require 'lovesmenot/src/utils/style'
 
 ---@class RatingsViewType: BaseViewType
@@ -76,12 +76,12 @@ end
 
 function RatingsView:_setup_category_config()
     local ratingsIconMap = {
-        [CONSTANTS.RATINGS.AVOID] = CONSTANTS.SYMBOLS.FLAME,
-        [CONSTANTS.RATINGS.PREFER] = CONSTANTS.SYMBOLS.WREATH,
+        [constants.RATINGS.AVOID] = constants.SYMBOLS.FLAME,
+        [constants.RATINGS.PREFER] = constants.SYMBOLS.WREATH,
     }
     local ratingsColorMap = {
-        [CONSTANTS.RATINGS.AVOID] = CONSTANTS.COLORS.ORANGE,
-        [CONSTANTS.RATINGS.PREFER] = CONSTANTS.COLORS.GREEN,
+        [constants.RATINGS.AVOID] = constants.COLORS.ORANGE,
+        [constants.RATINGS.PREFER] = constants.COLORS.GREEN,
     }
     local entries = {}
     local ratings = self._controller.rating and self._controller.rating.accounts or {}
@@ -96,7 +96,7 @@ function RatingsView:_setup_category_config()
         local subtitle = "lovesmenot_ratingsview_griditem_subtitle_" .. accountId
         local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
         local playerAvailability = playerInfo._presence._immaterium_entry.status
-        local platformIcon = CONSTANTS.PLATFORMS[info.platform]
+        local platformIcon = constants.PLATFORMS[info.platform]
         local ratingIcon = ratingsIconMap[info.rating]
         local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. info.rating)
         self._controller.dmf:add_global_localize_strings({
