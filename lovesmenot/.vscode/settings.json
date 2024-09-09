@@ -10,5 +10,10 @@
         "settings",
         "Color",
         "class",
-    ]
+        "modRequire",
+    ],
+    "Lua.codeLens.enable": false,
+    "Lua.runtime.special": {
+        "modRequire": "require"
+    }
 }

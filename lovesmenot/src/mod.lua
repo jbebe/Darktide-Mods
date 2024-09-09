@@ -1,19 +1,23 @@
+-- modRequire will now behave like require
+local mod = get_mod("lovesmenot")
+rawset(_G, 'modRequire', function(modPath) return mod:io_dofile(modPath) end)
+
 -- controller props
-local controller = require 'lovesmenot/src/controller/controller'
+local controller = modRequire 'lovesmenot/src/controller/controller'
 
 -- controller methods
-require 'lovesmenot/src/controller/persistence' (controller)
-require 'lovesmenot/src/controller/dmf-hooks' (controller)
-require 'lovesmenot/src/controller/hotkeys' (controller)
-require 'lovesmenot/src/controller/view-ratings' (controller)
-require 'lovesmenot/src/controller/view-inspect' (controller)
-require 'lovesmenot/src/controller/commands' (controller)
-require 'lovesmenot/src/controller/format-name' (controller)
+modRequire 'lovesmenot/src/controller/persistence' (controller)
+modRequire 'lovesmenot/src/controller/dmf-hooks' (controller)
+modRequire 'lovesmenot/src/controller/hotkeys' (controller)
+modRequire 'lovesmenot/src/controller/view-ratings' (controller)
+modRequire 'lovesmenot/src/controller/view-inspect' (controller)
+modRequire 'lovesmenot/src/controller/commands' (controller)
+modRequire 'lovesmenot/src/controller/format-name' (controller)
 
 -- hooks
-require 'lovesmenot/src/controller/hooks/game-end-screen' (controller)
-require 'lovesmenot/src/controller/hooks/player-joins-lobby' (controller)
-require 'lovesmenot/src/controller/hooks/player-joins-midgame' (controller)
-require 'lovesmenot/src/controller/hooks/player-nameplate' (controller)
+modRequire 'lovesmenot/src/controller/hooks/game-end-screen' (controller)
+modRequire 'lovesmenot/src/controller/hooks/player-joins-lobby' (controller)
+modRequire 'lovesmenot/src/controller/hooks/player-joins-midgame' (controller)
+modRequire 'lovesmenot/src/controller/hooks/player-nameplate' (controller)
 
 controller:registerRatingsView()
