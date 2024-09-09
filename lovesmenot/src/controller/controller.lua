@@ -11,6 +11,8 @@ local timers = {
     functions = {}
 }
 
+-- Whether the execution of code should be debounced by given seconds
+-- We can save execution time by skipping logic when not really needed
 function timers:canRun(functionName, currentSecs, sleepSecs)
     local lastTick = self.functions[functionName]
     if not lastTick then

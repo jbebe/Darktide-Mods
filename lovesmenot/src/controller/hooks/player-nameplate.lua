@@ -9,7 +9,8 @@ local function init(controller)
 
         return markers_by_id
     end
-    controller.dmf:hook_safe(CLASS.HudElementNameplates, 'update', function(self)
+    controller.dmf:hook_safe(CLASS.HudElementNameplates, 'update', function(self, dt, t)
+        if not controller.timers:canRun('HudElementNameplates_update', t, 2) then return end
         if not controller.initialized then return end
 
         local nameplates = self._nameplate_units
