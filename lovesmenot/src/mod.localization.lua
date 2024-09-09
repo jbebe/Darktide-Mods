@@ -50,7 +50,7 @@ return {
 		en = '%s %s | %s %s'
 	},
 	lovesmenot_ratingsview_griditem_subtitle = {
-		en = 'Operative: %s (%s) | Status: %s'
+		en = 'Operative: %s (%s) | %s | %s'
 	},
 
 	-- Ingame text

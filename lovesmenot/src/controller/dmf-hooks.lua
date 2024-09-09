@@ -20,9 +20,7 @@ local function init(controller)
     ---@param initial_call boolean
     function controller.dmf.on_enabled(initial_call)
         -- init mod (again) on reload all mods
-        if not initial_call then
-            controller:reinit()
-        end
+        controller:reinit()
     end
 
     -- Main event handling

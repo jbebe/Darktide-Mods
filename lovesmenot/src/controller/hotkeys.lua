@@ -2,6 +2,7 @@ local constants = modRequire 'lovesmenot/src/constants'
 local VERSION, RATINGS, COLORS, SYMBOLS =
     constants.VERSION, constants.RATINGS, constants.COLORS, constants.SYMBOLS
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
+local languageUtils = modRequire 'lovesmenot/src/utils/language'
 local styleUtils = modRequire 'lovesmenot/src/utils/style'
 
 ---@param controller LovesMeNot
@@ -16,7 +17,12 @@ local function init(controller)
 
         local message
         local isError = false
+        ---@type RatingAccountType
         local copy = table.clone(teammate)
+        -- UTC creation date
+        local creationDate = languageUtils.os.date("!%Y-%m-%d %H:%M:%S")
+        ---@cast creationDate string
+        copy.creationDate = creationDate
         if not self.rating.accounts[teammate.accountId] then
             -- account has not been rated yet, create object
             copy.rating = RATINGS.AVOID

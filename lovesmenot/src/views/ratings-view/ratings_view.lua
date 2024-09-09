@@ -74,17 +74,40 @@ function RatingsView:on_enter()
     self:_setup_input_legend()
 end
 
+local ratingsIconMap = {
+    [constants.RATINGS.AVOID] = constants.SYMBOLS.FLAME,
+    [constants.RATINGS.PREFER] = constants.SYMBOLS.WREATH,
+}
+
+local ratingsColorMap = {
+    [constants.RATINGS.AVOID] = constants.COLORS.ORANGE,
+    [constants.RATINGS.PREFER] = constants.COLORS.GREEN,
+}
+
+---@param a RatingAccountType
+---@param b RatingAccountType
+local function compareByCreationDate(a, b)
+    return a.creationDate < b.creationDate
+end
+
 function RatingsView:_setup_category_config()
-    local ratingsIconMap = {
-        [constants.RATINGS.AVOID] = constants.SYMBOLS.FLAME,
-        [constants.RATINGS.PREFER] = constants.SYMBOLS.WREATH,
-    }
-    local ratingsColorMap = {
-        [constants.RATINGS.AVOID] = constants.COLORS.ORANGE,
-        [constants.RATINGS.PREFER] = constants.COLORS.GREEN,
-    }
     local entries = {}
-    local ratings = self._controller.rating and self._controller.rating.accounts or {}
+    ---@type table<string, RatingAccountType>
+    local ratings = table.clone(self._controller.rating and self._controller.rating.accounts or {})
+    --[[ TODO: sort ratings by creation date
+    ---@type table<string, RatingAccountType>
+    local groupedRatings = {}
+    ---@type table<string, RatingAccountType>
+    local avoidRatings = {}
+    ---@type table<string, RatingAccountType>
+    local preferRatings = {}
+
+    table.sort(ratings, compareByCreationDate)
+    for accountId, ratingInfo in pairs(ratings) do
+        if ratingInfo.rating == constants.RATINGS.AVOID then
+            avoidRatings
+    end
+]]
     self._controller.dmf:add_global_localize_strings({
         lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
         lovesmenot_ratingsview_delete_description = localization.lovesmenot_ratingsview_delete_description,
@@ -97,16 +120,21 @@ function RatingsView:_setup_category_config()
         local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
         local playerAvailability = playerInfo._presence._immaterium_entry.status
         local platformIcon = constants.PLATFORMS[info.platform]
-        local ratingIcon = ratingsIconMap[info.rating]
+        local ratingIcon = styleUtils.colorize(ratingsColorMap[info.rating], ratingsIconMap[info.rating])
         local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. info.rating)
+        local ratingIconWithPadding = ratingIcon
+        if info.rating == constants.RATINGS.AVOID then
+            ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
+            ratingText = ratingText .. ' '
+        end
         self._controller.dmf:add_global_localize_strings({
             [title] = {
                 en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_title',
-                    styleUtils.colorize(ratingsColorMap[info.rating], ratingIcon), ratingText, platformIcon, info.name),
+                    ratingIconWithPadding, ratingText, platformIcon, info.name),
             },
             [subtitle] = {
                 en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_subtitle',
-                    info.characterName, info.characterType, playerAvailability),
+                    info.characterName, info.characterType, playerAvailability, info.creationDate),
             }
         })
         local entry = {

@@ -45,16 +45,17 @@ end
 ---| 'psyker'
 ---| 'ogryn'
 
----@class RatingAccountsType
+---@class RatingAccountType
 ---@field rating RATINGS
 ---@field name string
 ---@field platform PlatformType
 ---@field characterName string
 ---@field characterType CharacterType
+---@field creationDate string
 
 ---@class RatingType
 ---@field version number
----@field accounts table<string, RatingAccountsType>
+---@field accounts table<string, RatingAccountType>
 
 ---@class TeammateType
 ---@field accountId string
