@@ -1,6 +1,6 @@
-local constants = require "lovesmenot/src/constants"
-local langUtils = require "lovesmenot/src/utils/language"
-local styleUtils = require 'lovesmenot/src/utils/style'
+local constants = modRequire 'lovesmenot/src/constants'
+local langUtils = modRequire 'lovesmenot/src/utils/language'
+local styleUtils = modRequire 'lovesmenot/src/utils/style'
 
 local RATINGS, COLORS, SYMBOLS =
     constants.RATINGS, constants.COLORS, constants.SYMBOLS
@@ -8,8 +8,8 @@ local RATINGS, COLORS, SYMBOLS =
 ---@param controller LovesMeNot
 local function init(controller)
     local NAME_PREFIX = {
-        [RATINGS.AVOID] = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. " ",
-        [RATINGS.PREFER] = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. " ",
+        [RATINGS.AVOID] = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ',
+        [RATINGS.PREFER] = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ',
     }
 
     local function cleanRating(text)
@@ -21,7 +21,7 @@ local function init(controller)
             end
         end
 
-        -- strip icon from vanilla name: "{color}<unicode>{reset} <name>" -> "<name>"
+        -- strip icon from vanilla name: '{color}<unicode>{reset} <name>' -> '<name>'
         -- TODO: remove all smybols
         result = result
             :gsub('^%b{}', '')

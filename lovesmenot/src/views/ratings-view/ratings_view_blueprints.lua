@@ -1,9 +1,9 @@
-local UIRenderer = require "scripts/managers/ui/ui_renderer"
-local UISoundEvents = require "scripts/settings/ui/ui_sound_events"
-local UIFonts = require "scripts/managers/ui/ui_fonts"
-local UIFontSettings = require "scripts/managers/ui/ui_font_settings"
-local OptionsViewSettings = require "scripts/ui/views/options_view/options_view_settings"
-local ButtonPassTemplates = require "scripts/ui/pass_templates/button_pass_templates"
+local UIRenderer = require 'scripts/managers/ui/ui_renderer'
+local UISoundEvents = require 'scripts/settings/ui/ui_sound_events'
+local UIFonts = require 'scripts/managers/ui/ui_fonts'
+local UIFontSettings = require 'scripts/managers/ui/ui_font_settings'
+local OptionsViewSettings = require 'scripts/ui/views/options_view/options_view_settings'
+local ButtonPassTemplates = require 'scripts/ui/pass_templates/button_pass_templates'
 
 local grid_size = OptionsViewSettings.grid_size
 local grid_width = grid_size[1]
@@ -27,7 +27,7 @@ list_button_with_icon_text_style.offset[1] = 10
 list_button_with_icon_text_style.offset[2] = -10
 list_button_with_icon_text_style.font_size = 20
 local list_button_with_icon_icon_style = {
-	vertical_alignment = "center",
+	vertical_alignment = 'center',
 	color = list_button_with_icon_text_style.text_color,
 	default_color = list_button_with_icon_text_style.default_text_color,
 	disabled_color = list_button_with_icon_text_style.disabled_color,
@@ -62,18 +62,18 @@ local blueprints = {
 		},
 		pass_template = {
 			{
-				style_id = "hotspot",
-				pass_type = "hotspot",
-				content_id = "hotspot",
+				style_id = 'hotspot',
+				pass_type = 'hotspot',
+				content_id = 'hotspot',
 				content = {
 					use_is_focused = true,
 				},
 				style = list_button_hotspot_default_style
 			},
 			{
-				pass_type = "texture",
-				style_id = "background_selected",
-				value = "content/ui/materials/buttons/background_selected",
+				pass_type = 'texture',
+				style_id = 'background_selected',
+				value = 'content/ui/materials/buttons/background_selected',
 				style = {
 					color = Color.ui_terminal(0, true),
 					offset = { 0, 0, 0 }
@@ -84,9 +84,9 @@ local blueprints = {
 				visibility_function = ButtonPassTemplates.list_button_focused_visibility_function
 			},
 			{
-				pass_type = "texture",
-				style_id = "highlight",
-				value = "content/ui/materials/frames/hover",
+				pass_type = 'texture',
+				style_id = 'highlight',
+				value = 'content/ui/materials/frames/hover',
 				style = {
 					hdr = true,
 					scale_to_material = true,
@@ -98,9 +98,9 @@ local blueprints = {
 				visibility_function = ButtonPassTemplates.list_button_focused_visibility_function
 			},
 			{
-				pass_type = "texture",
-				value_id = "icon",
-				style_id = "icon",
+				pass_type = 'texture',
+				value_id = 'icon',
+				style_id = 'icon',
 				style = table.clone(list_button_with_icon_icon_style),
 				change_function = ButtonPassTemplates.list_button_label_change_function,
 				visibility_function = function(content, style)
@@ -108,16 +108,16 @@ local blueprints = {
 				end
 			},
 			{
-				pass_type = "text",
-				style_id = "text",
-				value_id = "text",
+				pass_type = 'text',
+				style_id = 'text',
+				value_id = 'text',
 				style = table.clone(list_button_with_icon_text_style),
 				change_function = ButtonPassTemplates.list_button_label_change_function
 			},
 			{
-				pass_type = "text",
-				style_id = "text2",
-				value_id = "text2",
+				pass_type = 'text',
+				style_id = 'text2',
+				value_id = 'text2',
 				style = table.clone(list_button_with_icon_text_style2),
 				change_function = ButtonPassTemplates.list_button_label_change_function
 			}
@@ -149,4 +149,4 @@ local blueprints = {
 	},
 }
 
-return settings("RatingsViewBlueprints", blueprints)
+return settings('RatingsViewBlueprints', blueprints)

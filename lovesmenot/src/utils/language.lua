@@ -1,4 +1,4 @@
-local DMF = get_mod("DMF")
+local DMF = get_mod('DMF')
 
 ---@class LanguageUtilsType
 ---@field io iolib
@@ -8,19 +8,19 @@ local utils = {}
 function utils.traceback()
     local level = 1
     while true do
-        local info = debug.getinfo(level, "Sl")
+        local info = debug.getinfo(level, 'Sl')
         if not info then break end
-        if info.what == "C" then
-            print(level, "C function")
+        if info.what == 'C' then
+            print(level, 'C function')
         else
-            print(("[%s]:%d"):format(info.short_src, info.currentline))
+            print(('[%s]:%d'):format(info.short_src, info.currentline))
         end
         level = level + 1
     end
 end
 
 local function load_lua_lib(libName)
-    utils[libName] = DMF:persistent_table("_" .. libName)
+    utils[libName] = DMF:persistent_table('_' .. libName)
     utils[libName].initialized = utils[libName].initialized or false
     if not utils[libName].initialized then
         ---@type Mods

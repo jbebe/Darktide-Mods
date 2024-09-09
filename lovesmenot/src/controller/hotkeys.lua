@@ -1,8 +1,8 @@
-local constants = require "lovesmenot/src/constants"
+local constants = modRequire 'lovesmenot/src/constants'
 local VERSION, RATINGS, COLORS, SYMBOLS =
     constants.VERSION, constants.RATINGS, constants.COLORS, constants.SYMBOLS
-local gameUtils = require 'lovesmenot/src/utils/game'
-local styleUtils = require 'lovesmenot/src/utils/style'
+local gameUtils = modRequire 'lovesmenot/src/utils/game'
+local styleUtils = modRequire 'lovesmenot/src/utils/style'
 
 ---@param controller LovesMeNot
 local function init(controller)
@@ -21,22 +21,22 @@ local function init(controller)
             -- account has not been rated yet, create object
             copy.rating = RATINGS.AVOID
             self.rating.accounts[teammate.accountId] = copy
-            message = controller.dmf:localize("lovesmenot_ingame_notification_set", teammate.characterName,
-                controller.dmf:localize("lovesmenot_ingame_rating_avoid"))
-            message = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. " " .. message
+            message = controller.dmf:localize('lovesmenot_ingame_notification_set', teammate.characterName,
+                controller.dmf:localize('lovesmenot_ingame_rating_avoid'))
+            message = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ' .. message
             isError = true
         elseif self.rating.accounts[teammate.accountId].rating == RATINGS.AVOID then
             -- account hasn been rated, cycle to prefer
             copy.rating = RATINGS.PREFER
             self.rating.accounts[teammate.accountId] = copy
-            message = controller.dmf:localize("lovesmenot_ingame_notification_set", teammate.characterName,
-                controller.dmf:localize("lovesmenot_ingame_rating_prefer"))
-            message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. " " .. message
+            message = controller.dmf:localize('lovesmenot_ingame_notification_set', teammate.characterName,
+                controller.dmf:localize('lovesmenot_ingame_rating_prefer'))
+            message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ' .. message
         else
             -- account was rated, remove from table
             self.rating.accounts[teammate.accountId] = nil
-            message = controller.dmf:localize("lovesmenot_ingame_notification_unset", teammate.characterName)
-            message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.CHECK) .. " " .. message
+            message = controller.dmf:localize('lovesmenot_ingame_notification_unset', teammate.characterName)
+            message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.CHECK) .. ' ' .. message
         end
 
         -- user feedback

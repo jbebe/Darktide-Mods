@@ -4,12 +4,12 @@ local function init(controller)
     local _get_markers_by_id = function()
         local ui_manager = Managers.ui
         local hud = ui_manager:get_hud()
-        local world_markers = hud and hud:element("HudElementWorldMarkers")
+        local world_markers = hud and hud:element('HudElementWorldMarkers')
         local markers_by_id = world_markers and world_markers._markers_by_id
 
         return markers_by_id
     end
-    controller.dmf:hook_safe(CLASS.HudElementNameplates, "update", function(self)
+    controller.dmf:hook_safe(CLASS.HudElementNameplates, 'update', function(self)
         if not controller.initialized then return end
 
         local nameplates = self._nameplate_units

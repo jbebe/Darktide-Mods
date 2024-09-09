@@ -1,13 +1,13 @@
-local DMF = get_mod("DMF")
+local DMF = get_mod('DMF')
 
-local ViewElementInputLegend = require "scripts/ui/view_elements/view_element_input_legend/view_element_input_legend"
-local ScriptWorld = require "scripts/foundation/utilities/script_world"
-local UIWidget = require "scripts/managers/ui/ui_widget"
-local UIWidgetGrid = require "scripts/ui/widget_logic/ui_widget_grid"
-local UIRenderer = require "scripts/managers/ui/ui_renderer"
-local localization = require "lovesmenot/src/mod.localization"
-local constants = require "lovesmenot/src/constants"
-local styleUtils = require 'lovesmenot/src/utils/style'
+local ViewElementInputLegend = require 'scripts/ui/view_elements/view_element_input_legend/view_element_input_legend'
+local ScriptWorld = require 'scripts/foundation/utilities/script_world'
+local UIWidget = require 'scripts/managers/ui/ui_widget'
+local UIWidgetGrid = require 'scripts/ui/widget_logic/ui_widget_grid'
+local UIRenderer = require 'scripts/managers/ui/ui_renderer'
+local localization = modRequire 'lovesmenot/src/mod.localization'
+local constants = modRequire 'lovesmenot/src/constants'
+local styleUtils = modRequire 'lovesmenot/src/utils/style'
 
 ---@class RatingsViewType: BaseViewType
 ---@field _blueprints table
@@ -28,7 +28,7 @@ local styleUtils = require 'lovesmenot/src/utils/style'
 ---@field _widgets_by_name table
 ---@field super table
 ---@field ui_manager table
-local RatingsView = class("RatingsView", "BaseView")
+local RatingsView = class('RatingsView', 'BaseView')
 
 --
 -- Init
@@ -50,19 +50,19 @@ end
 function RatingsView:_setup_offscreen_gui()
     local ui_manager = Managers.ui
     local class_name = self.__class_name
-    local timer_name = "ui"
+    local timer_name = 'ui'
     local world_layer = 10
-    local world_name = class_name .. "_ui_offscreen_world"
+    local world_name = class_name .. '_ui_offscreen_world'
     local view_name = self.view_name
     self._offscreen_world = ui_manager:create_world(world_name, world_layer, timer_name, view_name)
     local shading_environment = self._settings.shading_environment
-    local viewport_name = class_name .. "_ui_offscreen_world_viewport"
-    local viewport_type = "overlay_offscreen"
+    local viewport_name = class_name .. '_ui_offscreen_world_viewport'
+    local viewport_type = 'overlay_offscreen'
     local viewport_layer = 1
     self._offscreen_viewport = ui_manager:create_viewport(self._offscreen_world, viewport_name, viewport_type,
         viewport_layer, shading_environment)
     self._offscreen_viewport_name = viewport_name
-    self._ui_offscreen_renderer = ui_manager:create_renderer(class_name .. "_ui_offscreen_renderer",
+    self._ui_offscreen_renderer = ui_manager:create_renderer(class_name .. '_ui_offscreen_renderer',
         self._offscreen_world)
 end
 
@@ -92,8 +92,8 @@ function RatingsView:_setup_category_config()
         lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
     })
     for accountId, info in pairs(ratings) do
-        local title = "lovesmenot_ratingsview_griditem_title_" .. accountId
-        local subtitle = "lovesmenot_ratingsview_griditem_subtitle_" .. accountId
+        local title = 'lovesmenot_ratingsview_griditem_title_' .. accountId
+        local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. accountId
         local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
         local playerAvailability = playerInfo._presence._immaterium_entry.status
         local platformIcon = constants.PLATFORMS[info.platform]
@@ -110,17 +110,17 @@ function RatingsView:_setup_category_config()
             }
         })
         local entry = {
-            widget_type = "settings_button",
+            widget_type = 'settings_button',
             display_name = title,
             display_name2 = subtitle,
             pressed_function = function(parent, widget, entry)
                 local context = {
-                    title_text = "lovesmenot_ratingsview_delete_title",
-                    description_text = "lovesmenot_ratingsview_delete_description",
+                    title_text = 'lovesmenot_ratingsview_delete_title',
+                    description_text = 'lovesmenot_ratingsview_delete_description',
                     options = {
                         {
                             close_on_pressed = true,
-                            text = "lovesmenot_ratingsview_delete_yes",
+                            text = 'lovesmenot_ratingsview_delete_yes',
                             callback = callback(function()
                                 self._controller.rating.accounts[accountId] = nil
                                 self._controller:persistRating()
@@ -129,25 +129,25 @@ function RatingsView:_setup_category_config()
                         },
                         {
                             close_on_pressed = true,
-                            hotkey = "back",
-                            template_type = "terminal_button_small",
-                            text = "lovesmenot_ratingsview_delete_no",
+                            hotkey = 'back',
+                            template_type = 'terminal_button_small',
+                            text = 'lovesmenot_ratingsview_delete_no',
                         },
                     },
                 }
-                Managers.event:trigger("event_show_ui_popup", context)
+                Managers.event:trigger('event_show_ui_popup', context)
             end
         }
         entries[#entries + 1] = entry
     end
 
-    local scenegraph_id = "grid_content_pivot"
-    local callback_name = "cb_on_category_pressed"
+    local scenegraph_id = 'grid_content_pivot'
+    local callback_name = 'cb_on_category_pressed'
     self._category_content_widgets, self._category_alignment_list = self:_setup_content_widgets(entries, scenegraph_id,
         callback_name)
-    local scrollbar_widget_id = "scrollbar"
-    local grid_scenegraph_id = "background"
-    local grid_pivot_scenegraph_id = "grid_content_pivot"
+    local scrollbar_widget_id = 'scrollbar'
+    local grid_scenegraph_id = 'background'
+    local grid_pivot_scenegraph_id = 'grid_content_pivot'
     local grid_spacing = self._settings.grid_spacing
     self._category_content_grid = self:_setup_grid(self._category_content_widgets, self._category_alignment_list,
         grid_scenegraph_id, grid_spacing, true)
@@ -159,8 +159,8 @@ function RatingsView:_setup_content_grid_scrollbar(grid, widget_id, grid_scenegr
     local widgets_by_name = self._widgets_by_name
     local scrollbar_widget = widgets_by_name[widget_id]
 
-    if DMF:get("dmf_options_scrolling_speed") and widgets_by_name and widgets_by_name["scrollbar"] then
-        widgets_by_name["scrollbar"].content.scroll_speed = DMF:get("dmf_options_scrolling_speed")
+    if DMF:get('dmf_options_scrolling_speed') and widgets_by_name and widgets_by_name['scrollbar'] then
+        widgets_by_name['scrollbar'].content.scroll_speed = DMF:get('dmf_options_scrolling_speed')
     end
 
     grid:assign_scrollbar(scrollbar_widget, grid_pivot_scenegraph_id, grid_scenegraph_id)
@@ -169,7 +169,7 @@ end
 
 function RatingsView:_setup_grid(widgets, alignment_list, grid_scenegraph_id, spacing, use_is_focused)
     local ui_scenegraph = self._ui_scenegraph
-    local direction = "down"
+    local direction = 'down'
     local grid = UIWidgetGrid:new(widgets, alignment_list, ui_scenegraph, grid_scenegraph_id, direction, spacing, nil,
         use_is_focused)
     local render_scale = self._render_scale
@@ -200,7 +200,7 @@ function RatingsView:_setup_content_widgets(content, scenegraph_id, callback_nam
         local widget_definition = widget_definitions[widget_type]
 
         if widget_definition then
-            local name = scenegraph_id .. "_widget_" .. i
+            local name = scenegraph_id .. '_widget_' .. i
             widget = self:_create_widget(name, widget_definition)
 
             if template.init then
@@ -225,13 +225,13 @@ function RatingsView:_setup_content_widgets(content, scenegraph_id, callback_nam
 end
 
 function RatingsView:_setup_input_legend()
-    self._input_legend_element = self:_add_element(ViewElementInputLegend, "input_legend", 10)
+    self._input_legend_element = self:_add_element(ViewElementInputLegend, 'input_legend', 10)
     local legend_inputs = self._definitions.legend_inputs
     for i = 1, #legend_inputs do
         local legend_input = legend_inputs[i]
         local on_pressed_callback = legend_input.on_pressed_callback and callback(self, legend_input.on_pressed_callback)
         local visibility_function = legend_input.visibility_function
-        if legend_input.display_name == "loc_scoreboard_delete" then
+        if legend_input.display_name == 'loc_scoreboard_delete' then
             visibility_function = function()
                 return nil
             end
@@ -312,7 +312,7 @@ function RatingsView:cb_on_category_pressed(widget, entry)
 end
 
 function RatingsView:cb_on_back_pressed()
-    self.ui_manager:close_view("ratings_view")
+    self.ui_manager:close_view('ratings_view')
 end
 
 --
@@ -322,13 +322,13 @@ end
 RatingsView.on_exit = function(self)
     if self._input_legend_element then
         self._input_legend_element = nil
-        self:_remove_element("input_legend")
+        self:_remove_element('input_legend')
     end
 
     if self._ui_offscreen_renderer then
         self._ui_offscreen_renderer = nil
 
-        Managers.ui:destroy_renderer(self.__class_name .. "_ui_offscreen_renderer")
+        Managers.ui:destroy_renderer(self.__class_name .. '_ui_offscreen_renderer')
 
         local offscreen_world = self._offscreen_world
         local offscreen_viewport_name = self._offscreen_viewport_name
@@ -341,16 +341,16 @@ RatingsView.on_exit = function(self)
         self._offscreen_world = nil
     end
 
-    if self.ui_manager:view_active("ratings_view") and not self.ui_manager:is_view_closing("ratings_view") then
-        self.ui_manager:close_view("ratings_view", true)
+    if self.ui_manager:view_active('ratings_view') and not self.ui_manager:is_view_closing('ratings_view') then
+        self.ui_manager:close_view('ratings_view', true)
     end
 
     RatingsView.super.on_exit(self)
 end
 
 RatingsView._reload = function(self)
-    if self.ui_manager:view_active("ratings_view") and not self.ui_manager:is_view_closing("ratings_view") then
-        self.ui_manager:close_view("ratings_view", true)
+    if self.ui_manager:view_active('ratings_view') and not self.ui_manager:is_view_closing('ratings_view') then
+        self.ui_manager:close_view('ratings_view', true)
     end
     self:_setup_category_config()
 end

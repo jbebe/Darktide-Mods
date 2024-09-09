@@ -3,7 +3,7 @@
 ---@module 'lovemenot/src/constants'
 
 ---@type DmfMod
-local dmf = get_mod("lovesmenot")
+local dmf = get_mod('lovesmenot')
 
 ---@class TimersType
 ---@field functions table<string, number>

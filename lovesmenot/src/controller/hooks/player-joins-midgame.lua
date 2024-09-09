@@ -3,9 +3,9 @@ local function init(controller)
     -- Player joins midgame
     -- TODO: this is just for debugging. move new player update to a less frequent function to avoid performance hit ()
     --       or we can keep this one but don't set widget dirty to true if character name is already highlighted
-    controller.dmf:hook_safe(CLASS.HudElementTeamPanelHandler, "update",
+    controller.dmf:hook_safe(CLASS.HudElementTeamPanelHandler, 'update',
         function(self, dt, t, ui_renderer, render_settings, input_service)
-            if not controller.timers:canRun("HudElementTeamPanelHandler_update", t, 2) then
+            if not controller.timers:canRun('HudElementTeamPanelHandler_update', t, 2) then
                 return
             end
 

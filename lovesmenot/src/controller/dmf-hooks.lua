@@ -1,4 +1,4 @@
-local gameUtils = require "lovesmenot/src/utils/game"
+local gameUtils = modRequire 'lovesmenot/src/utils/game'
 
 ---@param controller LovesMeNot
 local function init(controller)
@@ -29,17 +29,17 @@ local function init(controller)
     -- We catch global state changes to run functions at specific times,
     -- not neccessarily during playing a level.
     function controller.dmf.on_game_state_changed(status, state_name)
-        if state_name == "StateMainMenu" and status == "enter" then
+        if state_name == 'StateMainMenu' and status == 'enter' then
             -- Game loaded, user is at the character selector menu
             controller:reinit()
-        elseif state_name == "GameplayStateRun" and status == "enter" then
+        elseif state_name == 'GameplayStateRun' and status == 'enter' then
             -- Mission started
             if not controller.initialized then
                 return
             end
 
             controller.isInMission = gameUtils.isInRealMission()
-        elseif state_name == "StateGameplay" and status == "exit" then
+        elseif state_name == 'StateGameplay' and status == 'exit' then
             -- Mission ended
             if controller:canRate() then
                 controller.isInMission = false

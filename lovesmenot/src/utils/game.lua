@@ -1,5 +1,5 @@
-local Missions = require("scripts/settings/mission/mission_templates")
-local UISoundEvents = require("scripts/settings/ui/ui_sound_events")
+local Missions = require('scripts/settings/mission/mission_templates')
+local UISoundEvents = require('scripts/settings/ui/ui_sound_events')
 
 local utils = {}
 
@@ -27,16 +27,16 @@ function utils.directNotification(message, isError)
     if managers.event then
         if not isError then
             Managers.event:trigger(
-                "event_add_notification_message",
-                "default",
+                'event_add_notification_message',
+                'default',
                 message,
                 nil,
                 UISoundEvents.default_click)
         else
             Managers.event:trigger(
-                "event_add_notification_message",
-                "alert",
-                { text = message } or "",
+                'event_add_notification_message',
+                'alert',
+                { text = message } or '',
                 nil,
                 UISoundEvents.default_click
             )

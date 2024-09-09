@@ -26,7 +26,7 @@
 ---@field get_description function
 ---@field persistent_table function
 ---@field original_require function
----@field __class_name "DMFMod"
+---@field __class_name 'DMFMod'
 ---@field get_name function
 ---@field pcall function
 ---@field package_status function

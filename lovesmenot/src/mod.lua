@@ -1,5 +1,6 @@
--- modRequire will now behave like require
-local mod = get_mod("lovesmenot")
+-- modRequire will now act like require in vscode and type inference can work
+-- (check settings.json/Lua.runtime.special)
+local mod = get_mod('lovesmenot')
 rawset(_G, 'modRequire', function(modPath) return mod:io_dofile(modPath) end)
 
 -- controller props

@@ -1,7 +1,7 @@
 ---@param controller LovesMeNot
 local function init(controller)
     -- game end screen
-    controller.dmf:hook_safe(CLASS.EndView, "_set_character_names", function(self)
+    controller.dmf:hook_safe(CLASS.EndView, '_set_character_names', function(self)
         if not controller.initialized then return end
 
         local spawn_slots = self._spawn_slots
