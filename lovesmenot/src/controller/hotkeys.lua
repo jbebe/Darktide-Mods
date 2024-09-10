@@ -19,8 +19,7 @@ local function init(controller)
         local isError = false
         ---@type RatingAccountType
         local copy = table.clone(teammate)
-        -- UTC creation date
-        local creationDate = languageUtils.os.date("!%Y-%m-%d %H:%M:%S")
+        local creationDate = languageUtils.os.date(constants.DATE_FORMAT)
         ---@cast creationDate string
         copy.creationDate = creationDate
         if not self.rating.accounts[teammate.accountId] then

@@ -32,5 +32,6 @@ return {
         xbox = SYMBOLS.PLATFORM_XBOX,
         psn = SYMBOLS.PLATFORM_PSN,
         unknown = SYMBOLS.PLATFORM_UNKNOWN,
-    }
+    },
+    DATE_FORMAT = '!%Y-%m-%d %H:%M:%S', -- UTC date
 }

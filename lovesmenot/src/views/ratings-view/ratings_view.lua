@@ -8,6 +8,7 @@ local UIRenderer = require 'scripts/managers/ui/ui_renderer'
 local localization = modRequire 'lovesmenot/src/mod.localization'
 local constants = modRequire 'lovesmenot/src/constants'
 local styleUtils = modRequire 'lovesmenot/src/utils/style'
+local fun = modRequire 'lovesmenot/nurgle_modules/fun'
 
 ---@class RatingsViewType: BaseViewType
 ---@field _blueprints table
@@ -92,32 +93,37 @@ end
 
 function RatingsView:_setup_category_config()
     local entries = {}
-    ---@type table<string, RatingAccountType>
-    local ratings = table.clone(self._controller.rating and self._controller.rating.accounts or {})
-    --[[ TODO: sort ratings by creation date
-    ---@type table<string, RatingAccountType>
-    local groupedRatings = {}
-    ---@type table<string, RatingAccountType>
-    local avoidRatings = {}
-    ---@type table<string, RatingAccountType>
-    local preferRatings = {}
 
-    table.sort(ratings, compareByCreationDate)
-    for accountId, ratingInfo in pairs(ratings) do
-        if ratingInfo.rating == constants.RATINGS.AVOID then
-            avoidRatings
-    end
-]]
+    local rawRatings = DMF.deepcopy(self._controller.rating and self._controller.rating.accounts or {})
+
+    ---@alias ExtendedRatingAccountType (RatingAccountType | { accountId: string })
+
+    ---@type ExtendedRatingAccountType[]
+    local sortedRatings = fun.reduce(function(acc, accountId, accountInfo)
+        accountInfo.accountId = accountId
+        table.insert(acc, accountInfo)
+        return acc
+    end, {}, rawRatings)
+    table.sort(sortedRatings, compareByCreationDate)
+
+    local avoidRatings, preferRatings = fun.partition(function(x)
+        ---@cast x ExtendedRatingAccountType
+        return x.rating == constants.RATINGS.AVOID
+    end, sortedRatings)
+
+    ---@type ExtendedRatingAccountType[]
+    local groupedRatings = fun.chain(preferRatings, avoidRatings)
+
     self._controller.dmf:add_global_localize_strings({
         lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
         lovesmenot_ratingsview_delete_description = localization.lovesmenot_ratingsview_delete_description,
         lovesmenot_ratingsview_delete_yes = localization.lovesmenot_ratingsview_delete_yes,
         lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
     })
-    for accountId, info in pairs(ratings) do
-        local title = 'lovesmenot_ratingsview_griditem_title_' .. accountId
-        local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. accountId
-        local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
+    for _, info in fun.iter(groupedRatings) do
+        local title = 'lovesmenot_ratingsview_griditem_title_' .. info.accountId
+        local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. info.accountId
+        local playerInfo = Managers.data_service.social:get_player_info_by_account_id(info.accountId)
         local playerAvailability = playerInfo._presence._immaterium_entry.status
         local platformIcon = constants.PLATFORMS[info.platform]
         local ratingIcon = styleUtils.colorize(ratingsColorMap[info.rating], ratingsIconMap[info.rating])
@@ -150,7 +156,7 @@ function RatingsView:_setup_category_config()
                             close_on_pressed = true,
                             text = 'lovesmenot_ratingsview_delete_yes',
                             callback = callback(function()
-                                self._controller.rating.accounts[accountId] = nil
+                                self._controller.rating.accounts[info.accountId] = nil
                                 self._controller:persistRating()
                                 self:_reload()
                             end),
