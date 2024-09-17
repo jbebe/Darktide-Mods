@@ -60,5 +60,12 @@ namespace Test
             Assert.Equal(request.SourceHash, rater.AccountHash);
             Assert.Equal(request.SourceXp, rater.Xp);
         }
+
+        [Fact]
+        public async Task GetRatings_Success()
+        {
+            var ratings = await Client.GetRatingsAsync(CancellationToken.None);
+            Assert.Empty(ratings);
+        }
     }
 }

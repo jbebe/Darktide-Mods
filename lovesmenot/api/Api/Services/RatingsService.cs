@@ -13,21 +13,18 @@ namespace Api.Services
             Db = db;
         }
 
-        public async IAsyncEnumerable<(Rating? Positive, Rating? Negative)> GetRatingsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<RatingResponse> GetRatingsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await foreach (var rating in Db.GetRatingsAsync(cancellationToken))
             {
-                var score = rating.Score;
-                if (Math.Abs(score) >= Constants.UsableScore)
+                var ratingType = Utils.CalculateRating(rating);
+                if (ratingType != null)
                 {
-                    if (score < 0)
+                    yield return new RatingResponse
                     {
-                        yield return (null, rating);
-                    }
-                    else
-                    {
-                        yield return (rating, null);
-                    }
+                        Hash = rating.Id,
+                        Type = ratingType.Value,
+                    };
                 }
             }
         }

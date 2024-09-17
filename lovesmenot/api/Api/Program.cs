@@ -1,5 +1,7 @@
 using Api.Controllers;
+using Api.Controllers.Models;
 using Api.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Api
 {
@@ -15,8 +17,10 @@ namespace Api
 
             var app = builder.Build();
             app.MapGet("/", () => "Loves Me, Loves Me Not 🌸");
-            app.MapGet("/ratings", RatingsController.GetRatingsAsync);
-            app.MapPost("/ratings", RatingsController.AddRatingAsync);
+            app.MapGet("/ratings", (RatingsService ratingsService, CancellationToken cancellationToken)
+                => ratingsService.GetRatingsAsync(cancellationToken));
+            app.MapPost("/ratings", (RatingsService ratingsService, [FromBody] RatingRequest request)
+                => ratingsService.AddRatingAsync(request, CancellationToken.None));
 
             app.Run();
 

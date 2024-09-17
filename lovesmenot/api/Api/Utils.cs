@@ -17,9 +17,10 @@ namespace Api
             return modifier * (sign * rater.Xp);
         }
 
-        public static RatingType? CalculateRating(double score)
+        public static RatingType? CalculateRating(Rating rating)
         {
-            if (Math.Abs(score) >= Constants.UsableScore)
+            var score = rating.Score;
+            if (Math.Abs(score) >= Constants.UsableScore && rating.RatedBy.Count >= Constants.UsableRaterCount)
                 return score < 0 ? RatingType.Negative : RatingType.Positive;
 
             return null;

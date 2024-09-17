@@ -18,8 +18,13 @@
         public const int DecentXp = MaxLevelXp + (11100 * 200);
 
         /// <summary>
+        /// Minimum amount of raters that makes a score usable
+        /// </summary>
+        public const int UsableRaterCount = 4;
+
+        /// <summary>
         /// A score is usable if its absolute value is bigger than 4 max level player xp
         /// </summary>
-        public const int UsableScore = 4 * MaxLevelXp;
+        public const int UsableScore = UsableRaterCount * MaxLevelXp;
     }
 }
