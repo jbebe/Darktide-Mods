@@ -1,6 +1,6 @@
 ﻿namespace Api.Controllers.Models
 {
-    public class RatingRequest
+    public record RatingRequest
     {
         /// <summary>
         /// Type of rating (negative / positive)

@@ -1,6 +1,6 @@
 ﻿namespace Api.Controllers.Models
 {
-    public class RatingResponse
+    public record RatingResponse
     {
         public required RatingType Type { get; set; }
 

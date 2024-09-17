@@ -1,6 +1,6 @@
 ﻿namespace Api.Services.Models
 {
-    public class Metadata
+    public record Metadata
     {
         /// <remarks>
         /// For future use. If we ever want to partition ratings by region, 

@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Test
 {
-    public class BasicTests : IClassFixture<ApplicationFactory>
+    public class BasicTests : IClassFixture<ApplicationFactory>, IDisposable
     {
         private HttpClient Client { get; }
 
@@ -18,6 +18,24 @@ namespace Test
             Client = factory.CreateClient();
             Faker = new Faker();
             DbService = (factory.Services.GetRequiredService<IDatabaseService>() as MockDatabaseService)!;
+        }
+
+        public void Dispose()
+        {
+            DbService.Db.Clear();
+        }
+
+        private RatingRequest CreateRequest()
+        {
+            return new RatingRequest
+            {
+                SourceHash = Faker.Random.Hash(32),
+                SourceXp = Faker.Random.Int(1, 500_000),
+                TargetXp = Faker.Random.Int(1, 500_000),
+                Type = Faker.Random.Enum<Api.RatingType>(),
+                Region = $"aws-{Faker.Random.AlphaNumeric(10)}",
+                TargetHash = Faker.Random.Hash(32),
+            };
         }
 
         [Fact]
@@ -34,15 +52,7 @@ namespace Test
             Assert.Empty(DbService.Db);
 
             var startDate = DateTime.UtcNow;
-            var request = await Client.CreateRatingAsync(new RatingRequest
-            {
-                SourceHash = Faker.Random.Hash(32),
-                SourceXp = Faker.Random.Int(1, 500_000),
-                TargetXp = Faker.Random.Int(1, 500_000),
-                Type = Faker.Random.Enum<Api.RatingType>(),
-                Region = $"aws-{Faker.Random.AlphaNumeric(10)}",
-                TargetHash = Faker.Random.Hash(32),
-            }, CancellationToken.None);
+            var request = await Client.CreateRatingAsync(CreateRequest(), CancellationToken.None);
             var endDate = DateTime.UtcNow;
 
             var rating = Assert.Single(DbService.Db).Value;
@@ -59,6 +69,26 @@ namespace Test
             Assert.Equal(request.Type, rater.Type);
             Assert.Equal(request.SourceHash, rater.AccountHash);
             Assert.Equal(request.SourceXp, rater.Xp);
+        }
+
+        [Fact]
+        public async Task UpdateRating_Success()
+        {
+            var request = CreateRequest();
+            
+            // Add rating as player 1
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+            var rating = Assert.Single(DbService.Db).Value;
+            Assert.Equal(request.SourceHash, rating.RatedBy.Single().AccountHash);
+
+            // Add rating as player 2
+            request.SourceHash = Faker.Random.Hash(32);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Assert that a second player can rate the target too
+            rating = DbService.Db.Single(x => x.Value.Id == request.TargetHash).Value;
+            Assert.Equal(2, rating.RatedBy.Count);
+            Assert.Equal(request.SourceHash, rating.RatedBy.Single(x => x.AccountHash == request.SourceHash).AccountHash);
         }
 
         [Fact]
