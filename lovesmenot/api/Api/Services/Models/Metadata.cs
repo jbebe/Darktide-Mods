@@ -25,6 +25,11 @@
         ///  * aws-us-west-1
         ///  * aws-us-west-2
         /// </remarks>
-        public List<string>? Regions { get; set; }
+        public HashSet<string> Regions { get; set; } = [];
+
+        /// <summary>
+        /// The player's highest xp character
+        /// </summary>
+        public int MaxCharacterXp { get; set; }
     }
 }

@@ -22,12 +22,12 @@ namespace Api.Controllers
         [HttpGet("ratings")]
         public async IAsyncEnumerable<RatingResponse> GetRatingsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var rating in RatingsService.GetRatingsAsync(cancellationToken))
+            await foreach (var (positive, negative) in RatingsService.GetRatingsAsync(cancellationToken))
             {
                 yield return new RatingResponse
                 {
-                    Hash = rating.Hash,
-                    Type = rating.Type,
+                    Hash = (positive ?? negative!).Id,
+                    Type = positive != null ? RatingType.Positive : RatingType.Negative,
                 };
             }
         }

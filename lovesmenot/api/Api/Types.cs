@@ -2,7 +2,7 @@
 {
     public enum RatingType
     {
-        Avoid,
-        Prefer
+        Negative,
+        Positive
     }
 }

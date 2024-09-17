@@ -1,6 +1,8 @@
-var builder = WebApplication.CreateBuilder(args);
+using Api.Services;
 
+var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+builder.Services.AddSingleton<RatingsService>();
 
 // AWS Lambda specific line; if removed, practically portable
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
@@ -8,7 +10,8 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.MapControllers();
-app.MapGet("/", () => "API server for 'Loves Me, Loves Me Not' Darktide mod");
+app.MapGet("/", () => "Loves Me, Loves Me Not 🌸");
+
 app.Run();
 
-namespace Api { public partial class Program { } }
+public partial class Program { }

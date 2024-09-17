@@ -42,6 +42,32 @@ Link mod folder to darktide mod folder:
 
 ### Useful stuff
 
+#### REST api
+
+Example:
+```lua
+if not Managers.backend:authenticated() then
+  Log.error('Cannot initiate api call if not authenticated to game backend')
+end
+Managers.backend:url_request(url, {
+		require_auth = true, -- this must be true always!
+    method = "POST",
+    body = {
+      placeholder = "",
+    },
+    headers = {
+      headerName = headerData,
+  }
+	}):next(
+    function(responseBody){ 
+      processData(responseBody)
+    }, 
+    function(errorObject){
+      local errorMessage = type(errorObject) == "table" and table.tostring(errorObject, 3) or errorObject
+      Log.warning("<classname>", "Failed to <...> for url '%s' with error: %s", url, errorMessage)
+    })
+```
+
 #### Player infos
 
 * player:profile()
