@@ -1,17 +1,26 @@
+using Api.Controllers;
 using Api.Services;
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
-builder.Services.AddSingleton<RatingsService>();
+namespace Api
+{
+    public class Program 
+    { 
+        public static int Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddSingleton<RatingsService>();
+            
+            // AWS Lambda specific line; if removed, practically portable
+            builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 
-// AWS Lambda specific line; if removed, practically portable
-builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
+            var app = builder.Build();
+            app.MapGet("/", () => "Loves Me, Loves Me Not 🌸");
+            app.MapGet("/ratings", RatingsController.GetRatingsAsync);
+            app.MapPost("/ratings", RatingsController.AddRatingAsync);
 
-var app = builder.Build();
-app.UseHttpsRedirection();
-app.MapControllers();
-app.MapGet("/", () => "Loves Me, Loves Me Not 🌸");
+            app.Run();
 
-app.Run();
-
-public partial class Program { }
+            return 0;
+        }
+    }
+}

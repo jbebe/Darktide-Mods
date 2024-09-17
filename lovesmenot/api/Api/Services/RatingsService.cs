@@ -1,5 +1,4 @@
-﻿
-using Api.Controllers.Models;
+﻿using Api.Controllers.Models;
 using Api.Services.Models;
 using System.Runtime.CompilerServices;
 

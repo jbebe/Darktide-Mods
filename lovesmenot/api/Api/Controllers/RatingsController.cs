@@ -5,24 +5,12 @@ using System.Runtime.CompilerServices;
 
 namespace Api.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class RatingsController : ControllerBase
+    public static class RatingsController
     {
-        private ILogger<RatingsController> Logger { get; }
-
-        private RatingsService RatingsService { get; }
-
-        public RatingsController(ILogger<RatingsController> logger, RatingsService ratingsService)
+        public static async IAsyncEnumerable<RatingResponse> GetRatingsAsync(
+            RatingsService ratingsService, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            Logger = logger;
-            RatingsService = ratingsService;
-        }
-
-        [HttpGet("ratings")]
-        public async IAsyncEnumerable<RatingResponse> GetRatingsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            await foreach (var (positive, negative) in RatingsService.GetRatingsAsync(cancellationToken))
+            await foreach (var (positive, negative) in ratingsService.GetRatingsAsync(cancellationToken))
             {
                 yield return new RatingResponse
                 {
@@ -32,10 +20,9 @@ namespace Api.Controllers
             }
         }
 
-        [HttpPost("ratings")]
-        public async Task AddRatingAsync([FromBody] RatingRequest request)
+        public static async Task AddRatingAsync(RatingsService ratingsService, [FromBody] RatingRequest request)
         {
-            await RatingsService.AddRatingAsync(request, CancellationToken.None);
+            await ratingsService.AddRatingAsync(request, CancellationToken.None);
         }
     }
 }

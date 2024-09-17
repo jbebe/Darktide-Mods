@@ -1,5 +1,4 @@
-﻿
-using Api.Services.Models;
+﻿using Api.Services.Models;
 
 namespace Api.Services
 {
