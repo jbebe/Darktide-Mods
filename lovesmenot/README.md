@@ -29,6 +29,18 @@
     * etc..
   * After game on the Mourningstar, dialog with 3 users to vote for good/meh/bad
 
+### Server sync
+
+* When you start the mod, you don't have anything
+* At the main menu, if it's a fresh start (no json) and server sync is enabled, sync all data and persist it in the json
+  * If sync is not enabled, just work with the current setup that we have on the main branch
+  * If sync is enabled, after every game start, sync runs at the beginning, keeping the local db fresh
+  * You can perform a manual sync from the mod menu (is there a button to do so?)
+* If you add a new vote / change the current vote, it's stored with the synced data but the id is also stored in a 'new id table'
+  * if that 'new id table' has any items in it, sync it to the server.
+  * A new toxic or good player is rarely added so it's not a big deal if we have to sync multiple entries at once. We can just use the batch download and upload.
+* If the update was successful (not error callback) we clear the 'new id table' and that's it. We will sync again if needed.
+* What about collision? Oh oh. I don't know.
 
 ### Dev env setup
 
