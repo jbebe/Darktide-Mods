@@ -1,3 +1,4 @@
+using Api;
 using Api.Controllers.Models;
 using Api.Services;
 using Bogus;
@@ -25,16 +26,20 @@ namespace Test
             DbService.Db.Clear();
         }
 
-        private RatingRequest CreateRequest()
+        private RatingRequest CreateRequest(
+            string? targetHash = null,
+            int? sourceXp = null,
+            RatingType? type = null
+        )
         {
             return new RatingRequest
             {
                 SourceHash = Faker.Random.Hash(32),
-                SourceXp = Faker.Random.Int(1, 500_000),
+                SourceXp = sourceXp ?? Faker.Random.Int(1, 500_000),
                 TargetXp = Faker.Random.Int(1, 500_000),
-                Type = Faker.Random.Enum<Api.RatingType>(),
+                Type = type ?? Faker.Random.Enum<RatingType>(),
                 Region = $"aws-{Faker.Random.AlphaNumeric(10)}",
-                TargetHash = Faker.Random.Hash(32),
+                TargetHash = targetHash ?? Faker.Random.Hash(32),
             };
         }
 
@@ -92,9 +97,64 @@ namespace Test
         }
 
         [Fact]
-        public async Task GetRatings_Success()
+        public async Task GetRatings_Everyone_Rates_Negative()
         {
+            var targetHash = Faker.Random.Hash(32);
+
+            // Add rating as player 1
+            var request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Add rating as player 2
+            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Add rating as player 3
+            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Check ratings (no result yet, only 3 people)
             var ratings = await Client.GetRatingsAsync(CancellationToken.None);
+            Assert.Empty(ratings);
+
+            // Add rating as player 4
+            request = CreateRequest(targetHash, sourceXp: 0);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Check ratings (results are available as the fourth vote just came in)
+            ratings = await Client.GetRatingsAsync(CancellationToken.None);
+            var rating = Assert.Single(ratings);
+            Assert.Equal(request.TargetHash, rating.Hash);
+            Assert.Equal(RatingType.Negative, rating.Type);
+        }
+
+        [Fact]
+        public async Task GetRatings_Balanced_Out_No_Rating()
+        {
+            var targetHash = Faker.Random.Hash(32);
+
+            // Add rating as player 1
+            var request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Add rating as player 2
+            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Add rating as player 3
+            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Positive);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Check ratings (no result yet, only 3 people)
+            var ratings = await Client.GetRatingsAsync(CancellationToken.None);
+            Assert.Empty(ratings);
+
+            // Add rating as player 4
+            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Positive);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Check ratings (results are available as the fourth vote just came in)
+            ratings = await Client.GetRatingsAsync(CancellationToken.None);
             Assert.Empty(ratings);
         }
     }
