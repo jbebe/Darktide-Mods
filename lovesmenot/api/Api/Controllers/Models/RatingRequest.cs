@@ -1,6 +1,6 @@
 ﻿namespace Api.Controllers.Models
 {
-    public record RatingRequest
+    public record TargetRequest
     {
         /// <summary>
         /// Type of rating (negative / positive)
@@ -16,6 +16,11 @@
         /// Experience points of the rated character
         /// </summary>
         public int TargetXp { get; set; }
+    }
+
+    public record RatingRequest
+    {
+        public required TargetRequest[] Targets { get; set; }
 
         /// <summary>
         /// Account GUID hash (for privacy/gdpr reasons) of the rating player
@@ -26,10 +31,5 @@
         /// Experience points of the rating character
         /// </summary>
         public int SourceXp { get; set; }
-
-        /// <summary>
-        /// Region where the rated player played
-        /// </summary>
-        public required string Region { get; set; }
     }
 }

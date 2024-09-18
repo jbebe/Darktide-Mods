@@ -3,9 +3,10 @@
     "Api": {
       "commandName": "Project",
       "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
+        "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development",
+            "AWS_PROFILE": "default"
+        },
       "applicationUrl": "https://localhost:53531;http://localhost:53532"
     }
   }

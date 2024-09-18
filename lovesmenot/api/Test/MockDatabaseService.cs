@@ -1,33 +1,62 @@
-﻿using Api.Services;
+﻿using Api.Database;
 using Api.Services.Models;
-using System.Runtime.CompilerServices;
 
 namespace Test
 {
+    internal class MockRating : IRating
+    {
+        public required string Region { get; init; }
+        
+        public required string Id {get;init;}
+        
+        public required DateTime Created {get;init;}
+        
+        public required Metadata Metadata {get;init;}
+        
+        public required List<Rater> RatedBy {get;init;}
+        
+        public DateTime? Updated { get; set; }
+    }
+
     internal class MockDatabaseService : IDatabaseService
     {
-        public Dictionary<string, Rating> Db = [];
+        public Dictionary<string, MockRating> Db = [];
 
-        public Task CreateOrUpdateAsync(Rating rating, CancellationToken cancellationToken)
+        public IRating CreateEntity(string region, string id, List<Rater> ratedBy, Metadata metadata)
         {
-            Db[rating.Id] = rating;
+            return new MockRating
+            {
+                Region = region,
+                Id = id,
+                Created = DateTime.UtcNow,
+                Metadata = metadata,
+                RatedBy = ratedBy,
+            };
+        }
+
+        public Task CreateOrUpdateAsync(IRating rating, CancellationToken cancellationToken)
+        {
+            if (rating is MockRating mockRating)
+            {
+                Db[rating.Region + "|" + rating.Id] = mockRating;
+            }
+            else
+            {
+                throw new ArgumentException();
+            }
+
             return Task.CompletedTask;
         }
 
-        public Task<Rating?> GetRatingAsync(string id, CancellationToken cancellationToken)
+        public Task<IRating?> GetRatingAsync(string region, string id, CancellationToken cancellationToken)
         {
-            Db.TryGetValue(id, out var rating);
-            return Task.FromResult(rating);
+            Db.TryGetValue(region + "|" + id, out var rating);
+            return Task.FromResult<IRating?>(rating);
         }
 
-#pragma warning disable CS1998
-        public async IAsyncEnumerable<Rating> GetRatingsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-#pragma warning restore CS1998
+        public Task<List<IRating>> GetRatingsAsync(string region, CancellationToken cancellationToken)
         {
-            foreach (var rating in Db.Values)
-            {
-                yield return rating;
-            }
+            return Task.FromResult(Db.Where(x => x.Key.StartsWith($"{region}|")).Select(x => (IRating)x.Value).ToList());
         }
     }
 }

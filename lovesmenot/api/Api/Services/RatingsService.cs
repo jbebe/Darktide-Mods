@@ -1,4 +1,5 @@
 ﻿using Api.Controllers.Models;
+using Api.Database;
 using Api.Services.Models;
 using System.Runtime.CompilerServices;
 
@@ -13,9 +14,9 @@ namespace Api.Services
             Db = db;
         }
 
-        public async IAsyncEnumerable<RatingResponse> GetRatingsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<RatingResponse> GetRatingsAsync(string region, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await foreach (var rating in Db.GetRatingsAsync(cancellationToken))
+            foreach (var rating in await Db.GetRatingsAsync(region, cancellationToken))
             {
                 var ratingType = Utils.CalculateRating(rating);
                 if (ratingType != null)
@@ -29,55 +30,52 @@ namespace Api.Services
             }
         }
 
-        public async Task AddRatingAsync(RatingRequest request, CancellationToken cancellationToken)
+        public async Task UpdateRatingAsync(string region, RatingRequest request, CancellationToken cancellationToken)
         {
-            var targetId = request.TargetHash;
-            var rating = await Db.GetRatingAsync(targetId, cancellationToken);
-            var now = DateTime.UtcNow;
-            var newRater = new Rater
+            foreach (var target in request.Targets)
             {
-                AccountHash = request.SourceHash,
-                Type = request.Type,
-                Xp = request.SourceXp,
-            };
-
-            if (rating == null)
-            {
-                rating = new Rating
+                var targetId = target.TargetHash;
+                var newRater = new Rater
                 {
-                    Id = targetId,
-                    Created = now,
-                    Updated = null,
-                    RatedBy = [newRater],
-                    Metadata = new Metadata
-                    {
-                        Regions = request.Region != null ? [request.Region] : [],
-                        MaxCharacterXp = request.TargetXp,
-                    },
+                    AccountHash = request.SourceHash,
+                    Type = target.Type,
+                    MaxCharacterXp = request.SourceXp,
                 };
-            }
-            else
-            {
-                rating.Updated = now;
 
-                // Rater's info
-                var rater = rating.RatedBy.SingleOrDefault(x => x.AccountHash == request.SourceHash);
-                if (rater == null)
+                var rating = await Db.GetRatingAsync(region, targetId, cancellationToken);
+                if (rating == null)
                 {
-                    rating.RatedBy.Add(newRater);
+                    rating = Db.CreateEntity(
+                        region,
+                        targetId,
+                        [newRater],
+                        new Metadata
+                        {
+                            MaxCharacterXp = target.TargetXp,
+                        }
+                    );
                 }
                 else
                 {
-                    rater.Xp = Math.Max(rater.Xp, request.SourceXp);
-                    rater.Type = request.Type;
+                    rating.Updated = DateTime.UtcNow;
+
+                    // Rater's info
+                    var rater = rating.RatedBy.SingleOrDefault(x => x.AccountHash == request.SourceHash);
+                    if (rater == null)
+                    {
+                        rating.RatedBy.Add(newRater);
+                    }
+                    else
+                    {
+                        rater.MaxCharacterXp = Math.Max(rater.MaxCharacterXp, request.SourceXp);
+                        rater.Type = target.Type;
+                    }
+
+                    // Metadata
+                    rating.Metadata.MaxCharacterXp = Math.Max(rating.Metadata.MaxCharacterXp, target.TargetXp);
                 }
-
-                // Metadata
-                rating.Metadata.MaxCharacterXp = Math.Max(rating.Metadata.MaxCharacterXp, request.TargetXp);
-                rating.Metadata.Regions.Add(request.Region);
+                await Db.CreateOrUpdateAsync(rating, cancellationToken);
             }
-
-            await Db.CreateOrUpdateAsync(rating, cancellationToken);
         }
     }
 }
