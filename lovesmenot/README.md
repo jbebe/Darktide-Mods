@@ -42,6 +42,21 @@
 * If the update was successful (not error callback) we clear the 'new id table' and that's it. We will sync again if needed.
 * What about collision? Oh oh. I don't know.
 
+### Networking
+
+| Reef | (AWS) Region |
+| - | -: |
+| afr-south | aws-af-south-1 |
+| ap-central | aws-ap-southeast-1 |
+| ap-north | aws-ap-northeast-1 <br> aws-ap-northeast-2 |
+| ap-south | aws-ap-southeast-2 |
+| eu | aws-eu-central-1<br>aws-eu-north-1<br>aws-eu-west-1<br>aws-eu-west-2 |
+| hk | aws-ap-east-1 |
+| mei | aws-ap-south-1<br>aws-me-south-1 |
+| sa | aws-sa-east-1 |
+| us-east | aws-ca-central-1<br>aws-us-east-1<br>aws-us-east-2 |
+| us-west | aws-us-west-1<br>aws-us-west-2 |
+
 ### Dev env setup
 
 Link mod folder to darktide mod folder:

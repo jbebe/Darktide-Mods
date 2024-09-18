@@ -7,9 +7,9 @@ namespace Api.Database
 {
     public class DynamoDbService : IDatabaseService
     {
-        public DynamoDBContext Context { get; }
+        public IDynamoDBContext Context { get; }
 
-        public DynamoDbService(DynamoDBContext context)
+        public DynamoDbService(IDynamoDBContext context)
         {
             Context = context;
         }

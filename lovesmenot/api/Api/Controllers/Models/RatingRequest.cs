@@ -1,10 +1,13 @@
-﻿namespace Api.Controllers.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Api.Controllers.Models
 {
     public record TargetRequest
     {
         /// <summary>
         /// Type of rating (negative / positive)
         /// </summary>
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public required RatingType Type { get; set; }
 
         /// <summary>
