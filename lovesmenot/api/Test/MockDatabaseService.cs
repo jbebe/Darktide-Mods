@@ -5,8 +5,8 @@ namespace Test
 {
     internal class MockRating : IRating
     {
-        public required string Region { get; init; }
-        
+        public string EntityType => string.Empty;
+
         public required string Id {get;init;}
         
         public required DateTime Created {get;init;}
@@ -22,11 +22,10 @@ namespace Test
     {
         public Dictionary<string, MockRating> Db = [];
 
-        public IRating CreateEntity(string region, string id, List<Rater> ratedBy, Metadata metadata)
+        public IRating CreateEntity(string id, List<Rater> ratedBy, Metadata metadata)
         {
             return new MockRating
             {
-                Region = region,
                 Id = id,
                 Created = DateTime.UtcNow,
                 Metadata = metadata,
@@ -38,7 +37,7 @@ namespace Test
         {
             if (rating is MockRating mockRating)
             {
-                Db[rating.Region + "|" + rating.Id] = mockRating;
+                Db[rating.Id] = mockRating;
             }
             else
             {
@@ -48,15 +47,15 @@ namespace Test
             return Task.CompletedTask;
         }
 
-        public Task<IRating?> GetRatingAsync(string region, string id, CancellationToken cancellationToken)
+        public Task<IRating?> GetRatingAsync(string id, CancellationToken cancellationToken)
         {
-            Db.TryGetValue(region + "|" + id, out var rating);
+            Db.TryGetValue(id, out var rating);
             return Task.FromResult<IRating?>(rating);
         }
 
-        public Task<List<IRating>> GetRatingsAsync(string region, CancellationToken cancellationToken)
+        public Task<List<IRating>> GetRatingsAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(Db.Where(x => x.Key.StartsWith($"{region}|")).Select(x => (IRating)x.Value).ToList());
+            return Task.FromResult(Db.Values.Cast<IRating>().ToList());
         }
     }
 }

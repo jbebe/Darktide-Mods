@@ -14,11 +14,10 @@ namespace Api.Database
             Context = context;
         }
 
-        public IRating CreateEntity(string region, string id, List<Rater> ratedBy, Metadata metadata)
+        public IRating CreateEntity(string id, List<Rater> ratedBy, Metadata metadata)
         {
             return new DynamoDbRating
             {
-                Region = Utils.NormalizeDarktideRegion(region),
                 Id = id,
                 Created = DateTime.UtcNow,
                 Metadata = metadata,
@@ -31,11 +30,11 @@ namespace Api.Database
             await Context.SaveAsync(typeof(DynamoDbRating), rating, cancellationToken);
         }
 
-        public async Task<IRating?> GetRatingAsync(string region, string id, CancellationToken cancellationToken)
+        public async Task<IRating?> GetRatingAsync(string id, CancellationToken cancellationToken)
         {
             try
             {
-                return await Context.LoadAsync<DynamoDbRating>(region, id, cancellationToken);
+                return await Context.LoadAsync<DynamoDbRating>(DynamoDbRating.HashKey, id, cancellationToken);
             } 
             catch (AmazonDynamoDBException)
             {
@@ -44,9 +43,9 @@ namespace Api.Database
             // throw if different error
         }
 
-        public async Task<List<IRating>> GetRatingsAsync(string region, CancellationToken cancellationToken)
+        public async Task<List<IRating>> GetRatingsAsync(CancellationToken cancellationToken)
         {
-            var search = Context.QueryAsync<DynamoDbRating>(region);
+            var search = Context.QueryAsync<DynamoDbRating>(DynamoDbRating.HashKey);
             var results = await search.GetRemainingAsync(cancellationToken);
             return results.Cast<IRating>().ToList();
         }

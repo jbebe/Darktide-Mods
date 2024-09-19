@@ -14,9 +14,9 @@ namespace Api.Services
             Db = db;
         }
 
-        public async IAsyncEnumerable<RatingResponse> GetRatingsAsync(string region, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<RatingResponse> GetRatingsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            foreach (var rating in await Db.GetRatingsAsync(region, cancellationToken))
+            foreach (var rating in await Db.GetRatingsAsync(cancellationToken))
             {
                 var ratingType = Utils.CalculateRating(rating);
                 if (ratingType != null)
@@ -30,23 +30,23 @@ namespace Api.Services
             }
         }
 
-        public async Task UpdateRatingAsync(string region, RatingRequest request, CancellationToken cancellationToken)
+        public async Task UpdateRatingAsync(RatingRequest request, CancellationToken cancellationToken)
         {
             foreach (var target in request.Targets)
             {
                 var targetId = target.TargetHash;
                 var newRater = new Rater
                 {
-                    AccountHash = request.SourceHash,
+                    Id = request.SourceHash,
                     Type = target.Type,
                     MaxCharacterXp = request.SourceXp,
+                    Reef = request.SourceReef,
                 };
 
-                var rating = await Db.GetRatingAsync(region, targetId, cancellationToken);
+                var rating = await Db.GetRatingAsync(targetId, cancellationToken);
                 if (rating == null)
                 {
                     rating = Db.CreateEntity(
-                        region,
                         targetId,
                         [newRater],
                         new Metadata
@@ -60,7 +60,7 @@ namespace Api.Services
                     rating.Updated = DateTime.UtcNow;
 
                     // Rater's info
-                    var rater = rating.RatedBy.SingleOrDefault(x => x.AccountHash == request.SourceHash);
+                    var rater = rating.RatedBy.SingleOrDefault(x => x.Id == request.SourceHash);
                     if (rater == null)
                     {
                         rating.RatedBy.Add(newRater);

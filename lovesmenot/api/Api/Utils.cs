@@ -25,15 +25,5 @@ namespace Api
 
             return null;
         }
-
-        public static string NormalizeDarktideRegion(string region)
-        {
-            region = region.ToLower();
-            if (!Constants.DarktideRegions.Contains(region))
-            {
-                throw new ArgumentException($"Invalid region value: {region}", nameof(region));
-            }
-            return region;
-        }
     }
 }

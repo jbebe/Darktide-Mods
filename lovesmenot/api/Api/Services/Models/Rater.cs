@@ -5,8 +5,10 @@ namespace Api.Services.Models
     {
         public required RatingType Type { get; set; }
 
-        public required string AccountHash { get; set; }
+        public required string Id { get; set; }
 
         public required int MaxCharacterXp { get; set; }
+
+        public required string Reef { get; set; }
     }
 }

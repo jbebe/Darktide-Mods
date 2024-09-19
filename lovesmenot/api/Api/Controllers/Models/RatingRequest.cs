@@ -11,7 +11,7 @@ namespace Api.Controllers.Models
         public required RatingType Type { get; set; }
 
         /// <summary>
-        /// Account GUID hash (for privacy/gdpr reasons) of the rated player
+        /// Account GUID hash of the rated player
         /// </summary>
         public required string TargetHash { get; set; }
 
@@ -26,7 +26,7 @@ namespace Api.Controllers.Models
         public required TargetRequest[] Targets { get; set; }
 
         /// <summary>
-        /// Account GUID hash (for privacy/gdpr reasons) of the rating player
+        /// Account GUID hash of the rating player
         /// </summary>
         public required string SourceHash { get; set; }
 
@@ -34,5 +34,11 @@ namespace Api.Controllers.Models
         /// Experience points of the rating character
         /// </summary>
         public int SourceXp { get; set; }
+
+        /// <summary>
+        /// Superset of cloud provider region.
+        /// </summary>
+        /// <example>eu</example>
+        public required string SourceReef { get; set; }
     }
 }

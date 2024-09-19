@@ -6,8 +6,11 @@ namespace Api.Database.Models
     [DynamoDBTable("lovesmenot")]
     public record DynamoDbRating : IRating
     {
+        [DynamoDBIgnore]
+        public const string HashKey = "rating";
+
         [DynamoDBHashKey]
-        public required string Region { get; init; }
+        public string EntityType { get; set; } = HashKey;
 
         [DynamoDBRangeKey]
         public required string Id { get; init; }

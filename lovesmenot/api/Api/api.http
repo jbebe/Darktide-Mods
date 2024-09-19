@@ -1,12 +1,13 @@
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
 
 
-POST https://localhost:53531/ratings/aws-eu-west-1
+POST https://localhost:53531/ratings
 Content-Type: application/json
 
 {
     "SourceHash": "source3f76818f507fe7eb6422bd0703c64c88",
     "SourceXp": 1000,
+    "SourceReef": "eu",
     "Targets": [
         {
             "Type": "Negative",

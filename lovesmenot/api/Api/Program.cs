@@ -12,7 +12,7 @@ builder.Services.AddSingleton<IDynamoDBContext>(services =>
 {
     var client = new AmazonDynamoDBClient();
     var context = new DynamoDBContext(client);
-    context.ConverterCache.Add(typeof(DynamoDbEnumConverter<RatingType>), new DynamoDbEnumConverter<RatingType>());
+    context.ConverterCache.Add(typeof(RatingType), new DynamoDbEnumConverter<RatingType>());
     return context;
 });
 builder.Services.AddSingleton<IDatabaseService, DynamoDbService>();
@@ -23,10 +23,10 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 
 var app = builder.Build();
 app.MapGet("/", () => "Loves Me, Loves Me Not 🌸");
-app.MapGet("/ratings/{region}", ([FromRoute] string region, RatingsService ratingsService, CancellationToken cancellationToken)
-    => ratingsService.GetRatingsAsync(region, cancellationToken));
-app.MapPost("/ratings/{region}", ([FromRoute] string region, [FromBody] RatingRequest request, RatingsService ratingsService)
-    => ratingsService.UpdateRatingAsync(region, request, CancellationToken.None));
+app.MapGet("/ratings", (RatingsService ratingsService, CancellationToken cancellationToken)
+    => ratingsService.GetRatingsAsync(cancellationToken));
+app.MapPost("/ratings", ([FromBody] RatingRequest request, RatingsService ratingsService)
+    => ratingsService.UpdateRatingAsync(request, CancellationToken.None));
 
 app.Run();
 

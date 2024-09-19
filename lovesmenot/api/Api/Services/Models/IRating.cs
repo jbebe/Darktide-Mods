@@ -3,7 +3,7 @@ namespace Api.Services.Models
 {
     public interface IRating
     {
-        string Region { get; init; }
+        string EntityType { get; set; }
 
         string Id { get; init; }
 
