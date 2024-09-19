@@ -37,14 +37,14 @@ namespace Test
                 SourceHash = Faker.Random.Hash(32),
                 SourceXp = sourceXp ?? Faker.Random.Int(1, 500_000),
                 SourceReef = Faker.PickRandom("eu", "hk", "mei", "sa"),
-                Targets = [
-                    new TargetRequest
+                Targets = new Dictionary<string, TargetRequest>
+                {
+                    [targetHash ?? Faker.Random.Hash(32)] = new TargetRequest
                     {
                         Type = type ?? Faker.Random.Enum<RatingType>(),
                         TargetXp = Faker.Random.Int(1, 500_000),
-                        TargetHash = targetHash ?? Faker.Random.Hash(32),
                     }
-                ]
+                },
             };
         }
 
@@ -66,16 +66,16 @@ namespace Test
             var endDate = DateTime.UtcNow;
 
             var rating = Assert.Single(DbService.Db).Value;
-            Assert.Equal(request.Targets.Single().TargetHash, rating.Id);
+            Assert.Equal(request.Targets.Keys.Single(), rating.Id);
             Assert.InRange(rating.Created, startDate, endDate);
             Assert.Null(rating.Updated);
 
-            Assert.Equal(request.Targets.Single().TargetXp, rating.Metadata.MaxCharacterXp);
+            Assert.Equal(request.Targets.Values.Single().TargetXp, rating.Metadata.MaxCharacterXp);
             
             var rater = Assert.Single(rating.RatedBy);
-            Assert.Equal(request.Targets.Single().Type, rater.Type);
-            Assert.Equal(request.SourceHash, rater.Id);
-            Assert.Equal(request.SourceXp, rater.MaxCharacterXp);
+            Assert.Equal(request.Targets.Values.Single().Type, rater.Value.Type);
+            Assert.Equal(request.SourceHash, rater.Key);
+            Assert.Equal(request.SourceXp, rater.Value.MaxCharacterXp);
         }
 
         [Fact]
@@ -86,16 +86,16 @@ namespace Test
             // Add rating as player 1
             await Client.CreateRatingAsync(request, CancellationToken.None);
             var rating = Assert.Single(DbService.Db).Value;
-            Assert.Equal(request.SourceHash, rating.RatedBy.Single().Id);
+            Assert.Equal(request.SourceHash, rating.RatedBy.Keys.Single());
 
             // Add rating as player 2
             request.SourceHash = Faker.Random.Hash(32);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Assert that a second player can rate the target too
-            rating = DbService.Db.Single(x => x.Value.Id == request.Targets.Single().TargetHash).Value;
+            rating = DbService.Db.Single(x => x.Value.Id == request.Targets.Keys.Single()).Value;
             Assert.Equal(2, rating.RatedBy.Count);
-            Assert.Equal(request.SourceHash, rating.RatedBy.Single(x => x.Id == request.SourceHash).Id);
+            Assert.Equal(request.SourceHash, rating.RatedBy.Keys.Single(x => x == request.SourceHash));
         }
 
         [Fact]
@@ -126,8 +126,8 @@ namespace Test
             // Check ratings (results are available as the fourth vote just came in)
             ratings = await Client.GetRatingsAsync(CancellationToken.None);
             var rating = Assert.Single(ratings);
-            Assert.Equal(request.Targets.Single().TargetHash, rating.Hash);
-            Assert.Equal(RatingType.Negative, rating.Type);
+            Assert.Equal(request.Targets.Keys.Single(), rating.Key);
+            Assert.Equal(RatingType.Negative, rating.Value);
         }
 
         [Fact]

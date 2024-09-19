@@ -29,9 +29,9 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 
 var app = builder.Build();
 app.MapGet("/", () => "Loves Me, Loves Me Not 🌸");
-app.MapGet("/ratings", (RatingsService ratingsService, CancellationToken cancellationToken)
+app.MapGet($"/{Constants.ApiVersion}/ratings", (RatingsService ratingsService, CancellationToken cancellationToken)
     => ratingsService.GetRatingsAsync(cancellationToken));
-app.MapPost("/ratings", ([FromBody] RatingRequest request, RatingsService ratingsService)
+app.MapPost($"/{Constants.ApiVersion}/ratings", ([FromBody] RatingRequest request, RatingsService ratingsService)
     => ratingsService.UpdateRatingAsync(request, CancellationToken.None));
 
 app.Run();

@@ -14,7 +14,7 @@ namespace Api.Database
             Context = context;
         }
 
-        public IRating CreateEntity(string id, List<Rater> ratedBy, Metadata metadata)
+        public IRating CreateEntity(string id, Dictionary<string, Rater> ratedBy, Metadata metadata)
         {
             return new DynamoDbRating
             {

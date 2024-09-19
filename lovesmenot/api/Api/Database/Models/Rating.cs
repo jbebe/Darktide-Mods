@@ -15,7 +15,7 @@ namespace Api.Database.Models
         [DynamoDBRangeKey]
         public required string Id { get; init; }
 
-        public required List<Rater> RatedBy { get; init; }
+        public required Dictionary<string, Rater> RatedBy { get; init; }
 
         public required Metadata Metadata { get; init; }
 

@@ -4,7 +4,7 @@ namespace Api.Database
 {
     public interface IDatabaseService
     {
-        IRating CreateEntity(string id, List<Rater> ratedBy, Metadata metadata);
+        IRating CreateEntity(string id, Dictionary<string, Rater> ratedBy, Metadata metadata);
 
         Task CreateOrUpdateAsync(IRating rating, CancellationToken cancellationToken);
 

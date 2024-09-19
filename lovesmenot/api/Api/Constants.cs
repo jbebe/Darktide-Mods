@@ -4,6 +4,8 @@ namespace Api
 {
     public static class Constants
     {
+        public const int ApiVersion = 1;
+
         /// <summary>
         /// Level 20 xp according to Darktide
         /// </summary>

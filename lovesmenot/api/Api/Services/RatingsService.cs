@@ -1,7 +1,6 @@
 ﻿using Api.Controllers.Models;
 using Api.Database;
 using Api.Services.Models;
-using System.Runtime.CompilerServices;
 
 namespace Api.Services
 {
@@ -14,30 +13,30 @@ namespace Api.Services
             Db = db;
         }
 
-        public async IAsyncEnumerable<RatingResponse> GetRatingsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        public async Task<Dictionary<string, RatingType>> GetRatingsAsync(CancellationToken cancellationToken)
         {
+            var response = new Dictionary<string, RatingType>();
             foreach (var rating in await Db.GetRatingsAsync(cancellationToken))
             {
                 var ratingType = Utils.CalculateRating(rating);
                 if (ratingType != null)
                 {
-                    yield return new RatingResponse
-                    {
-                        Hash = rating.Id,
-                        Type = ratingType.Value,
-                    };
+                    response[rating.Id] = ratingType.Value;
                 }
             }
+
+            return response;
         }
 
         public async Task UpdateRatingAsync(RatingRequest request, CancellationToken cancellationToken)
         {
-            foreach (var target in request.Targets)
+            var raterId = request.SourceHash;
+            foreach (var kvp in request.Targets)
             {
-                var targetId = target.TargetHash;
+                var targetId = kvp.Key;
+                var target = kvp.Value;
                 var newRater = new Rater
                 {
-                    Id = request.SourceHash,
                     Type = target.Type,
                     MaxCharacterXp = request.SourceXp,
                     Reef = request.SourceReef,
@@ -46,9 +45,10 @@ namespace Api.Services
                 var rating = await Db.GetRatingAsync(targetId, cancellationToken);
                 if (rating == null)
                 {
+                    
                     rating = Db.CreateEntity(
                         targetId,
-                        [newRater],
+                        new Dictionary<string, Rater> { [raterId] = newRater },
                         new Metadata
                         {
                             MaxCharacterXp = target.TargetXp,
@@ -60,17 +60,16 @@ namespace Api.Services
                     rating.Updated = DateTime.UtcNow;
 
                     // Rater's info
-                    var rater = rating.RatedBy.SingleOrDefault(x => x.Id == request.SourceHash);
-                    if (rater == null)
-                    {
-                        rating.RatedBy.Add(newRater);
-                    }
-                    else
+                    if (rating.RatedBy.TryGetValue(raterId, out var rater))
                     {
                         rater.MaxCharacterXp = Math.Max(rater.MaxCharacterXp, request.SourceXp);
                         rater.Type = target.Type;
                     }
-
+                    else
+                    {
+                        rating.RatedBy[request.SourceHash] = newRater;
+                    }
+                    
                     // Metadata
                     rating.Metadata.MaxCharacterXp = Math.Max(rating.Metadata.MaxCharacterXp, target.TargetXp);
                 }

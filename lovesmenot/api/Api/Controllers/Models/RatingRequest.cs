@@ -8,11 +8,6 @@
         public required RatingType Type { get; set; }
 
         /// <summary>
-        /// Account GUID hash of the rated player
-        /// </summary>
-        public required string TargetHash { get; set; }
-
-        /// <summary>
         /// Experience points of the rated character
         /// </summary>
         public int TargetXp { get; set; }
@@ -20,8 +15,6 @@
 
     public record RatingRequest
     {
-        public required TargetRequest[] Targets { get; set; }
-
         /// <summary>
         /// Account GUID hash of the rating player
         /// </summary>
@@ -37,5 +30,10 @@
         /// </summary>
         /// <example>eu</example>
         public required string SourceReef { get; set; }
+        
+        /// <summary>
+        /// KEY: Account GUID hash of the rated player
+        /// </summary>
+        public required Dictionary<string, TargetRequest> Targets { get; set; }
     }
 }

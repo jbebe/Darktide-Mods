@@ -5,7 +5,7 @@ namespace Test
 {
     internal class MockRating : IRating
     {
-        public string EntityType => string.Empty;
+        public string EntityType { get; set; } = string.Empty;
 
         public required string Id {get;init;}
         
@@ -13,7 +13,7 @@ namespace Test
         
         public required Metadata Metadata {get;init;}
         
-        public required List<Rater> RatedBy {get;init;}
+        public required Dictionary<string, Rater> RatedBy {get;init;}
         
         public DateTime? Updated { get; set; }
     }
@@ -22,7 +22,7 @@ namespace Test
     {
         public Dictionary<string, MockRating> Db = [];
 
-        public IRating CreateEntity(string id, List<Rater> ratedBy, Metadata metadata)
+        public IRating CreateEntity(string id, Dictionary<string, Rater> ratedBy, Metadata metadata)
         {
             return new MockRating
             {
