@@ -5,16 +5,18 @@ POST https://localhost:53531/ratings
 Content-Type: application/json
 
 {
-    "SourceHash": "source3f76818f507fe7eb6422bd0703c64c88",
+    "SourceHash": "3f76818f507fe7eb6422bd0703c64c88",
     "SourceXp": 1000,
     "SourceReef": "eu",
     "Targets": [
         {
             "Type": "Negative",
-            "TargetHash": "target3f76818f507fe7eb6422bd0703c64c88",
+            "TargetHash": "3f76818f507fe7eb6422bd0703c64c88",
             "TargetXp": 500
         }
     ]
 }
 
 ###
+
+GET https://localhost:53531/ratings

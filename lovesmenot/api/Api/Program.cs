@@ -6,8 +6,14 @@ using Api.Controllers.Models;
 using Api.Database;
 using Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<JsonOptions>(options => 
+    options.SerializerOptions.Converters.Add(
+        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 builder.Services.AddSingleton<IDynamoDBContext>(services =>
 {
     var client = new AmazonDynamoDBClient();
