@@ -157,7 +157,7 @@ function RatingsView:_setup_category_config()
                             text = 'lovesmenot_ratingsview_delete_yes',
                             callback = callback(function()
                                 self._controller.rating.accounts[info.accountId] = nil
-                                self._controller:persistRating()
+                                self._controller:persistLocalRating()
                                 self:_reload()
                             end),
                         },

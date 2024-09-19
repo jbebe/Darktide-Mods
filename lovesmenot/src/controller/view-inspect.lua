@@ -17,7 +17,7 @@ local function init(controller)
             characterName = playerInfo:profile().name,
             characterType = playerInfo:profile().archetype.name,
         })
-        controller:persistRating()
+        controller:persistLocalRating()
     end
 
     controller.dmf:hook(PlayerCharacterOptionsView, '_setup_buttons_interactions', function(func, self, ...)

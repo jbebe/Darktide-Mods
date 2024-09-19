@@ -26,6 +26,12 @@ return {
 	lovesmenot_settings_hotkey_3_title = {
 		en = 'Change rating of teammate #3'
 	},
+	lovesmenot_settings_cloud_sync = {
+		en = 'Cloud sync'
+	},
+	lovesmenot_settings_cloud_sync_description = {
+		en = 'Synchronizes ratings between all mod users'
+	},
 
 	-- Accounts dashboard
 	lovesmenot_ratingsview_title = {

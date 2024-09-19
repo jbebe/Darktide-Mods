@@ -34,6 +34,12 @@ return {
 				keybind_trigger = 'pressed',
 				keybind_type = 'function_call',
 				function_name = 'openRatings'
+			},
+			{
+				setting_id = "lovesmenot_settings_cloud_sync",
+				type = "checkbox",
+				require_restart = true,
+				default_value = false,
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
+local netUtils = modRequire 'lovesmenot/src/utils/network'
 
 ---@param controller LovesMeNot
 local function init(controller)
@@ -13,8 +14,17 @@ local function init(controller)
             return
         end
         self.initialized = true
-        self:loadRating()
-        self.isInMission = gameUtils.isInRealMission()
+
+        local isCloud = self.dmf:get('lovesmenot_settings_cloud_sync')
+        if isCloud then
+            netUtils.getRatings():next(function(ratings)
+                self.rating = ratings
+                self.isInMission = gameUtils.isInRealMission()
+            end)
+        else
+            self:loadLocalRating()
+            self.isInMission = gameUtils.isInRealMission()
+        end
     end
 
     ---@param initial_call boolean
@@ -42,7 +52,7 @@ local function init(controller)
             if controller:canRate() then
                 controller.isInMission = false
                 controller.teammates = {}
-                controller:persistRating()
+                controller:persistLocalRating()
             end
         end
     end

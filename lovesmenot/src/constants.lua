@@ -19,8 +19,11 @@ local SYMBOLS = {
     PLATFORM_UNKNOWN = '\u{e06f}',
 }
 
+local version = 1
+
 return {
-    VERSION = 1,
+    VERSION = version,
+    API_PREFIX = 'https://localhost:53531/' .. version,
     RATINGS = RATINGS,
     SYMBOLS = SYMBOLS,
     COLORS = {

@@ -72,8 +72,8 @@ end
 ---@field teammates table
 ---@field isInMission boolean
 ---@field debugging boolean
----@field loadRating function
----@field persistRating function
+---@field loadLocalRating function
+---@field persistLocalRating function
 ---@field reinit function
 ---@field registerRatingsView function
 ---@field openRatings function

@@ -5,7 +5,7 @@ local utils = modRequire 'lovesmenot/src/utils/language'
 local function init(controller)
     local ratingPath = utils.os.getenv('APPDATA') .. [[\Fatshark\Darktide\lovesmenot.json]]
 
-    function controller:loadRating()
+    function controller:loadLocalRating()
         local file = utils.io.open(ratingPath, 'r')
         if file ~= nil then
             local rawContent = file:read('*all')
@@ -19,7 +19,7 @@ local function init(controller)
 
     -- TODO: use coroutine debounce and save json more often
     -- https://www.lua.org/pil/9.1.html
-    function controller:persistRating()
+    function controller:persistLocalRating()
         if not self.rating then
             return
         end
