@@ -17,7 +17,7 @@ local function init(controller)
 
         local message
         local isError = false
-        ---@type RatingAccountType
+        ---@type RatingAccount
         local copy = table.clone(teammate)
         local creationDate = languageUtils.os.date(constants.DATE_FORMAT)
         ---@cast creationDate string

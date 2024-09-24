@@ -45,7 +45,7 @@ end
 ---| 'psyker'
 ---| 'ogryn'
 
----@class RatingAccountType
+---@class RatingAccount
 ---@field rating RATINGS
 ---@field name string
 ---@field platform PlatformType
@@ -55,7 +55,7 @@ end
 
 ---@class RatingType
 ---@field version number
----@field accounts table<string, RatingAccountType>
+---@field accounts table<string, RatingAccount>
 
 ---@class TeammateType
 ---@field accountId string

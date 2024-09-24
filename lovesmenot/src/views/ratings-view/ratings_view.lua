@@ -85,8 +85,8 @@ local ratingsColorMap = {
     [constants.RATINGS.PREFER] = constants.COLORS.GREEN,
 }
 
----@param a RatingAccountType
----@param b RatingAccountType
+---@param a RatingAccount
+---@param b RatingAccount
 local function compareByCreationDate(a, b)
     return a.creationDate < b.creationDate
 end
@@ -96,9 +96,9 @@ function RatingsView:_setup_category_config()
 
     local rawRatings = DMF.deepcopy(self._controller.rating and self._controller.rating.accounts or {})
 
-    ---@alias ExtendedRatingAccountType (RatingAccountType | { accountId: string })
+    ---@alias ExtendedRatingAccount (RatingAccount | { accountId: string })
 
-    ---@type ExtendedRatingAccountType[]
+    ---@type ExtendedRatingAccount[]
     local sortedRatings = fun.reduce(function(acc, accountId, accountInfo)
         accountInfo.accountId = accountId
         table.insert(acc, accountInfo)
@@ -107,11 +107,11 @@ function RatingsView:_setup_category_config()
     table.sort(sortedRatings, compareByCreationDate)
 
     local avoidRatings, preferRatings = fun.partition(function(x)
-        ---@cast x ExtendedRatingAccountType
+        ---@cast x ExtendedRatingAccount
         return x.rating == constants.RATINGS.AVOID
     end, sortedRatings)
 
-    ---@type ExtendedRatingAccountType[]
+    ---@type ExtendedRatingAccount[]
     local groupedRatings = fun.chain(preferRatings, avoidRatings)
 
     self._controller.dmf:add_global_localize_strings({
