@@ -8,8 +8,8 @@ local RATINGS, COLORS, SYMBOLS =
 ---@param controller LovesMeNot
 local function init(controller)
     local NAME_PREFIX = {
-        [RATINGS.AVOID] = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ',
-        [RATINGS.PREFER] = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ',
+        [RATINGS.NEGATIVE] = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ',
+        [RATINGS.POSITIVE] = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ',
     }
 
     local function cleanRating(text)
@@ -37,13 +37,13 @@ local function init(controller)
     end
 
     function controller:formatPlayerName(oldText, accountId)
-        if not self.rating then
+        if not self:hasRating() then
             -- rating is not available, skip
             return oldText, false
         end
 
-        local accData = self.rating.accounts[accountId]
-        if not accData then
+        local rating = self:getRating(accountId)
+        if not rating then
             local textRaw = cleanRating(oldText)
             if oldText == textRaw then
                 -- default player name, unchanged
@@ -54,7 +54,6 @@ local function init(controller)
             return textRaw, true
         end
 
-        local rating = accData.rating
         local ratingPrefix = NAME_PREFIX[rating]
         if langUtils.startsWith(oldText, ratingPrefix) then
             -- prefix already applied

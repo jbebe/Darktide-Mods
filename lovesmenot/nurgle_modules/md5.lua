@@ -1,4 +1,4 @@
-local function init(ffi_module)
+local function init(ffi)
     local md5 = {
         _VERSION     = "md5.lua 1.1.0",
         _DESCRIPTION = "MD5 computation in Lua (5.1-3, LuaJIT)",
@@ -34,8 +34,6 @@ local function init(ffi_module)
     local char, byte, format, rep, sub =
         string.char, string.byte, string.format, string.rep, string.sub
     local bit_or, bit_and, bit_not, bit_xor, bit_rshift, bit_lshift
-
-    local ok_ffi, ffi = true, ffi_module
 
     local function tbl2number(tbl)
         local result = 0
@@ -176,15 +174,8 @@ local function init(ffi_module)
     -- convert little-endian 32-bit int to a 4-char string
     local lei2str
     -- function is defined this way to allow full jit compilation (removing UCLO instruction in LuaJIT)
-    if ok_ffi then
-        local ct_IntType = ffi.typeof("int[1]")
-        lei2str = function(i) return ffi.string(ct_IntType(i), 4) end
-    else
-        lei2str = function(i)
-            local f = function(s) return char(bit_and(bit_rshift(i, s), 255)) end
-            return f(0) .. f(8) .. f(16) .. f(24)
-        end
-    end
+    local ct_IntType = ffi.typeof("int[1]")
+    lei2str = function(i) return ffi.string(ct_IntType(i), 4) end
 
     -- convert raw string to big-endian int
     local function str2bei(s)
@@ -198,23 +189,12 @@ local function init(ffi_module)
     -- convert raw string to little-endian int
     local str2lei
 
-    if ok_ffi then
-        local ct_constcharptr = ffi.typeof("const char*")
-        local ct_constintptr = ffi.typeof("const int*")
-        str2lei = function(s)
-            local int = ct_constcharptr(s)
-            return ffi.cast(ct_constintptr, int)[0]
-        end
-    else
-        str2lei = function(s)
-            local v = 0
-            for i = #s, 1, -1 do
-                v = v * 256 + byte(s, i)
-            end
-            return v
-        end
+    local ct_constcharptr = ffi.typeof("const char*")
+    local ct_constintptr = ffi.typeof("const int*")
+    str2lei = function(s)
+        local int = ct_constcharptr(s)
+        return ffi.cast(ct_constintptr, int)[0]
     end
-
 
     -- cut up a string in little-endian ints of given size
     local function cut_le_str(s)

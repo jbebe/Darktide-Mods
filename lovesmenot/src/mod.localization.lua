@@ -32,13 +32,19 @@ return {
 	lovesmenot_settings_cloud_sync_description = {
 		en = 'Synchronizes ratings between all mod users'
 	},
+	lovesmenot_settings_cloud_sync_hide_own_rating = {
+		en = 'Show notification if you appear in the community rating'
+	},
 
 	-- Accounts dashboard
 	lovesmenot_ratingsview_title = {
 		en = 'Accounts Dashboard'
 	},
-	lovesmenot_ratingsview_description = {
+	lovesmenot_ratingsview_local_description = {
 		en = 'These are the accounts you rated so far. Click on any account to revoke your rating.'
+	},
+	lovesmenot_ratingsview_remote_description = {
+		en = 'These are the accounts the community rated so far. Rate players to help us build a useful dataset.'
 	},
 	lovesmenot_ratingsview_delete_title = {
 		en = 'Rehabilitate Account',
@@ -60,16 +66,22 @@ return {
 	},
 
 	-- Ingame text
-	lovesmenot_ingame_rating_avoid = {
-		en = 'Avoid'
+	lovesmenot_ingame_rating_negative = {
+		en = 'Negative'
 	},
-	lovesmenot_ingame_rating_prefer = {
-		en = 'Prefer'
+	lovesmenot_ingame_rating_positive = {
+		en = 'Positive'
 	},
 	lovesmenot_ingame_notification_set = {
 		en = '%s is now marked as: %s'
 	},
 	lovesmenot_ingame_notification_unset = {
 		en = '%s is now unmarked'
+	},
+	lovesmenot_ingame_self_status = {
+		en = 'Congratulations! You are rated as \'%s\' by the community.'
+	},
+	lovesmenot_ingame_na = {
+		en = 'n/a'
 	},
 }

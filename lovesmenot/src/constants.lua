@@ -1,7 +1,7 @@
 ---@enum RATINGS
 local RATINGS = {
-    AVOID = 'avoid',
-    PREFER = 'prefer',
+    NEGATIVE = 'negative',
+    POSITIVE = 'positive',
 }
 
 local SYMBOLS = {

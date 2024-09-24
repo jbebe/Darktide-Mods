@@ -1,5 +1,3 @@
-local DMF = get_mod('DMF')
-
 local ViewElementInputLegend = require 'scripts/ui/view_elements/view_element_input_legend/view_element_input_legend'
 local ScriptWorld = require 'scripts/foundation/utilities/script_world'
 local UIWidget = require 'scripts/managers/ui/ui_widget'
@@ -76,13 +74,13 @@ function RatingsView:on_enter()
 end
 
 local ratingsIconMap = {
-    [constants.RATINGS.AVOID] = constants.SYMBOLS.FLAME,
-    [constants.RATINGS.PREFER] = constants.SYMBOLS.WREATH,
+    [constants.RATINGS.NEGATIVE] = constants.SYMBOLS.FLAME,
+    [constants.RATINGS.POSITIVE] = constants.SYMBOLS.WREATH,
 }
 
 local ratingsColorMap = {
-    [constants.RATINGS.AVOID] = constants.COLORS.ORANGE,
-    [constants.RATINGS.PREFER] = constants.COLORS.GREEN,
+    [constants.RATINGS.NEGATIVE] = constants.COLORS.ORANGE,
+    [constants.RATINGS.POSITIVE] = constants.COLORS.GREEN,
 }
 
 ---@param a RatingAccount
@@ -91,10 +89,43 @@ local function compareByCreationDate(a, b)
     return a.creationDate < b.creationDate
 end
 
-function RatingsView:_setup_category_config()
-    local entries = {}
+function RatingsView:_get_remote_widget_configs()
+    local widgetConfig = {}
+    for hash, rating in pairs(self._controller.remoteRating) do
+        local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
+        local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash
+        local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. rating)
+        local ratingIcon = styleUtils.colorize(ratingsColorMap[rating], ratingsIconMap[rating])
+        local ratingIconWithPadding = ratingIcon
+        if rating == constants.RATINGS.NEGATIVE then
+            ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
+        else
+            ratingText = ratingText .. '  \u{2009}'
+        end
+        self._controller.dmf:add_global_localize_strings({
+            [title] = {
+                en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_title',
+                    ratingIconWithPadding, ratingText, '', hash),
+            },
+            [subtitle] = {
+                en = self._controller.dmf:localize('lovesmenot_ingame_na'),
+            }
+        })
+        local entry = {
+            widget_type = 'settings_button',
+            display_name = title,
+            display_name2 = subtitle,
+        }
+        widgetConfig[#widgetConfig + 1] = entry
+    end
 
-    local rawRatings = DMF.deepcopy(self._controller.rating and self._controller.rating.accounts or {})
+    return widgetConfig
+end
+
+function RatingsView:_get_local_widget_configs()
+    local widgetConfig = {}
+    local rawRatings = self._controller.dmf.deepcopy(self._controller.localRating and
+        self._controller.localRating.accounts or {})
 
     ---@alias ExtendedRatingAccount (RatingAccount | { accountId: string })
 
@@ -106,13 +137,13 @@ function RatingsView:_setup_category_config()
     end, {}, rawRatings)
     table.sort(sortedRatings, compareByCreationDate)
 
-    local avoidRatings, preferRatings = fun.partition(function(x)
+    local negativeRatings, positiveRatings = fun.partition(function(x)
         ---@cast x ExtendedRatingAccount
-        return x.rating == constants.RATINGS.AVOID
+        return x.rating == constants.RATINGS.NEGATIVE
     end, sortedRatings)
 
     ---@type ExtendedRatingAccount[]
-    local groupedRatings = fun.chain(preferRatings, avoidRatings)
+    local groupedRatings = fun.chain(positiveRatings, negativeRatings)
 
     self._controller.dmf:add_global_localize_strings({
         lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
@@ -129,7 +160,7 @@ function RatingsView:_setup_category_config()
         local ratingIcon = styleUtils.colorize(ratingsColorMap[info.rating], ratingsIconMap[info.rating])
         local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. info.rating)
         local ratingIconWithPadding = ratingIcon
-        if info.rating == constants.RATINGS.AVOID then
+        if info.rating == constants.RATINGS.NEGATIVE then
             ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
             ratingText = ratingText .. ' '
         end
@@ -156,7 +187,7 @@ function RatingsView:_setup_category_config()
                             close_on_pressed = true,
                             text = 'lovesmenot_ratingsview_delete_yes',
                             callback = callback(function()
-                                self._controller.rating.accounts[info.accountId] = nil
+                                self._controller.localRating.accounts[info.accountId] = nil
                                 self._controller:persistLocalRating()
                                 self:_reload()
                             end),
@@ -172,13 +203,20 @@ function RatingsView:_setup_category_config()
                 Managers.event:trigger('event_show_ui_popup', context)
             end
         }
-        entries[#entries + 1] = entry
+        widgetConfig[#widgetConfig + 1] = entry
     end
 
+    return widgetConfig
+end
+
+function RatingsView:_setup_category_config()
     local scenegraph_id = 'grid_content_pivot'
     local callback_name = 'cb_on_category_pressed'
-    self._category_content_widgets, self._category_alignment_list = self:_setup_content_widgets(entries, scenegraph_id,
-        callback_name)
+    local widgetConfig = self._controller:isCloud()
+        and self:_get_remote_widget_configs()
+        or self:_get_local_widget_configs()
+    self._category_content_widgets, self._category_alignment_list =
+        self:_setup_content_widgets(widgetConfig, scenegraph_id, callback_name)
     local scrollbar_widget_id = 'scrollbar'
     local grid_scenegraph_id = 'background'
     local grid_pivot_scenegraph_id = 'grid_content_pivot'
@@ -193,8 +231,8 @@ function RatingsView:_setup_content_grid_scrollbar(grid, widget_id, grid_scenegr
     local widgets_by_name = self._widgets_by_name
     local scrollbar_widget = widgets_by_name[widget_id]
 
-    if DMF:get('dmf_options_scrolling_speed') and widgets_by_name and widgets_by_name['scrollbar'] then
-        widgets_by_name['scrollbar'].content.scroll_speed = DMF:get('dmf_options_scrolling_speed')
+    if self._controller.dmf:get('dmf_options_scrolling_speed') and widgets_by_name and widgets_by_name['scrollbar'] then
+        widgets_by_name['scrollbar'].content.scroll_speed = self._controller.dmf:get('dmf_options_scrolling_speed')
     end
 
     grid:assign_scrollbar(scrollbar_widget, grid_pivot_scenegraph_id, grid_scenegraph_id)

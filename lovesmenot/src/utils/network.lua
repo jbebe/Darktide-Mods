@@ -15,7 +15,7 @@ end
 
 ---@class Promise<T, T2>: { next: fun(self: any, callback: fun(input: T): T2 | nil): Promise<T2 | nil> }
 
----@return Promise<table<string, RatingType>> | nil
+---@return Promise<RemoteRating> | nil
 function utils.getRatings()
     if not Managers.backend:authenticated() then
         DMF:error('Cannot initiate api call if not authenticated to game backend')

@@ -3,6 +3,7 @@ local DMF = get_mod('DMF')
 ---@class LanguageUtilsType
 ---@field io iolib
 ---@field os oslib
+---@field ffi any
 local utils = {}
 
 function utils.traceback()
@@ -31,9 +32,23 @@ end
 
 load_lua_lib('io')
 load_lua_lib('os')
+load_lua_lib('ffi')
 
 function utils.startsWith(haystack, needle)
     return haystack:sub(1, #needle) == needle
+end
+
+---@param obj table
+function utils.coalesce(obj, ...)
+    local current = obj
+    local props = { ... }
+    for _, propertyName in ipairs(props) do
+        if current == nil then
+            return nil
+        end
+        current = current[propertyName]
+    end
+    return current
 end
 
 return utils

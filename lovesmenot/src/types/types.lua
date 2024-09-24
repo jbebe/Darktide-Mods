@@ -9,7 +9,7 @@
 -- ---@field characterName string
 -- ---@field characterType 'zealot' | 'veteran' | 'psyker' | 'ogryn'
 
--- ---@class RatingType
+-- ---@class LocalRating
 -- ---@field version number
 -- ---@field accounts table<string, RatingAccountsType>
 
@@ -17,7 +17,7 @@
 -- ---@field dmf DmfMod
 -- ---@field localPlayer HumanPlayer | nil
 -- ---@field initialized boolean
--- ---@field rating RatingType | nil
+-- ---@field rating LocalRating | nil
 -- ---@field teammates table
 -- ---@field isInMission boolean
 

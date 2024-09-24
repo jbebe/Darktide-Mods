@@ -40,6 +40,11 @@ return {
 				type = "checkbox",
 				require_restart = true,
 				default_value = false,
+				sub_widgets = {
+					setting_id = "lovesmenot_settings_cloud_sync_hide_own_rating",
+					type = "checkbox",
+					default_value = false,
+				}
 			}
 		}
 	}

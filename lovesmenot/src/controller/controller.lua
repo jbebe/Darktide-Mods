@@ -2,6 +2,9 @@
 ---@module 'lovemenot/src/types/darktide-types'
 ---@module 'lovemenot/src/constants'
 
+local md5 = modRequire 'lovesmenot/nurgle_modules/md5'
+local langUtils = modRequire 'lovesmenot/src/utils/language'
+
 ---@type DmfMod
 local dmf = get_mod('lovesmenot')
 
@@ -53,7 +56,7 @@ end
 ---@field characterType CharacterType
 ---@field creationDate string
 
----@class RatingType
+---@class LocalRating
 ---@field version number
 ---@field accounts table<string, RatingAccount>
 
@@ -64,11 +67,14 @@ end
 ---@field characterName string
 ---@field characterType CharacterType
 
+---@alias RemoteRating table<string, RATINGS>
+
 ---@class LovesMeNot
 ---@field dmf DmfMod | table<string, function>
 ---@field localPlayer HumanPlayer | nil
 ---@field initialized boolean
----@field rating RatingType | nil
+---@field localRating LocalRating | nil
+---@field remoteRating RemoteRating | nil
 ---@field teammates table
 ---@field isInMission boolean
 ---@field debugging boolean
@@ -80,6 +86,8 @@ end
 ---@field updateRating fun(self: LovesMeNot, teammate: TeammateType)
 ---@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string): string, boolean
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
+---@field md5 { sumhexa: fun(text: string): string }
+---@field hashCache table<string, string>
 local controller = {
     dmf = dmf,
     initialized = false,
@@ -88,11 +96,47 @@ local controller = {
     teammates = {},
     rating = nil,
     debugging = false,
-    timers = timers
+    timers = timers,
+    md5 = md5(langUtils.ffi),
+    hashCache = {},
 }
+
+---@param accountId string
+function controller:hash(accountId)
+    local cleanedId, _ = accountId:lower():gsub('[^0-9a-f]+', '')
+    return self.md5.sumhexa(cleanedId)
+end
 
 function controller:canRate()
     return self.initialized and self.isInMission
+end
+
+function controller:isCloud()
+    local isCloud = self.dmf:get('lovesmenot_settings_cloud_sync')
+    return isCloud
+end
+
+function controller:hasRating()
+    if self:isCloud() then
+        return self.remoteRating ~= nil
+    else
+        return self.localRating ~= nil
+    end
+end
+
+---@param accountId string
+function controller:getRating(accountId)
+    if self:isCloud() then
+        local cachedHash = self.hashCache[accountId]
+        if cachedHash == nil then
+            cachedHash = self:hash(accountId)
+            self.hashCache[accountId] = cachedHash
+        end
+
+        return self.remoteRating[cachedHash]
+    else
+        return langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
+    end
 end
 
 return controller

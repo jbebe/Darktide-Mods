@@ -13,13 +13,18 @@ local function init(controller)
             -- account not yet available, retry later
             return
         end
+
         self.initialized = true
 
-        local isCloud = self.dmf:get('lovesmenot_settings_cloud_sync')
-        if isCloud then
+        if self:isCloud() then
             netUtils.getRatings():next(function(ratings)
-                self.rating = ratings
+                self.remoteRating = ratings
                 self.isInMission = gameUtils.isInRealMission()
+
+                local selfRating = ratings[self.localPlayer._account_id]
+                if selfRating ~= nil and self.dmf:get('lovesmenot_settings_cloud_sync_hide_own_rating') then
+                    gameUtils.directNotification(self.dmf:localize('lovesmenot_ingame_self_status', selfRating), false)
+                end
             end)
         else
             self:loadLocalRating()
