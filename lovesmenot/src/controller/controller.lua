@@ -60,14 +60,24 @@ end
 ---@field version number
 ---@field accounts table<string, RatingAccount>
 
----@class TeammateType
+---@class Teammate
 ---@field accountId string
 ---@field name string
 ---@field platform PlatformType
 ---@field characterName string
 ---@field characterType CharacterType
 
+---@class SyncableRatingItem
+---@field characterXp number
+---@field idHash string
+---@field rating RATINGS
+
 ---@alias RemoteRating table<string, RATINGS>
+---@alias SyncableRating table<string, SyncableRatingItem>
+
+---@class CachedInfo
+---@field idHash string
+---@field characterXp number | nil
 
 ---@class LovesMeNot
 ---@field dmf DmfMod | table<string, function>
@@ -75,19 +85,23 @@ end
 ---@field initialized boolean
 ---@field localRating LocalRating | nil
 ---@field remoteRating RemoteRating | nil
+---@field syncableRating SyncableRating | nil
 ---@field teammates table
 ---@field isInMission boolean
 ---@field debugging boolean
 ---@field loadLocalRating function
+---@field loadRemoteRating function
 ---@field persistLocalRating function
+---@field syncRemoteRating function
 ---@field reinit function
 ---@field registerRatingsView function
 ---@field openRatings function
----@field updateRating fun(self: LovesMeNot, teammate: TeammateType)
+---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
+---@field updateRemoteRating fun(self: LovesMeNot, teammate: Teammate)
 ---@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string): string, boolean
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
 ---@field md5 { sumhexa: fun(text: string): string }
----@field hashCache table<string, string>
+---@field accountCache table<string, CachedInfo>
 local controller = {
     dmf = dmf,
     initialized = false,
@@ -98,7 +112,8 @@ local controller = {
     debugging = false,
     timers = timers,
     md5 = md5(langUtils.ffi),
-    hashCache = {},
+    accountCache = {},
+    syncableRating = {},
 }
 
 ---@param accountId string
@@ -125,15 +140,24 @@ function controller:hasRating()
 end
 
 ---@param accountId string
-function controller:getRating(accountId)
+function controller:getRating(accountId, characterId)
     if self:isCloud() then
-        local cachedHash = self.hashCache[accountId]
-        if cachedHash == nil then
-            cachedHash = self:hash(accountId)
-            self.hashCache[accountId] = cachedHash
-        end
+        local cache = self.accountCache[accountId]
+        if cache == nil then
+            cache = {
+                characterXp = nil,
+                idHash = self:hash(accountId),
+            }
+            self.accountCache[accountId] = cache
 
-        return self.remoteRating[cachedHash]
+            -- load character xp
+            local promise = Managers.backend.interfaces.progression:get_progression('character', characterId)
+            ---@param data CharacterProgression
+            promise:next(function(data)
+                cache.characterXp = data.currentXp
+            end)
+        end
+        return self.remoteRating[cache.idHash]
     else
         return langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
     end

@@ -662,3 +662,9 @@
 ---@field using_cursor_navigation function
 ---@field widget_hotspot_content function
 ---@field widgets_by_name function
+
+---@class CharacterProgression
+---@field currentLevel number
+---@field currentXp number
+---@field currentXpInLevel number
+---@field neededXpForNextLevel number

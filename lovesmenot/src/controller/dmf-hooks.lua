@@ -1,5 +1,4 @@
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
-local netUtils = modRequire 'lovesmenot/src/utils/network'
 
 ---@param controller LovesMeNot
 local function init(controller)
@@ -17,15 +16,7 @@ local function init(controller)
         self.initialized = true
 
         if self:isCloud() then
-            netUtils.getRatings():next(function(ratings)
-                self.remoteRating = ratings
-                self.isInMission = gameUtils.isInRealMission()
-
-                local selfRating = ratings[self.localPlayer._account_id]
-                if selfRating ~= nil and self.dmf:get('lovesmenot_settings_cloud_sync_hide_own_rating') then
-                    gameUtils.directNotification(self.dmf:localize('lovesmenot_ingame_self_status', selfRating), false)
-                end
-            end)
+            self:loadRemoteRating()
         else
             self:loadLocalRating()
             self.isInMission = gameUtils.isInRealMission()
@@ -57,7 +48,11 @@ local function init(controller)
             if controller:canRate() then
                 controller.isInMission = false
                 controller.teammates = {}
-                controller:persistLocalRating()
+                if controller:isCloud() then
+                    controller:syncRemoteRating()
+                else
+                    controller:persistLocalRating()
+                end
             end
         end
     end

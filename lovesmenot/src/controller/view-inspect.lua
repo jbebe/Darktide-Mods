@@ -10,7 +10,7 @@ local function init(controller)
         local playerInfo = self._player_info
         local accountName = playerInfo._presence:account_name()
         local platform = playerInfo:platform() or 'unknown'
-        controller:updateRating({
+        controller:updateLocalRating({
             accountId = playerInfo:account_id(),
             name = accountName,
             platform = platform,
