@@ -27,9 +27,10 @@ local function init(controller)
                 if not player_deleted then
                     local widget = marker.widget
                     local content = widget.content
+                    local characterId = player:profile().character_id
 
-                    local newName, isDirty =
-                        controller:formatPlayerName(content.header_text, player._telemetry_subject.account_id)
+                    local newName, isDirty = controller:formatPlayerName(
+                        content.header_text, player._telemetry_subject.account_id, characterId)
                     if isDirty then
                         content.header_text = newName
                         widget.dirty = true

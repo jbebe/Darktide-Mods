@@ -12,8 +12,11 @@ local function init(controller)
             for _, data in ipairs(self._player_panels_array) do
                 local player = data.player
                 local accountId = player:account_id()
+                accountId = player._telemetry_subject.account_id -- DEBUG ONLY
                 if accountId ~= nil and accountId ~= controller.localPlayer._account_id then
-                    local characterName = player:profile().name
+                    local profile = player:profile()
+                    local character_id = profile and profile.character_id
+                    local characterName = profile.name
                     local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
                     if playerInfo then
                         local accountName = playerInfo._presence:account_name()
@@ -23,7 +26,7 @@ local function init(controller)
                             name = accountName,
                             platform = platform,
                             characterName = characterName,
-                            characterType = player:profile().archetype.name,
+                            characterType = profile.archetype.name,
                         })
 
                         local panel = data.panel
@@ -31,7 +34,7 @@ local function init(controller)
                         local content = widget.content
 
                         -- change name
-                        local newName, isDirty = controller:formatPlayerName(content.text, accountId)
+                        local newName, isDirty = controller:formatPlayerName(content.text, accountId, character_id)
                         if isDirty then
                             content.text = newName
                             widget.dirty = isDirty

@@ -86,6 +86,7 @@ end
 ---@field localRating LocalRating | nil
 ---@field remoteRating RemoteRating | nil
 ---@field syncableRating SyncableRating | nil
+---@field accountCache table<string, CachedInfo>
 ---@field teammates table
 ---@field isInMission boolean
 ---@field debugging boolean
@@ -98,10 +99,9 @@ end
 ---@field openRatings function
 ---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
 ---@field updateRemoteRating fun(self: LovesMeNot, teammate: Teammate)
----@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string): string, boolean
+---@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string, characterId: string): string, boolean
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
 ---@field md5 { sumhexa: fun(text: string): string }
----@field accountCache table<string, CachedInfo>
 local controller = {
     dmf = dmf,
     initialized = false,
@@ -140,24 +140,41 @@ function controller:hasRating()
 end
 
 ---@param accountId string
+---@return RATINGS | nil, boolean | nil
 function controller:getRating(accountId, characterId)
     if self:isCloud() then
         local cache = self.accountCache[accountId]
         if cache == nil then
             cache = {
-                characterXp = nil,
+                characterXp = 1, -- until testing is done with bots
                 idHash = self:hash(accountId),
             }
             self.accountCache[accountId] = cache
 
-            -- load character xp
-            local promise = Managers.backend.interfaces.progression:get_progression('character', characterId)
+            -- load character xp here, not needed for rating so we just fire and forget
+            --[[local promise = Managers.backend.interfaces.progression:get_progression('character', characterId)
             ---@param data CharacterProgression
             promise:next(function(data)
+                controller.dmf:echo('character xp: ' .. data.currentXp)
                 cache.characterXp = data.currentXp
-            end)
+            end):catch(function(error)
+                print(table.tostring(error, 5))
+            end)]]
         end
-        return self.remoteRating[cache.idHash]
+
+        -- show normal rating if host player rated it
+        local syncable = self.syncableRating[accountId]
+        if syncable then
+            return syncable.rating
+        end
+
+        -- show rating with cloud icon if account has cloud rating
+        local remoteRating = self.remoteRating[cache.idHash]
+        if remoteRating then
+            return remoteRating, true
+        end
+
+        return nil
     else
         return langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
     end

@@ -41,8 +41,12 @@ local function init(controller)
             if not controller.initialized then
                 return
             end
-
+            -- Set if in real mission
             controller.isInMission = gameUtils.isInRealMission()
+
+            -- Update client's info
+            local player = controller.localPlayer
+            controller:getRating(player:account_id(), player:character_id())
         elseif state_name == 'StateGameplay' and status == 'exit' then
             -- Mission ended
             if controller:canRate() then

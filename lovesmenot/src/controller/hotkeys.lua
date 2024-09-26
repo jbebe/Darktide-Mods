@@ -31,11 +31,11 @@ local function init(controller)
             message = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ' .. message
             isError = true
         elseif self.localRating.accounts[teammate.accountId].rating == RATINGS.NEGATIVE then
-            -- account hasn been rated, cycle to prefer
+            -- account hasn been rated, cycle to positive
             copy.rating = RATINGS.POSITIVE
             self.localRating.accounts[teammate.accountId] = copy
             message = controller.dmf:localize('lovesmenot_ingame_notification_set', teammate.characterName,
-                controller.dmf:localize('lovesmenot_ingame_rating_prefer'))
+                controller.dmf:localize('lovesmenot_ingame_rating_positive'))
             message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ' .. message
         else
             -- account was rated, remove from table
@@ -49,7 +49,15 @@ local function init(controller)
     end
 
     function controller:updateRemoteRating(teammate)
+        if not self.accountCache then
+            return
+        end
         local cache = self.accountCache[teammate.accountId]
+        if not cache then
+            print('Account id is not found in account cache')
+            return
+        end
+
         local isCacheLoaded = cache.characterXp ~= nil
         if self.remoteRating == nil or not isCacheLoaded then
             return
@@ -69,14 +77,14 @@ local function init(controller)
             message = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ' .. message
             isError = true
         elseif self.syncableRating[teammate.accountId].rating == RATINGS.NEGATIVE then
-            -- account hasn been rated, cycle to prefer
+            -- account hasn been rated, cycle to positive
             self.syncableRating[teammate.accountId] = {
                 characterXp = cache.characterXp,
                 idHash = cache.idHash,
                 rating = RATINGS.POSITIVE,
             }
             message = controller.dmf:localize('lovesmenot_ingame_notification_set', teammate.characterName,
-                controller.dmf:localize('lovesmenot_ingame_rating_prefer'))
+                controller.dmf:localize('lovesmenot_ingame_rating_positive'))
             message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ' .. message
         else
             -- account was rated, remove from table

@@ -9,6 +9,7 @@ local SYMBOLS = {
     TORSO = '\u{e005}',
     FLAME = '\u{e020}',
     WREATH = '\u{e041}',
+    WEB = '\u{e06f}',
     VETERAN = '\u{e01a}',
     ZEALOT = '\u{e01b}',
     PSYKER = '\u{e01c}',

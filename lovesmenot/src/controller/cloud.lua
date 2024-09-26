@@ -2,6 +2,7 @@ local BackendUtilities = require('scripts/foundation/managers/backend/utilities/
 
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
 local netUtils = modRequire 'lovesmenot/src/utils/network'
+local langUtils = modRequire 'lovesmenot/src/utils/language'
 
 ---@param controller LovesMeNot
 local function init(controller)
@@ -23,7 +24,7 @@ local function init(controller)
             -- player is not loaded yet
             return
         end
-        if #self.syncableRating == 0 then
+        if langUtils.isEmpty(self.syncableRating) then
             -- nothing to sync to cloud
             return
         end

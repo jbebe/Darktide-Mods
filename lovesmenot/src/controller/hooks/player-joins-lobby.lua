@@ -10,8 +10,11 @@ local function init(controller)
         local slotId = self:_player_slot_id(unique_id)
         local slot = spawnSlots[slotId]
         local content = slot.panel_widget.content
+        local profile = player:profile()
+        local character_id = profile and profile.character_id
 
-        content.character_name, _ = controller:formatPlayerName(content.character_name, player._account_id)
+        content.character_name, _ =
+            controller:formatPlayerName(content.character_name, player._account_id, character_id)
     end)
 end
 

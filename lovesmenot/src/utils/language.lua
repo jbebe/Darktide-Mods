@@ -4,6 +4,7 @@ local DMF = get_mod('DMF')
 ---@field io iolib
 ---@field os oslib
 ---@field ffi any
+---@field loadstring fun(input: string): (fun(): unknown)
 local utils = {}
 
 function utils.traceback()
@@ -33,6 +34,7 @@ end
 load_lua_lib('io')
 load_lua_lib('os')
 load_lua_lib('ffi')
+load_lua_lib('loadstring')
 
 function utils.startsWith(haystack, needle)
     return haystack:sub(1, #needle) == needle
@@ -49,6 +51,26 @@ function utils.coalesce(obj, ...)
         current = current[propertyName]
     end
     return current
+end
+
+function utils.keys(obj)
+    local keys = {}
+    for key, _ in pairs(obj) do
+        table.insert(keys, key)
+    end
+    return keys
+end
+
+function utils.values(obj)
+    local values = {}
+    for _, value in pairs(obj) do
+        table.insert(values, value)
+    end
+    return values
+end
+
+function utils.isEmpty(t)
+    return next(t) == nil
 end
 
 return utils

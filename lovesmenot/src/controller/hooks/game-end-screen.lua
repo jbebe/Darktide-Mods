@@ -13,9 +13,13 @@ local function init(controller)
                 if widget then
                     local content = widget.content
                     local account_id = slot.account_id
+                    local player_info = slot.player_info
+                    local profile = player_info:profile()
+                    local character_id = profile and profile.character_id
 
                     if account_id ~= controller.localPlayer._account_id then
-                        local newName, isDirty = controller:formatPlayerName(content.character_name, account_id)
+                        local newName, isDirty =
+                            controller:formatPlayerName(content.character_name, account_id, character_id)
                         if isDirty then
                             content.character_name = newName
                             widget.dirty = true
