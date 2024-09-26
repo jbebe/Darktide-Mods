@@ -3,6 +3,7 @@
 ---@module 'lovemenot/src/constants'
 
 local md5 = modRequire 'lovesmenot/nurgle_modules/md5'
+local fun = modRequire 'lovesmenot/nurgle_modules/fun'
 local langUtils = modRequire 'lovesmenot/src/utils/language'
 
 ---@type DmfMod
@@ -93,12 +94,12 @@ end
 ---@field loadLocalRating function
 ---@field loadRemoteRating function
 ---@field persistLocalRating function
----@field syncRemoteRating function
 ---@field reinit function
 ---@field registerRatingsView function
 ---@field openRatings function
 ---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
----@field updateRemoteRating fun(self: LovesMeNot, teammate: Teammate)
+---@field updateRemoteRating fun(self: LovesMeNot, teammate: Teammate): boolean
+---@field syncRemoteRating fun(self: LovesMeNot): boolean
 ---@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string, characterId: string): string, boolean
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
 ---@field md5 { sumhexa: fun(text: string): string }
@@ -142,6 +143,13 @@ end
 ---@param accountId string
 ---@return RATINGS | nil, boolean | nil
 function controller:getRating(accountId, characterId)
+    -- Return local rating if exists
+    local rating = langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
+    if rating then
+        return rating
+    end
+
+    -- If cloud sync is enabled, fall back to it
     if self:isCloud() then
         local cache = self.accountCache[accountId]
         if cache == nil then
@@ -162,22 +170,37 @@ function controller:getRating(accountId, characterId)
             end)]]
         end
 
-        -- show normal rating if host player rated it
-        local syncable = self.syncableRating[accountId]
-        if syncable then
-            return syncable.rating
-        end
-
         -- show rating with cloud icon if account has cloud rating
         local remoteRating = self.remoteRating[cache.idHash]
         if remoteRating then
             return remoteRating, true
         end
-
-        return nil
     else
-        return langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
+
     end
+end
+
+function controller:loadLocalPlayerToCache()
+    local backend_interface = Managers.backend.interfaces
+    local promise = backend_interface.progression:get_entity_type_progression("character")
+    promise:next(function(characters_progression)
+        ---@type CharacterProgression
+        local progression = fun.maximum_by(
+        ---@param a CharacterProgression
+        ---@param b CharacterProgression
+            function(a, b)
+                if a.currentXp > b.currentXp then
+                    return a
+                else
+                    return b
+                end
+            end,
+            characters_progression)
+        -- Update cache with local player
+        self:getRating(self.localPlayer:account_id(), progression.id)
+    end):catch(function(error)
+        print(table.tostring(error, 5))
+    end)
 end
 
 return controller

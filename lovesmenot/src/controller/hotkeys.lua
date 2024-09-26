@@ -50,51 +50,40 @@ local function init(controller)
 
     function controller:updateRemoteRating(teammate)
         if not self.accountCache then
-            return
+            return false
         end
         local cache = self.accountCache[teammate.accountId]
         if not cache then
             print('Account id is not found in account cache')
-            return
+            return false
         end
 
         local isCacheLoaded = cache.characterXp ~= nil
-        if self.remoteRating == nil or not isCacheLoaded then
-            return
+        if not isCacheLoaded then
+            print('Cached account is not fully loaded')
+            return false
         end
 
-        local message
-        local isError = false
-        if not self.syncableRating[teammate.accountId] then
+        if not self.localRating or not self.localRating.accounts[teammate.accountId] then
             -- account has not been rated yet, create object
             self.syncableRating[teammate.accountId] = {
                 characterXp = cache.characterXp,
                 idHash = cache.idHash,
                 rating = RATINGS.NEGATIVE,
             }
-            message = controller.dmf:localize('lovesmenot_ingame_notification_set', teammate.characterName,
-                controller.dmf:localize('lovesmenot_ingame_rating_negative'))
-            message = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ' .. message
-            isError = true
-        elseif self.syncableRating[teammate.accountId].rating == RATINGS.NEGATIVE then
+        elseif self.localRating.accounts[teammate.accountId].rating == RATINGS.NEGATIVE then
             -- account hasn been rated, cycle to positive
             self.syncableRating[teammate.accountId] = {
                 characterXp = cache.characterXp,
                 idHash = cache.idHash,
                 rating = RATINGS.POSITIVE,
             }
-            message = controller.dmf:localize('lovesmenot_ingame_notification_set', teammate.characterName,
-                controller.dmf:localize('lovesmenot_ingame_rating_positive'))
-            message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ' .. message
         else
             -- account was rated, remove from table
             self.syncableRating[teammate.accountId] = nil
-            message = controller.dmf:localize('lovesmenot_ingame_notification_unset', teammate.characterName)
-            message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.CHECK) .. ' ' .. message
         end
 
-        -- user feedback
-        gameUtils.directNotification(message, isError)
+        return true
     end
 
     function controller:rateTeammate(teammateIndex)
@@ -114,9 +103,8 @@ local function init(controller)
         if selected then
             if self:isCloud() then
                 self:updateRemoteRating(selected)
-            else
-                self:updateLocalRating(selected)
             end
+            self:updateLocalRating(selected)
         end
     end
 

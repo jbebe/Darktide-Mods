@@ -44,7 +44,8 @@ return {
 		en = 'These are the accounts you rated so far. Click on any account to revoke your rating.'
 	},
 	lovesmenot_ratingsview_remote_description = {
-		en = 'These are the accounts the community rated so far. Rate players to help us build a useful dataset.'
+		en =
+		'These are the accounts you rated so far. Click on any account to revoke your rating.\n(Cloud-sync accounts cannot be revoked)'
 	},
 	lovesmenot_ratingsview_delete_title = {
 		en = 'Rehabilitate Account',
@@ -81,7 +82,7 @@ return {
 	lovesmenot_ingame_self_status = {
 		en = 'Congratulations! You are rated as \'%s\' by the community.'
 	},
-	lovesmenot_ingame_na = {
-		en = 'n/a'
+	lovesmenot_ingame_cloud_synced = {
+		en = 'cloud-synced'
 	},
 }

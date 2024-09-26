@@ -89,42 +89,9 @@ local function compareByCreationDate(a, b)
     return a.creationDate < b.creationDate
 end
 
-function RatingsView:_get_remote_widget_configs()
+function RatingsView:_get_widget_configs()
     local widgetConfig = {}
-    for hash, rating in pairs(self._controller.remoteRating) do
-        local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
-        local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash
-        local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. rating)
-        local ratingIcon = styleUtils.colorize(ratingsColorMap[rating], ratingsIconMap[rating])
-        local ratingIconWithPadding = ratingIcon
-        if rating == constants.RATINGS.NEGATIVE then
-            ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
-        else
-            ratingText = ratingText .. '  \u{2009}'
-        end
-        self._controller.dmf:add_global_localize_strings({
-            [title] = {
-                en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_title',
-                    ratingIconWithPadding, ratingText, '', hash),
-            },
-            [subtitle] = {
-                en = self._controller.dmf:localize('lovesmenot_ingame_na'),
-            }
-        })
-        local entry = {
-            widget_type = 'settings_button',
-            display_name = title,
-            display_name2 = subtitle,
-        }
-        widgetConfig[#widgetConfig + 1] = entry
-    end
-
-    return widgetConfig
-end
-
-function RatingsView:_get_local_widget_configs()
-    local widgetConfig = {}
-    local rawRatings = self._controller.dmf.deepcopy(self._controller.localRating and
+    local rawRatings = table.clone(self._controller.localRating and
         self._controller.localRating.accounts or {})
 
     ---@alias ExtendedRatingAccount (RatingAccount | { accountId: string })
@@ -206,15 +173,43 @@ function RatingsView:_get_local_widget_configs()
         widgetConfig[#widgetConfig + 1] = entry
     end
 
+    if self._controller:isCloud() then
+        for hash, rating in pairs(self._controller.remoteRating) do
+            local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
+            local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash
+            local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. rating)
+            local ratingIcon = styleUtils.colorize(ratingsColorMap[rating], ratingsIconMap[rating])
+            local ratingIconWithPadding = ratingIcon
+            if rating == constants.RATINGS.NEGATIVE then
+                ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
+            else
+                ratingText = ratingText .. '  \u{2009}'
+            end
+            self._controller.dmf:add_global_localize_strings({
+                [title] = {
+                    en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_title',
+                        ratingIconWithPadding, ratingText, '', hash),
+                },
+                [subtitle] = {
+                    en = constants.SYMBOLS.WEB .. ' ' .. self._controller.dmf:localize('lovesmenot_ingame_cloud_synced'),
+                }
+            })
+            local entry = {
+                widget_type = 'settings_button',
+                display_name = title,
+                display_name2 = subtitle,
+            }
+            widgetConfig[#widgetConfig + 1] = entry
+        end
+    end
+
     return widgetConfig
 end
 
 function RatingsView:_setup_category_config()
     local scenegraph_id = 'grid_content_pivot'
     local callback_name = 'cb_on_category_pressed'
-    local widgetConfig = self._controller:isCloud()
-        and self:_get_remote_widget_configs()
-        or self:_get_local_widget_configs()
+    local widgetConfig = self:_get_widget_configs()
     self._category_content_widgets, self._category_alignment_list =
         self:_setup_content_widgets(widgetConfig, scenegraph_id, callback_name)
     local scrollbar_widget_id = 'scrollbar'

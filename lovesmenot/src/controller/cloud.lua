@@ -9,7 +9,6 @@ local function init(controller)
     function controller:loadRemoteRating()
         netUtils.getRatings():next(function(ratings)
             self.remoteRating = ratings
-            self.isInMission = gameUtils.isInRealMission()
 
             local selfRating = ratings[self.localPlayer._account_id]
             if selfRating ~= nil and self.dmf:get('lovesmenot_settings_cloud_sync_hide_own_rating') then
@@ -22,11 +21,11 @@ local function init(controller)
         local localPlayer = controller.localPlayer
         if not localPlayer then
             -- player is not loaded yet
-            return
+            return false
         end
         if langUtils.isEmpty(self.syncableRating) then
             -- nothing to sync to cloud
-            return
+            return false
         end
 
         ---@type table<string, TargetRequest>
@@ -49,6 +48,8 @@ local function init(controller)
         netUtils.updateRatings(request):next(function()
             self.syncableRating = {}
         end)
+
+        return true
     end
 end
 

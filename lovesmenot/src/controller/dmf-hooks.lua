@@ -17,10 +17,10 @@ local function init(controller)
 
         if self:isCloud() then
             self:loadRemoteRating()
-        else
-            self:loadLocalRating()
-            self.isInMission = gameUtils.isInRealMission()
+            self:loadLocalPlayerToCache()
         end
+        self:loadLocalRating()
+        self.isInMission = gameUtils.isInRealMission()
     end
 
     ---@param initial_call boolean
@@ -43,10 +43,6 @@ local function init(controller)
             end
             -- Set if in real mission
             controller.isInMission = gameUtils.isInRealMission()
-
-            -- Update client's info
-            local player = controller.localPlayer
-            controller:getRating(player:account_id(), player:character_id())
         elseif state_name == 'StateGameplay' and status == 'exit' then
             -- Mission ended
             if controller:canRate() then
@@ -54,9 +50,8 @@ local function init(controller)
                 controller.teammates = {}
                 if controller:isCloud() then
                     controller:syncRemoteRating()
-                else
-                    controller:persistLocalRating()
                 end
+                controller:persistLocalRating()
             end
         end
     end

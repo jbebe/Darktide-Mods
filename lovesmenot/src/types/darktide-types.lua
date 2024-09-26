@@ -664,7 +664,11 @@
 ---@field widgets_by_name function
 
 ---@class CharacterProgression
----@field currentLevel number
----@field currentXp number
+---@field id string Character id
+---@field currentLevel number [1,30]
+---@field currentXp number actual xp regardless of level
 ---@field currentXpInLevel number
----@field neededXpForNextLevel number
+---@field neededXpForNextLevel number xp for next level or -1 if already max level
+---@field eligibleForLevel boolean
+---@field talentPoints number unlocked talent points [0,30]
+---@field type string

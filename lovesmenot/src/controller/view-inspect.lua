@@ -17,10 +17,14 @@ local function init(controller)
             characterType = playerInfo:profile().archetype.name,
         }
 
+        local isSuccess = true
         if controller:isCloud() then
-            controller:updateRemoteRating(teammate)
-            controller:syncRemoteRating()
-        else
+            isSuccess = controller:updateRemoteRating(teammate)
+            if isSuccess then
+                isSuccess = controller:syncRemoteRating()
+            end
+        end
+        if isSuccess then
             controller:updateLocalRating(teammate)
             controller:persistLocalRating()
         end
