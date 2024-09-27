@@ -11,6 +11,7 @@
         "Color",
         "class",
         "modRequire",
+        "setfenv",
     ],
     "Lua.codeLens.enable": false,
     "Lua.runtime.special": {

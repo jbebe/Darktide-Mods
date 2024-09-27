@@ -1,5 +1,4 @@
 local DMF = get_mod('DMF')
-local json = modRequire 'lovesmenot/nurgle_modules/json'
 local constants = modRequire 'lovesmenot/src/constants'
 
 local utils = {}

@@ -2,7 +2,7 @@
 local function init(controller)
     -- Player joins the lobby
     -- Remarks: here we don't have to worry about bots because they join after the game has started
-    -- TODO: _assign_player_to_slot() maybe?
+    -- improvement: _assign_player_to_slot() maybe?
     controller.dmf:hook_safe(CLASS.LobbyView, '_sync_player', function(self, unique_id, player)
         if not controller.initialized then return end
 

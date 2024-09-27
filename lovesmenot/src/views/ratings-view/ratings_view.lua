@@ -129,7 +129,8 @@ function RatingsView:_get_widget_configs()
         local ratingIconWithPadding = ratingIcon
         if info.rating == constants.RATINGS.NEGATIVE then
             ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
-            ratingText = ratingText .. ' '
+        else
+            ratingText = ratingText .. '  '
         end
         self._controller.dmf:add_global_localize_strings({
             [title] = {
@@ -183,7 +184,7 @@ function RatingsView:_get_widget_configs()
             if rating == constants.RATINGS.NEGATIVE then
                 ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
             else
-                ratingText = ratingText .. '  \u{2009}'
+                ratingText = ratingText .. '    '
             end
             self._controller.dmf:add_global_localize_strings({
                 [title] = {

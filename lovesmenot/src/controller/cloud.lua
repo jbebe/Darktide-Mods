@@ -11,7 +11,7 @@ local function init(controller)
             self.remoteRating = ratings
 
             local selfRating = ratings[self.localPlayer._account_id]
-            if selfRating ~= nil and self.dmf:get('lovesmenot_settings_cloud_sync_hide_own_rating') then
+            if selfRating ~= nil and not self:hideOwnRating() then
                 gameUtils.directNotification(self.dmf:localize('lovesmenot_ingame_self_status', selfRating), false)
             end
         end)

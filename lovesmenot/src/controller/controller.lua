@@ -112,7 +112,7 @@ local controller = {
     rating = nil,
     debugging = false,
     timers = timers,
-    md5 = md5(langUtils.ffi),
+    md5 = md5,
     accountCache = {},
     syncableRating = {},
 }
@@ -154,20 +154,20 @@ function controller:getRating(accountId, characterId)
         local cache = self.accountCache[accountId]
         if cache == nil then
             cache = {
-                characterXp = 1, -- until testing is done with bots
+                characterXp = nil,
                 idHash = self:hash(accountId),
             }
             self.accountCache[accountId] = cache
 
             -- load character xp here, not needed for rating so we just fire and forget
-            --[[local promise = Managers.backend.interfaces.progression:get_progression('character', characterId)
+            local promise = Managers.backend.interfaces.progression:get_progression('character', characterId)
             ---@param data CharacterProgression
             promise:next(function(data)
                 controller.dmf:echo('character xp: ' .. data.currentXp)
                 cache.characterXp = data.currentXp
             end):catch(function(error)
-                print(table.tostring(error, 5))
-            end)]]
+                print('Could not find progression for character id: ' .. tostring(characterId))
+            end)
         end
 
         -- show rating with cloud icon if account has cloud rating
@@ -175,8 +175,6 @@ function controller:getRating(accountId, characterId)
         if remoteRating then
             return remoteRating, true
         end
-    else
-
     end
 end
 
@@ -184,6 +182,7 @@ function controller:loadLocalPlayerToCache()
     local backend_interface = Managers.backend.interfaces
     local promise = backend_interface.progression:get_entity_type_progression("character")
     promise:next(function(characters_progression)
+        -- Find character with highest XP
         ---@type CharacterProgression
         local progression = fun.maximum_by(
         ---@param a CharacterProgression
@@ -196,11 +195,16 @@ function controller:loadLocalPlayerToCache()
                 end
             end,
             characters_progression)
-        -- Update cache with local player
+
+        -- Update cache with host/local player
         self:getRating(self.localPlayer:account_id(), progression.id)
     end):catch(function(error)
         print(table.tostring(error, 5))
     end)
+end
+
+function controller:hideOwnRating()
+    return self.dmf:get('lovesmenot_settings_cloud_sync_hide_own_rating')
 end
 
 return controller

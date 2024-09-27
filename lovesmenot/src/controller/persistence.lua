@@ -17,7 +17,7 @@ local function init(controller)
         end
     end
 
-    -- TODO: use coroutine debounce and save json more often
+    -- TODO: use coroutine debounce and save json more often?
     -- https://www.lua.org/pil/9.1.html
     function controller:persistLocalRating()
         if not self.localRating then
