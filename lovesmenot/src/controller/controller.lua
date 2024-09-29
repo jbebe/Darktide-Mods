@@ -67,18 +67,15 @@ end
 ---@field platform PlatformType
 ---@field characterName string
 ---@field characterType CharacterType
+---@field characterLevel number
 
 ---@class SyncableRatingItem
----@field characterXp number
+---@field level number
 ---@field idHash string
 ---@field rating RATINGS
 
 ---@alias RemoteRating table<string, RATINGS>
 ---@alias SyncableRating table<string, SyncableRatingItem>
-
----@class CachedInfo
----@field idHash string
----@field characterXp number | nil
 
 ---@class LovesMeNot
 ---@field dmf DmfMod | table<string, function>
@@ -87,7 +84,7 @@ end
 ---@field localRating LocalRating | nil
 ---@field remoteRating RemoteRating | nil
 ---@field syncableRating SyncableRating | nil
----@field accountCache table<string, CachedInfo>
+---@field hashCache table<string, string> accountId -> hash cache
 ---@field teammates table
 ---@field isInMission boolean
 ---@field debugging boolean
@@ -113,7 +110,7 @@ local controller = {
     debugging = false,
     timers = timers,
     md5 = md5,
-    accountCache = {},
+    hashCache = {},
     syncableRating = {},
 }
 

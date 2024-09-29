@@ -28,21 +28,21 @@ namespace Test
 
         private RatingRequest CreateRequest(
             string? targetHash = null,
-            int? sourceXp = null,
+            int? sourceLevel = null,
             RatingType? type = null
         )
         {
             return new RatingRequest
             {
                 SourceHash = Faker.Random.Hash(32),
-                SourceXp = sourceXp ?? Faker.Random.Int(1, 500_000),
+                SourceLevel = sourceLevel ?? Faker.Random.Int(1, 30),
                 SourceReef = Faker.PickRandom("eu", "hk", "mei", "sa"),
                 Targets = new Dictionary<string, TargetRequest>
                 {
                     [targetHash ?? Faker.Random.Hash(32)] = new TargetRequest
                     {
                         Type = type ?? Faker.Random.Enum<RatingType>(),
-                        TargetXp = Faker.Random.Int(1, 500_000),
+                        TargetLevel = Faker.Random.Int(1, 30),
                     }
                 },
             };
@@ -70,12 +70,12 @@ namespace Test
             Assert.InRange(rating.Created, startDate, endDate);
             Assert.Null(rating.Updated);
 
-            Assert.Equal(request.Targets.Values.Single().TargetXp, rating.Metadata.MaxCharacterXp);
+            Assert.Equal(request.Targets.Values.Single().TargetLevel, rating.Metadata.MaxCharacterLevel);
             
             var rater = Assert.Single(rating.RatedBy);
             Assert.Equal(request.Targets.Values.Single().Type, rater.Value.Type);
             Assert.Equal(request.SourceHash, rater.Key);
-            Assert.Equal(request.SourceXp, rater.Value.MaxCharacterXp);
+            Assert.Equal(request.SourceLevel, rater.Value.MaxCharacterLevel);
         }
 
         [Fact]
@@ -104,15 +104,15 @@ namespace Test
             var targetHash = Faker.Random.Hash(32);
 
             // Add rating as player 1
-            var request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            var request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Add rating as player 2
-            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Add rating as player 3
-            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Check ratings (no result yet, only 3 people)
@@ -120,7 +120,7 @@ namespace Test
             Assert.Empty(ratings);
 
             // Add rating as player 4
-            request = CreateRequest(targetHash, sourceXp: 0);
+            request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Check ratings (results are available as the fourth vote just came in)
@@ -131,20 +131,48 @@ namespace Test
         }
 
         [Fact]
+        public async Task GetRatings_Everyone_Rates_Negative_Too_Few_Players()
+        {
+            var targetHash = Faker.Random.Hash(32);
+
+            // Add rating as player 1
+            var request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Add rating as player 2
+            request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Add rating as player 3
+            request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Add rating as player 4
+            request = CreateRequest(targetHash, sourceLevel: 1);
+            request = CreateRequest(targetHash, sourceLevel: 11);
+            request = CreateRequest(targetHash, sourceLevel: 29);
+            await Client.CreateRatingAsync(request, CancellationToken.None);
+
+            // Check ratings (more than 4 players but only 3 lvl30 player, so it's still not 4x30...
+            var ratings = await Client.GetRatingsAsync(CancellationToken.None);
+            Assert.Empty(ratings);
+        }
+
+        [Fact]
         public async Task GetRatings_Balanced_Out_No_Rating()
         {
             var targetHash = Faker.Random.Hash(32);
 
             // Add rating as player 1
-            var request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            var request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Add rating as player 2
-            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Negative);
+            request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Negative);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Add rating as player 3
-            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Positive);
+            request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Positive);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Check ratings (no result yet, only 3 people)
@@ -152,7 +180,7 @@ namespace Test
             Assert.Empty(ratings);
 
             // Add rating as player 4
-            request = CreateRequest(targetHash, sourceXp: Constants.DecentXp, type: RatingType.Positive);
+            request = CreateRequest(targetHash, sourceLevel: Constants.MaxLevel, type: RatingType.Positive);
             await Client.CreateRatingAsync(request, CancellationToken.None);
 
             // Check ratings (results are available as the fourth vote just came in)

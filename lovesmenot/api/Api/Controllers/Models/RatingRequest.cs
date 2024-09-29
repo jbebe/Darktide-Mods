@@ -1,4 +1,6 @@
-﻿  namespace Api.Controllers.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Api.Controllers.Models
 {
     public record TargetRequest
     {
@@ -10,7 +12,8 @@
         /// <summary>
         /// Experience points of the rated character
         /// </summary>
-        public int TargetXp { get; set; }
+        [Range(Constants.MinLevel, Constants.MaxLevel)]
+        public int TargetLevel { get; set; }
     }
 
     public record RatingRequest
@@ -23,7 +26,8 @@
         /// <summary>
         /// Experience points of the rating character
         /// </summary>
-        public int SourceXp { get; set; }
+        [Range(Constants.MinLevel, Constants.MaxLevel)]
+        public int SourceLevel { get; set; }
 
         /// <summary>
         /// Superset of cloud provider region.

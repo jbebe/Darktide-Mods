@@ -1,25 +1,18 @@
-﻿using Microsoft.AspNetCore.Routing;
-
-namespace Api
+﻿namespace Api
 {
     public static class Constants
     {
         public const int ApiVersion = 1;
 
         /// <summary>
-        /// Level 20 xp according to Darktide
+        /// First level according to Darktide
         /// </summary>
-        public const int BeginnerXp = 57255;
+        public const int MinLevel = 1;
 
         /// <summary>
-        /// Max level xp according to Darktide
+        /// Max level according to Darktide
         /// </summary>
-        public const int MaxLevelXp = 143405;
-
-        /// <summary>
-        /// A decent experience point is earned if you are (true) level 200
-        /// </summary>
-        public const int DecentXp = MaxLevelXp + (11100 * 200);
+        public const int MaxLevel = 30;
 
         /// <summary>
         /// Minimum amount of raters that makes a score usable
@@ -27,8 +20,8 @@ namespace Api
         public const int UsableRaterCount = 4;
 
         /// <summary>
-        /// A score is usable if its absolute value is bigger than 4 max level player xp
+        /// A score is usable if its absolute value is bigger than n times the max level (n max level player)
         /// </summary>
-        public const int UsableScore = UsableRaterCount * MaxLevelXp;
+        public const int UsableScore = UsableRaterCount * MaxLevel;
     }
 }

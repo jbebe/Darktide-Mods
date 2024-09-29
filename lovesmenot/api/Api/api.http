@@ -9,9 +9,13 @@ Content-Type: application/json
     "SourceXp": 1000,
     "SourceReef": "eu",
     "Targets": {
-        "3f76818f507fe7eb6422bd0703c64c88": {
+        "0000008006484e0980931833e7ee5a3c": {
             "Type": "Negative",
             "TargetXp": 500
+        },
+        "76818f507fe7aaeb6422bd0703c64c88": {
+            "Type": "Positive",
+            "TargetXp": 1000
         }
     }
 }

@@ -8,10 +8,6 @@ local function handleNetworkError(errorObject)
     DMF:error('Failed to download ratings with error: ' .. errorMessage)
 end
 
----@class RatingResponse
----@field type string
----@field hash string
-
 ---@class Promise<T, T2>: { next: fun(self: any, callback: fun(input: T): T2 | nil): Promise<T2 | nil> }
 
 ---@return Promise<RemoteRating> | nil
@@ -34,11 +30,11 @@ end
 
 ---@class TargetRequest
 ---@field type RATINGS
----@field targetXp number
+---@field targetLevel number
 
 ---@class RatingRequest
 ---@field sourceHash string
----@field sourceXp number
+---@field sourceLevel number
 ---@field sourceReef string
 ---@field targets table<string, TargetRequest>
 

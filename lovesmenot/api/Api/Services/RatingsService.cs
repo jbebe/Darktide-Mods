@@ -38,7 +38,7 @@ namespace Api.Services
                 var newRater = new Rater
                 {
                     Type = target.Type,
-                    MaxCharacterXp = request.SourceXp,
+                    MaxCharacterLevel = request.SourceLevel,
                     Reef = request.SourceReef,
                 };
 
@@ -51,7 +51,7 @@ namespace Api.Services
                         new Dictionary<string, Rater> { [raterId] = newRater },
                         new Metadata
                         {
-                            MaxCharacterXp = target.TargetXp,
+                            MaxCharacterLevel = target.TargetLevel,
                         }
                     );
                 }
@@ -62,7 +62,7 @@ namespace Api.Services
                     // Rater's info
                     if (rating.RatedBy.TryGetValue(raterId, out var rater))
                     {
-                        rater.MaxCharacterXp = Math.Max(rater.MaxCharacterXp, request.SourceXp);
+                        rater.MaxCharacterLevel = Math.Max(rater.MaxCharacterLevel, request.SourceLevel);
                         rater.Type = target.Type;
                     }
                     else
@@ -71,7 +71,7 @@ namespace Api.Services
                     }
                     
                     // Metadata
-                    rating.Metadata.MaxCharacterXp = Math.Max(rating.Metadata.MaxCharacterXp, target.TargetXp);
+                    rating.Metadata.MaxCharacterLevel = Math.Max(rating.Metadata.MaxCharacterLevel, target.TargetLevel);
                 }
                 await Db.CreateOrUpdateAsync(rating, cancellationToken);
             }

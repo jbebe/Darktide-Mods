@@ -6,6 +6,6 @@ namespace Api.Services.Models
         /// <summary>
         /// The player's highest xp character
         /// </summary>
-        public int MaxCharacterXp { get; set; }
+        public int MaxCharacterLevel { get; set; }
     }
 }
