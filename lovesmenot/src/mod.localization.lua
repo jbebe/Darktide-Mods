@@ -41,7 +41,7 @@ return {
 
 	-- Accounts dashboard
 	lovesmenot_ratingsview_title = {
-		en = 'Accounts Dashboard'
+		en = 'Account ratings'
 	},
 	lovesmenot_ratingsview_local_description = {
 		en = 'These are the accounts you rated so far. Click on any account to revoke your rating.'
@@ -92,6 +92,6 @@ return {
 		en = 'Congratulations! You are rated as \'%s\' by the community.'
 	},
 	lovesmenot_ingame_community_rating = {
-		en = 'community'
+		en = 'Community'
 	},
 }

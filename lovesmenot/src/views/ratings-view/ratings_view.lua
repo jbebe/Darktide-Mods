@@ -139,7 +139,7 @@ function RatingsView:_get_widget_configs()
                 },
                 [subtitle] = {
                     en = constants.SYMBOLS.WEB ..
-                    ' ' .. self._controller.dmf:localize('lovesmenot_ingame_community_rating'),
+                        ' ' .. self._controller.dmf:localize('lovesmenot_ingame_community_rating'),
                 }
             })
             local entry = {
@@ -303,11 +303,6 @@ function RatingsView:_setup_input_legend()
         local legend_input = legend_inputs[i]
         local on_pressed_callback = legend_input.on_pressed_callback and callback(self, legend_input.on_pressed_callback)
         local visibility_function = legend_input.visibility_function
-        if legend_input.display_name == 'loc_scoreboard_delete' then
-            visibility_function = function()
-                return nil
-            end
-        end
         self._input_legend_element:add_entry(legend_input.display_name, legend_input.input_action, visibility_function,
             on_pressed_callback, legend_input.alignment)
     end
@@ -391,6 +386,7 @@ function RatingsView:cb_on_download_ratings_pressed()
     self._controller:persistLocalRating()
     gameUtils.directNotification(
         self._controller.dmf:localize('lovesmenot_ratingsview_download_ratings_notif'))
+    self:_setup_category_config()
 end
 
 --
