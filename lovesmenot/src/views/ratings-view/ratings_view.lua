@@ -120,8 +120,8 @@ function RatingsView:_get_widget_configs()
         lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
     })
 
-    if self._controller:isCloud() then
-        for hash, rating in pairs(self._controller.remoteRating) do
+    if self._controller:isCommunity() then
+        for hash, rating in pairs(self._controller.communityRating) do
             local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
             local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash
             local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. rating)
@@ -138,7 +138,8 @@ function RatingsView:_get_widget_configs()
                         ratingIconWithPadding, ratingText, '', hash),
                 },
                 [subtitle] = {
-                    en = constants.SYMBOLS.WEB .. ' ' .. self._controller.dmf:localize('lovesmenot_ingame_cloud_synced'),
+                    en = constants.SYMBOLS.WEB ..
+                    ' ' .. self._controller.dmf:localize('lovesmenot_ingame_community_rating'),
                 }
             })
             local entry = {
@@ -383,9 +384,9 @@ function RatingsView:cb_on_back_pressed()
 end
 
 function RatingsView:cb_on_download_ratings_pressed()
-    if self._controller:isCloud() then
-        self._controller:uploadRemoteRating()
-        self._controller:downloadRemoteRating()
+    if self._controller:isCommunity() then
+        self._controller:uploadCommunityRating()
+        self._controller:downloadCommunityRating()
     end
     self._controller:persistLocalRating()
     gameUtils.directNotification(

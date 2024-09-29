@@ -48,7 +48,7 @@ local function init(controller)
         gameUtils.directNotification(message, isError)
     end
 
-    function controller:updateRemoteRating(teammate)
+    function controller:updateCommunityRating(teammate)
         if not self.accountCache then
             return false
         end
@@ -101,8 +101,8 @@ local function init(controller)
         end
 
         if selected then
-            if self:isCloud() then
-                self:updateRemoteRating(selected)
+            if self:isCommunity() then
+                self:updateCommunityRating(selected)
             end
             self:updateLocalRating(selected)
         end

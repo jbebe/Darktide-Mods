@@ -74,7 +74,7 @@ end
 ---@field idHash string
 ---@field rating RATINGS
 
----@alias RemoteRating table<string, RATINGS>
+---@alias CommunityRating table<string, RATINGS>
 ---@alias SyncableRating table<string, SyncableRatingItem>
 
 ---@class CachedInfo
@@ -86,21 +86,21 @@ end
 ---@field localPlayer HumanPlayer | nil
 ---@field initialized boolean
 ---@field localRating LocalRating | nil
----@field remoteRating RemoteRating | nil
+---@field communityRating CommunityRating | nil
 ---@field syncableRating SyncableRating | nil
 ---@field accountCache table<string, CachedInfo>
 ---@field teammates table
 ---@field isInMission boolean
 ---@field debugging boolean
 ---@field loadLocalRating function
----@field downloadRemoteRating function
+---@field downloadCommunityRating function
 ---@field persistLocalRating function
 ---@field reinit function
 ---@field registerRatingsView function
 ---@field openRatings function
 ---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
----@field updateRemoteRating fun(self: LovesMeNot, teammate: Teammate): boolean
----@field uploadRemoteRating fun(self: LovesMeNot): boolean
+---@field updateCommunityRating fun(self: LovesMeNot, teammate: Teammate): boolean
+---@field uploadCommunityRating fun(self: LovesMeNot): boolean
 ---@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string, characterId: string): string, boolean
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
 ---@field md5 { sumhexa: fun(text: string): string }
@@ -117,6 +117,8 @@ local controller = {
     md5 = md5,
     accountCache = {},
     syncableRating = {},
+    localRating = nil,
+    communityRating = nil,
     reef = nil,
 }
 
@@ -130,14 +132,14 @@ function controller:canRate()
     return self.initialized and self.isInMission
 end
 
-function controller:isCloud()
-    local isCloud = self.dmf:get('lovesmenot_settings_cloud_sync')
-    return isCloud
+function controller:isCommunity()
+    local isCommunity = self.dmf:get('lovesmenot_settings_community')
+    return isCommunity
 end
 
 function controller:hasRating()
-    if self:isCloud() then
-        return self.remoteRating ~= nil
+    if self:isCommunity() then
+        return self.communityRating ~= nil
     else
         return self.localRating ~= nil
     end
@@ -171,14 +173,14 @@ function controller:getRating(accountId, overrideLevel)
         return rating
     end
 
-    -- If cloud sync is enabled, fall back to it
-    if self:isCloud() then
+    -- If community sync is enabled, fall back to it if local rating is not found
+    if self:isCommunity() then
         local cache = self:addAccountCache(accountId, overrideLevel)
 
-        -- show rating with cloud icon if account has cloud rating
-        local remoteRating = self.remoteRating[cache.idHash]
-        if remoteRating then
-            return remoteRating, true
+        local communityRating = self.communityRating[cache.idHash]
+        if communityRating then
+            -- show rating with web icon if account has community rating
+            return communityRating, true
         end
     end
 end
@@ -209,7 +211,7 @@ function controller:loadLocalPlayerToCache()
 end
 
 function controller:hideOwnRating()
-    return self.dmf:get('lovesmenot_settings_cloud_sync_hide_own_rating')
+    return self.dmf:get('lovesmenot_settings_community_hide_own_rating')
 end
 
 return controller

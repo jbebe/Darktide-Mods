@@ -26,16 +26,16 @@ return {
 	lovesmenot_settings_hotkey_3_title = {
 		en = 'Change rating of teammate #3'
 	},
-	lovesmenot_settings_cloud_sync = {
-		en = 'Cloud sync'
+	lovesmenot_settings_community = {
+		en = 'Community rating'
 	},
-	lovesmenot_settings_cloud_sync_description = {
+	lovesmenot_settings_community_description = {
 		en = 'Synchronizes ratings between all mod users'
 	},
-	lovesmenot_settings_cloud_sync_hide_own_rating = {
+	lovesmenot_settings_community_hide_own_rating = {
 		en = 'Hide my community rating'
 	},
-	lovesmenot_settings_cloud_sync_hide_own_rating_description = {
+	lovesmenot_settings_community_hide_own_rating_description = {
 		en = 'Hides all visual signs of your own community ranking (for sensitive souls)'
 	},
 
@@ -46,9 +46,9 @@ return {
 	lovesmenot_ratingsview_local_description = {
 		en = 'These are the accounts you rated so far. Click on any account to revoke your rating.'
 	},
-	lovesmenot_ratingsview_remote_description = {
+	lovesmenot_ratingsview_community_description = {
 		en =
-		'These are the accounts you rated so far. Click on any account to revoke your rating.\n(Cloud-sync accounts cannot be revoked)'
+		'These are the accounts you rated so far. Click on any account to revoke your rating.\n(Community accounts cannot be revoked)'
 	},
 	lovesmenot_ratingsview_delete_title = {
 		en = 'Rehabilitate Account',
@@ -91,7 +91,7 @@ return {
 	lovesmenot_ingame_self_status = {
 		en = 'Congratulations! You are rated as \'%s\' by the community.'
 	},
-	lovesmenot_ingame_cloud_synced = {
-		en = 'cloud-synced'
+	lovesmenot_ingame_community_rating = {
+		en = 'community'
 	},
 }

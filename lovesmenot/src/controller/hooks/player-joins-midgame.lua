@@ -6,7 +6,7 @@ local function init(controller)
             if not controller.timers:canRun('HudElementTeamPanelHandler_update', t, 2) then return end
             if not controller.initialized then return end
 
-            local remotePlayers = {}
+            local communityPlayers = {}
             for _, data in ipairs(self._player_panels_array) do
                 ---@type HumanPlayer
                 local player = data.player
@@ -38,7 +38,7 @@ local function init(controller)
                         if playerInfo then
                             local accountName = playerInfo._presence:account_name()
                             local platform = playerInfo:platform() or 'unknown'
-                            table.insert(remotePlayers, {
+                            table.insert(communityPlayers, {
                                 accountId = accountId,
                                 name = accountName,
                                 platform = platform,
@@ -51,7 +51,7 @@ local function init(controller)
             end
 
             -- TODO: only update teammates if something has changed
-            controller.teammates = remotePlayers
+            controller.teammates = communityPlayers
         end)
 end
 

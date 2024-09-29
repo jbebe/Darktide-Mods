@@ -157,8 +157,8 @@ local function init(controller)
 				pass_type = 'text',
 				value_id = 'text_2',
 				style_id = 'text_2',
-				value = controller:isCloud()
-					and controller.dmf:localize('lovesmenot_ratingsview_remote_description')
+				value = controller:isCommunity()
+					and controller.dmf:localize('lovesmenot_ratingsview_community_description')
 					or controller.dmf:localize('lovesmenot_ratingsview_local_description'),
 				style = table.clone(UIFontSettings.body_small)
 			}

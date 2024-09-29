@@ -18,10 +18,10 @@ local function init(controller)
         }
 
         local isSuccess = true
-        if controller:isCloud() then
-            isSuccess = controller:updateRemoteRating(teammate)
+        if controller:isCommunity() then
+            isSuccess = controller:updateCommunityRating(teammate)
             if isSuccess then
-                isSuccess = controller:uploadRemoteRating()
+                isSuccess = controller:uploadCommunityRating()
             end
         end
         if isSuccess then

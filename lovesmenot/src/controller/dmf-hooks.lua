@@ -18,8 +18,8 @@ local function init(controller)
 
         self.initialized = true
 
-        if self:isCloud() then
-            self:downloadRemoteRating()
+        if self:isCommunity() then
+            self:downloadCommunityRating()
             self:loadLocalPlayerToCache()
         end
         self:loadLocalRating()
@@ -58,9 +58,9 @@ local function init(controller)
             if controller:canRate() then
                 controller.isInMission = false
                 controller.teammates = {}
-                if controller:isCloud() then
-                    controller:uploadRemoteRating()
-                    controller:downloadRemoteRating()
+                if controller:isCommunity() then
+                    controller:uploadCommunityRating()
+                    controller:downloadCommunityRating()
                 end
                 controller:persistLocalRating()
             end

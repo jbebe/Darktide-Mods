@@ -6,21 +6,21 @@ local langUtils = modRequire 'lovesmenot/src/utils/language'
 
 ---@param controller LovesMeNot
 local function init(controller)
-    function controller:downloadRemoteRating()
+    function controller:downloadCommunityRating()
         netUtils.getRatings():next(function(ratings)
-            self.remoteRating = ratings
+            self.communityRating = ratings
 
             local selfRating = ratings[self.localPlayer._account_id]
             if selfRating ~= nil and not self:hideOwnRating() then
                 gameUtils.directNotification(self.dmf:localize('lovesmenot_ingame_self_status', selfRating), false)
             end
         end):catch(function(error)
-            gameUtils.directNotification('Cloud-sync server is unreachable. Mod is temporarily disabled.', true)
+            gameUtils.directNotification('Community server is unreachable. Mod is temporarily disabled.', true)
             controller.dmf:set_mod_state('false', false)
         end)
     end
 
-    function controller:uploadRemoteRating()
+    function controller:uploadCommunityRating()
         local localPlayer = controller.localPlayer
         if not localPlayer then
             -- player is not loaded yet
