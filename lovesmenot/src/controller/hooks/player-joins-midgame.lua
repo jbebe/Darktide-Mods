@@ -1,9 +1,6 @@
 ---@param controller LovesMeNot
 local function init(controller)
     -- Player joins midgame
-    -- TODO: this is too much of a performance hit.
-    -- Move new player update to a less frequent function to avoid performance hit
-    -- In this method we only need to format the player name, teammates update can be elsewhere
     controller.dmf:hook_safe(CLASS.HudElementTeamPanelHandler, 'update',
         function(self, dt, t, ui_renderer, render_settings, input_service)
             if not controller.timers:canRun('HudElementTeamPanelHandler_update', t, 2) then return end
@@ -51,6 +48,7 @@ local function init(controller)
                 end
             end
 
+            -- TODO: only update teammates if something has changed
             controller.teammates = remotePlayers
         end)
 end

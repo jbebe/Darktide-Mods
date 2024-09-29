@@ -26,8 +26,7 @@ function utils.getRatings()
         }):next(
             function(response)
                 return response.body
-            end,
-            handleNetworkError
+            end
         )
         return promise
     end

@@ -4,6 +4,9 @@ local function init(controller)
     controller.dmf:hook_safe(CLASS.EndView, '_set_character_names', function(self)
         if not controller.initialized then return end
 
+        local session_report = self._session_report
+        local session_report_raw = session_report and session_report.eor
+        local participant_reports = session_report_raw and session_report_raw.team.participants
         local spawn_slots = self._spawn_slots
 
         if spawn_slots then
@@ -16,6 +19,9 @@ local function init(controller)
                     local player_info = slot.player_info
                     local profile = player_info:profile()
                     local character_id = profile and profile.character_id
+                    ---@type CharacterProgression
+                    local report = self:_get_participant_progression(participant_reports, account_id)
+                    controller:addAccountCache(account_id, report.currentXp)
 
                     if account_id ~= controller.localPlayer._account_id then
                         local newName, isDirty =

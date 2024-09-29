@@ -1,4 +1,4 @@
-local BackendUtilities = require('scripts/foundation/managers/backend/utilities/backend_utilities')
+local BackendUtilities = require 'scripts/foundation/managers/backend/utilities/backend_utilities'
 
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
 local netUtils = modRequire 'lovesmenot/src/utils/network'
@@ -14,6 +14,9 @@ local function init(controller)
             if selfRating ~= nil and not self:hideOwnRating() then
                 gameUtils.directNotification(self.dmf:localize('lovesmenot_ingame_self_status', selfRating), false)
             end
+        end):catch(function(error)
+            gameUtils.directNotification('Cloud-sync server is unreachable. Mod is temporarily disabled.', true)
+            controller.dmf:set_mod_state('false', false)
         end)
     end
 

@@ -1,5 +1,5 @@
-local Missions = require('scripts/settings/mission/mission_templates')
-local UISoundEvents = require('scripts/settings/ui/ui_sound_events')
+local Missions = require 'scripts/settings/mission/mission_templates'
+local UISoundEvents = require 'scripts/settings/ui/ui_sound_events'
 
 local utils = {}
 

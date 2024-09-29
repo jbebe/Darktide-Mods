@@ -141,8 +141,27 @@ function controller:hasRating()
 end
 
 ---@param accountId string
+---@param characterXp number | nil
+---@return CachedInfo
+function controller:addAccountCache(accountId, characterXp)
+    local cache = self.accountCache[accountId]
+    if cache then
+        cache.characterXp = characterXp or cache.characterXp
+    else
+        cache = {
+            characterXp = characterXp or 1,
+            idHash = self:hash(accountId),
+        }
+    end
+    self.accountCache[accountId] = cache
+
+    return cache
+end
+
+---@param accountId string
+---@param overrideXp number | nil
 ---@return RATINGS | nil, boolean | nil
-function controller:getRating(accountId, characterId)
+function controller:getRating(accountId, overrideXp)
     -- Return local rating if exists
     local rating = langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
     if rating then
@@ -151,24 +170,7 @@ function controller:getRating(accountId, characterId)
 
     -- If cloud sync is enabled, fall back to it
     if self:isCloud() then
-        local cache = self.accountCache[accountId]
-        if cache == nil then
-            cache = {
-                characterXp = nil,
-                idHash = self:hash(accountId),
-            }
-            self.accountCache[accountId] = cache
-
-            -- load character xp here, not needed for rating so we just fire and forget
-            local promise = Managers.backend.interfaces.progression:get_progression('character', characterId)
-            ---@param data CharacterProgression
-            promise:next(function(data)
-                controller.dmf:echo('character xp: ' .. data.currentXp)
-                cache.characterXp = data.currentXp
-            end):catch(function(error)
-                print('Could not find progression for character id: ' .. tostring(characterId))
-            end)
-        end
+        local cache = self:addAccountCache(accountId, overrideXp)
 
         -- show rating with cloud icon if account has cloud rating
         local remoteRating = self.remoteRating[cache.idHash]
@@ -180,7 +182,7 @@ end
 
 function controller:loadLocalPlayerToCache()
     local backend_interface = Managers.backend.interfaces
-    local promise = backend_interface.progression:get_entity_type_progression("character")
+    local promise = backend_interface.progression:get_entity_type_progression('character')
     promise:next(function(characters_progression)
         -- Find character with highest XP
         ---@type CharacterProgression
@@ -196,8 +198,8 @@ function controller:loadLocalPlayerToCache()
             end,
             characters_progression)
 
-        -- Update cache with host/local player
-        self:getRating(self.localPlayer:account_id(), progression.id)
+        -- Set rating of host player
+        self:getRating(self.localPlayer:account_id(), progression.currentXp)
     end):catch(function(error)
         print(table.tostring(error, 5))
     end)

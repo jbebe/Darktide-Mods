@@ -12,6 +12,7 @@
         "class",
         "modRequire",
         "setfenv",
+        "cjson",
     ],
     "Lua.codeLens.enable": false,
     "Lua.runtime.special": {
