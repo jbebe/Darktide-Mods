@@ -36,7 +36,7 @@ local function init(controller)
         for _, item in pairs(self.syncableRating) do
             targets[item.idHash] = {
                 type = item.rating,
-                targetXp = item.characterXp,
+                targetLevel = item.level,
             }
         end
 
@@ -44,7 +44,7 @@ local function init(controller)
         ---@type RatingRequest
         local request = {
             sourceHash = sourceCache.idHash,
-            sourceXp = sourceCache.characterXp,
+            sourceLevel = sourceCache.level,
             sourceReef = BackendUtilities.prefered_mission_region,
             targets = targets
         }

@@ -77,6 +77,10 @@ end
 ---@alias RemoteRating table<string, RATINGS>
 ---@alias SyncableRating table<string, SyncableRatingItem>
 
+---@class CachedInfo
+---@field idHash string
+---@field level number | nil
+
 ---@class LovesMeNot
 ---@field dmf DmfMod | table<string, function>
 ---@field localPlayer HumanPlayer | nil
@@ -84,7 +88,7 @@ end
 ---@field localRating LocalRating | nil
 ---@field remoteRating RemoteRating | nil
 ---@field syncableRating SyncableRating | nil
----@field hashCache table<string, string> accountId -> hash cache
+---@field accountCache table<string, CachedInfo>
 ---@field teammates table
 ---@field isInMission boolean
 ---@field debugging boolean
@@ -110,7 +114,7 @@ local controller = {
     debugging = false,
     timers = timers,
     md5 = md5,
-    hashCache = {},
+    accountCache = {},
     syncableRating = {},
 }
 
@@ -138,15 +142,15 @@ function controller:hasRating()
 end
 
 ---@param accountId string
----@param characterXp number | nil
+---@param level number | nil
 ---@return CachedInfo
-function controller:addAccountCache(accountId, characterXp)
+function controller:addAccountCache(accountId, level)
     local cache = self.accountCache[accountId]
     if cache then
-        cache.characterXp = characterXp or cache.characterXp
+        cache.level = level or cache.level
     else
         cache = {
-            characterXp = characterXp or 1,
+            level = level or 1,
             idHash = self:hash(accountId),
         }
     end
@@ -156,9 +160,9 @@ function controller:addAccountCache(accountId, characterXp)
 end
 
 ---@param accountId string
----@param overrideXp number | nil
+---@param overrideLevel number | nil
 ---@return RATINGS | nil, boolean | nil
-function controller:getRating(accountId, overrideXp)
+function controller:getRating(accountId, overrideLevel)
     -- Return local rating if exists
     local rating = langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
     if rating then
@@ -167,7 +171,7 @@ function controller:getRating(accountId, overrideXp)
 
     -- If cloud sync is enabled, fall back to it
     if self:isCloud() then
-        local cache = self:addAccountCache(accountId, overrideXp)
+        local cache = self:addAccountCache(accountId, overrideLevel)
 
         -- show rating with cloud icon if account has cloud rating
         local remoteRating = self.remoteRating[cache.idHash]
@@ -181,13 +185,13 @@ function controller:loadLocalPlayerToCache()
     local backend_interface = Managers.backend.interfaces
     local promise = backend_interface.progression:get_entity_type_progression('character')
     promise:next(function(characters_progression)
-        -- Find character with highest XP
+        -- Find character with highest level
         ---@type CharacterProgression
         local progression = fun.maximum_by(
         ---@param a CharacterProgression
         ---@param b CharacterProgression
             function(a, b)
-                if a.currentXp > b.currentXp then
+                if a.currentLevel > b.currentLevel then
                     return a
                 else
                     return b
@@ -196,7 +200,7 @@ function controller:loadLocalPlayerToCache()
             characters_progression)
 
         -- Set rating of host player
-        self:getRating(self.localPlayer:account_id(), progression.currentXp)
+        self:getRating(self.localPlayer:account_id(), progression.currentLevel)
     end):catch(function(error)
         print(table.tostring(error, 5))
     end)

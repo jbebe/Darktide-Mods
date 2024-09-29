@@ -12,7 +12,6 @@ namespace Api.Controllers.Models
         /// <summary>
         /// Experience points of the rated character
         /// </summary>
-        [Range(Constants.MinLevel, Constants.MaxLevel)]
         public int TargetLevel { get; set; }
     }
 
@@ -26,7 +25,6 @@ namespace Api.Controllers.Models
         /// <summary>
         /// Experience points of the rating character
         /// </summary>
-        [Range(Constants.MinLevel, Constants.MaxLevel)]
         public int SourceLevel { get; set; }
 
         /// <summary>

@@ -353,10 +353,6 @@ function RatingsView:_draw_grid(grid, widgets, interaction_widget, dt, t, input_
                 if hotspot then
                     hotspot.force_disabled = not is_grid_hovered
                     local is_active = hotspot.is_focused or hotspot.is_hover
-
-                    if is_active and widget.content.entry and (widget.content.entry.tooltip_text or widget.content.entry.disabled_by and not table.is_empty(widget.content.entry.disabled_by)) then
-                        --self:_set_tooltip_data(widget)
-                    end
                 end
 
                 UIWidget.draw(widget, ui_renderer)

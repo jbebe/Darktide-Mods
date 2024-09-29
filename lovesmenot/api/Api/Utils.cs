@@ -20,7 +20,7 @@ namespace Api
         public static RatingType? CalculateRating(IRating rating)
         {
             var score = rating.Score;
-            if (Math.Abs(score) >= Constants.UsableScore && rating.RatedBy.Count >= Constants.UsableRaterCount)
+            if (Math.Abs(score) >= Constants.UsableScore)
                 return score < 0 ? RatingType.Negative : RatingType.Positive;
 
             return null;

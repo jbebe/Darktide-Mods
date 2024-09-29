@@ -36,7 +36,7 @@
 ---@field is_human_controlled function
 ---@field name function
 ---@field set_profile function
----@field profile function
+---@field profile fun(): PlayerProfile
 ---@field has_local_profile function
 ---@field archetype_name function
 ---@field breed_name function
@@ -672,3 +672,14 @@
 ---@field eligibleForLevel boolean
 ---@field talentPoints number unlocked talent points [0,30]
 ---@field type string
+
+---@class PlayerProfile
+---@field personal { character_height: number }
+---@field archetype { name: string }
+---@field character_id string
+---@field name string character name
+---@field specialization string e.g. psyker_2 veteran_1
+---@field current_level number
+---@field gender 'male' | 'female'
+---@field selected_voice string
+---@field talent_points number

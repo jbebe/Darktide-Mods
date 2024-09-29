@@ -8,6 +8,7 @@ local function init(controller)
 
             local remotePlayers = {}
             for _, data in ipairs(self._player_panels_array) do
+                ---@type HumanPlayer
                 local player = data.player
                 local accountId = player:account_id()
                 local isBot = accountId == nil

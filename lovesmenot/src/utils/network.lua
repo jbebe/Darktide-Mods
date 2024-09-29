@@ -8,24 +8,25 @@ local function handleNetworkError(errorObject)
     DMF:error('Failed to download ratings with error: ' .. errorMessage)
 end
 
----@class Promise<T, T2>: { next: fun(self: any, callback: fun(input: T): T2 | nil): Promise<T2 | nil> }
+---@class Promise<T>: { next: fun(self: Promise<T>, callback: fun(input: T): any): Promise<T>, catch: fun(self: Promise<T>, callback: fun(error: any)): Promise<T> }
 
 ---@return Promise<RemoteRating> | nil
 function utils.getRatings()
     if not Managers.backend:authenticated() then
         DMF:error('Cannot initiate api call if not authenticated to game backend')
-    else
-        local url = ('%s/ratings'):format(constants.API_PREFIX)
-        local promise = Managers.backend:url_request(url, {
-            method = 'GET',
-            require_auth = true, -- this must be true always
-        }):next(
-            function(response)
-                return response.body
-            end
-        )
-        return promise
+        return
     end
+
+    local url = ('%s/ratings'):format(constants.API_PREFIX)
+    local promise = Managers.backend:url_request(url, {
+        method = 'GET',
+        require_auth = true, -- this must be true always
+    }):next(
+        function(response)
+            return response.body
+        end
+    )
+    return promise
 end
 
 ---@class TargetRequest

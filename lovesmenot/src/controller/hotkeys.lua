@@ -58,7 +58,7 @@ local function init(controller)
             return false
         end
 
-        local isCacheLoaded = cache.characterXp ~= nil
+        local isCacheLoaded = cache.level ~= nil
         if not isCacheLoaded then
             print('Cached account is not fully loaded')
             return false
@@ -67,14 +67,14 @@ local function init(controller)
         if not self.localRating or not self.localRating.accounts[teammate.accountId] then
             -- account has not been rated yet, create object
             self.syncableRating[teammate.accountId] = {
-                characterXp = cache.characterXp,
+                level = cache.level,
                 idHash = cache.idHash,
                 rating = RATINGS.NEGATIVE,
             }
         elseif self.localRating.accounts[teammate.accountId].rating == RATINGS.NEGATIVE then
             -- account hasn been rated, cycle to positive
             self.syncableRating[teammate.accountId] = {
-                characterXp = cache.characterXp,
+                level = cache.level,
                 idHash = cache.idHash,
                 rating = RATINGS.POSITIVE,
             }
