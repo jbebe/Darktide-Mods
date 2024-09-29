@@ -9,7 +9,9 @@ local function init(controller)
         local args = { ... }
         local argsString = table.concat(args, ' ')
         local evalFn = langUtils.loadstring(argsString)
-        setfenv(evalFn, { self = controller })
+        local globalObj = table.shallow_copy(_G)
+        globalObj.self = controller
+        setfenv(evalFn, globalObj)
         local evalResult = evalFn()
         if type(evalResult) == 'table' then
             evalResult = json.encode(evalResult)

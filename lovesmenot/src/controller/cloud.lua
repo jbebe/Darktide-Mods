@@ -1,4 +1,4 @@
-local BackendUtilities = require 'scripts/foundation/managers/backend/utilities/backend_utilities'
+local BackendUtilities = require('scripts/foundation/managers/backend/utilities/backend_utilities')
 
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
 local netUtils = modRequire 'lovesmenot/src/utils/network'
@@ -6,7 +6,7 @@ local langUtils = modRequire 'lovesmenot/src/utils/language'
 
 ---@param controller LovesMeNot
 local function init(controller)
-    function controller:loadRemoteRating()
+    function controller:downloadRemoteRating()
         netUtils.getRatings():next(function(ratings)
             self.remoteRating = ratings
 
@@ -20,7 +20,7 @@ local function init(controller)
         end)
     end
 
-    function controller:syncRemoteRating()
+    function controller:uploadRemoteRating()
         local localPlayer = controller.localPlayer
         if not localPlayer then
             -- player is not loaded yet

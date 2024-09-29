@@ -1,3 +1,6 @@
+local RegionLatency = require 'scripts/backend/region_latency'
+
+local localization = modRequire 'lovesmenot/src/mod.localization'
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
 
 ---@param controller LovesMeNot
@@ -16,11 +19,18 @@ local function init(controller)
         self.initialized = true
 
         if self:isCloud() then
-            self:loadRemoteRating()
+            self:downloadRemoteRating()
             self:loadLocalPlayerToCache()
         end
         self:loadLocalRating()
         self.isInMission = gameUtils.isInRealMission()
+        self:registerRatingsView()
+        RegionLatency:get_preferred_reef():next(function(data)
+            controller.reef = data
+        end)
+        controller.dmf:add_global_localize_strings({
+            lovesmenot_ratingsview_download_ratings = localization.lovesmenot_ratingsview_download_ratings,
+        })
     end
 
     ---@param initial_call boolean
@@ -49,7 +59,8 @@ local function init(controller)
                 controller.isInMission = false
                 controller.teammates = {}
                 if controller:isCloud() then
-                    controller:syncRemoteRating()
+                    controller:uploadRemoteRating()
+                    controller:downloadRemoteRating()
                 end
                 controller:persistLocalRating()
             end

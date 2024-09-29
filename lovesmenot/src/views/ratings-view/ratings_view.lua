@@ -6,6 +6,7 @@ local UIRenderer = require 'scripts/managers/ui/ui_renderer'
 local localization = modRequire 'lovesmenot/src/mod.localization'
 local constants = modRequire 'lovesmenot/src/constants'
 local styleUtils = modRequire 'lovesmenot/src/utils/style'
+local gameUtils = modRequire 'lovesmenot/src/utils/game'
 local fun = modRequire 'lovesmenot/nurgle_modules/fun'
 
 ---@class RatingsViewType: BaseViewType
@@ -118,6 +119,37 @@ function RatingsView:_get_widget_configs()
         lovesmenot_ratingsview_delete_yes = localization.lovesmenot_ratingsview_delete_yes,
         lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
     })
+
+    if self._controller:isCloud() then
+        for hash, rating in pairs(self._controller.remoteRating) do
+            local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
+            local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash
+            local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. rating)
+            local ratingIcon = styleUtils.colorize(ratingsColorMap[rating], ratingsIconMap[rating])
+            local ratingIconWithPadding = ratingIcon
+            if rating == constants.RATINGS.NEGATIVE then
+                ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
+            else
+                ratingText = ratingText .. '    '
+            end
+            self._controller.dmf:add_global_localize_strings({
+                [title] = {
+                    en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_title',
+                        ratingIconWithPadding, ratingText, '', hash),
+                },
+                [subtitle] = {
+                    en = constants.SYMBOLS.WEB .. ' ' .. self._controller.dmf:localize('lovesmenot_ingame_cloud_synced'),
+                }
+            })
+            local entry = {
+                widget_type = 'settings_button',
+                display_name = title,
+                display_name2 = subtitle,
+            }
+            widgetConfig[#widgetConfig + 1] = entry
+        end
+    end
+
     for _, info in fun.iter(groupedRatings) do
         local title = 'lovesmenot_ratingsview_griditem_title_' .. info.accountId
         local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. info.accountId
@@ -174,36 +206,7 @@ function RatingsView:_get_widget_configs()
         widgetConfig[#widgetConfig + 1] = entry
     end
 
-    if self._controller:isCloud() then
-        for hash, rating in pairs(self._controller.remoteRating) do
-            local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
-            local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash
-            local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. rating)
-            local ratingIcon = styleUtils.colorize(ratingsColorMap[rating], ratingsIconMap[rating])
-            local ratingIconWithPadding = ratingIcon
-            if rating == constants.RATINGS.NEGATIVE then
-                ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
-            else
-                ratingText = ratingText .. '    '
-            end
-            self._controller.dmf:add_global_localize_strings({
-                [title] = {
-                    en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_title',
-                        ratingIconWithPadding, ratingText, '', hash),
-                },
-                [subtitle] = {
-                    en = constants.SYMBOLS.WEB .. ' ' .. self._controller.dmf:localize('lovesmenot_ingame_cloud_synced'),
-                }
-            })
-            local entry = {
-                widget_type = 'settings_button',
-                display_name = title,
-                display_name2 = subtitle,
-            }
-            widgetConfig[#widgetConfig + 1] = entry
-        end
-    end
-
+    -- widget list will be reversed by the grid
     return widgetConfig
 end
 
@@ -377,6 +380,16 @@ end
 
 function RatingsView:cb_on_back_pressed()
     self.ui_manager:close_view('ratings_view')
+end
+
+function RatingsView:cb_on_download_ratings_pressed()
+    if self._controller:isCloud() then
+        self._controller:uploadRemoteRating()
+        self._controller:downloadRemoteRating()
+    end
+    self._controller:persistLocalRating()
+    gameUtils.directNotification(
+        self._controller.dmf:localize('lovesmenot_ratingsview_download_ratings_notif'))
 end
 
 --

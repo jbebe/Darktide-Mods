@@ -187,6 +187,12 @@ local function init(controller)
 			on_pressed_callback = 'cb_on_back_pressed',
 			display_name = 'loc_settings_menu_close_menu',
 			alignment = 'left_alignment'
+		},
+		{
+			input_action = 'hotkey_menu_special_1',
+			on_pressed_callback = 'cb_on_download_ratings_pressed',
+			display_name = 'lovesmenot_ratingsview_download_ratings',
+			alignment = 'left_alignment'
 		}
 	}
 

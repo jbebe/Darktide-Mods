@@ -21,7 +21,7 @@ local function init(controller)
         if controller:isCloud() then
             isSuccess = controller:updateRemoteRating(teammate)
             if isSuccess then
-                isSuccess = controller:syncRemoteRating()
+                isSuccess = controller:uploadRemoteRating()
             end
         end
         if isSuccess then

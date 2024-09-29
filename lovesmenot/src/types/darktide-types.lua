@@ -8,6 +8,7 @@
 ---@field aim_assist_data string
 ---@field _telemetry_game_session any
 ---@field _debug_name string
+---@field _telemetry_subject { account_id: string, character_id: string, bot: boolean }
 ---@field _session_id string
 ---@field _unique_id string
 ---@field _peer_id string

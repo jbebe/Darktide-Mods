@@ -93,17 +93,18 @@ end
 ---@field isInMission boolean
 ---@field debugging boolean
 ---@field loadLocalRating function
----@field loadRemoteRating function
+---@field downloadRemoteRating function
 ---@field persistLocalRating function
 ---@field reinit function
 ---@field registerRatingsView function
 ---@field openRatings function
 ---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
 ---@field updateRemoteRating fun(self: LovesMeNot, teammate: Teammate): boolean
----@field syncRemoteRating fun(self: LovesMeNot): boolean
+---@field uploadRemoteRating fun(self: LovesMeNot): boolean
 ---@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string, characterId: string): string, boolean
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
 ---@field md5 { sumhexa: fun(text: string): string }
+---@field reef string | nil
 local controller = {
     dmf = dmf,
     initialized = false,
@@ -116,6 +117,7 @@ local controller = {
     md5 = md5,
     accountCache = {},
     syncableRating = {},
+    reef = nil,
 }
 
 ---@param accountId string

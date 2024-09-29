@@ -6,16 +6,16 @@ Content-Type: application/json
 
 {
     "sourceHash": "3f76818f507fe7eb6422bd0703c64c88",
-    "sourceLevel": 300,
+    "sourceLevel": 20,
     "sourceReef": "eu",
     "targets": {
         "0000008006484e0980931833e7ee5a3c": {
             "type": "negative",
-            "targetLevel": 500
+            "targetLevel": 30
         },
         "76818f507fe7aaeb6422bd0703c64c88": {
             "type": "positive",
-            "targetLevel": 10
+            "targetLevel": 1
         }
     }
 }

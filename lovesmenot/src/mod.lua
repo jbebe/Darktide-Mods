@@ -20,7 +20,4 @@ modRequire 'lovesmenot/src/controller/format-name' (controller)
 modRequire 'lovesmenot/src/controller/hooks/game-end-screen' (controller)
 modRequire 'lovesmenot/src/controller/hooks/player-joins-lobby' (controller)
 modRequire 'lovesmenot/src/controller/hooks/player-joins-midgame' (controller)
-modRequire 'lovesmenot/src/controller/hooks/player-joins-mourningstar' (controller)
 modRequire 'lovesmenot/src/controller/hooks/player-nameplate' (controller)
-
-controller:registerRatingsView()

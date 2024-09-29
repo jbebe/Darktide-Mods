@@ -33,7 +33,10 @@ return {
 		en = 'Synchronizes ratings between all mod users'
 	},
 	lovesmenot_settings_cloud_sync_hide_own_rating = {
-		en = 'Show notification if you appear in the community rating'
+		en = 'Hide my community rating'
+	},
+	lovesmenot_settings_cloud_sync_hide_own_rating_description = {
+		en = 'Hides all visual signs of your own community ranking (for sensitive souls)'
 	},
 
 	-- Accounts dashboard
@@ -64,6 +67,12 @@ return {
 	},
 	lovesmenot_ratingsview_griditem_subtitle = {
 		en = 'Operative: %s (%s) | %s | %s'
+	},
+	lovesmenot_ratingsview_download_ratings = {
+		en = 'Sync now'
+	},
+	lovesmenot_ratingsview_download_ratings_notif = {
+		en = 'Database successfully updated'
 	},
 
 	-- Ingame text

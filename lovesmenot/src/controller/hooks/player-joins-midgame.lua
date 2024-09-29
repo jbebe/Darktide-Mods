@@ -11,7 +11,8 @@ local function init(controller)
                 ---@type HumanPlayer
                 local player = data.player
                 local accountId = player:account_id()
-                local isBot = accountId == nil
+                accountId = player._telemetry_subject.account_id
+                local isBot = false -- accountId == nil
                 if not isBot then
                     local panel = data.panel
                     local widget = panel._widgets_by_name.player_name
