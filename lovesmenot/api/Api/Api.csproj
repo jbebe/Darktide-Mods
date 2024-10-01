@@ -12,7 +12,9 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.7.0" />
+		<PackageReference Include="AspNet.Security.OpenId.Steam" Version="8.0.0" />
 		<PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.400.21" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
 		<PackageReference Include="System.Text.Json" Version="8.0.4" />
 	</ItemGroup>
 </Project>

@@ -6,7 +6,7 @@ Content-Type: application/json
 
 {
     "sourceHash": "3f76818f507fe7eb6422bd0703c64c88",
-    "sourceLevel": 20,
+    "sourceLevel": 21,
     "sourceReef": "eu",
     "targets": {
         "0000008006484e0980931833e7ee5a3c": {
@@ -15,7 +15,7 @@ Content-Type: application/json
         },
         "76818f507fe7aaeb6422bd0703c64c88": {
             "type": "positive",
-            "targetLevel": 1
+            "targetLevel": 2
         }
     }
 }
@@ -23,3 +23,28 @@ Content-Type: application/json
 ###
 
 GET https://localhost:53531/1/ratings
+
+###
+
+POST https://peywv4zsif.execute-api.eu-west-1.amazonaws.com/Prod/1/ratings
+Content-Type: application/json
+
+{
+    "sourceHash": "3f76818f507fe7eb6422bd0703c64c88",
+    "sourceLevel": 21,
+    "sourceReef": "eu",
+    "targets": {
+        "0000008006484e0980931833e7ee5a3c": {
+            "type": "negative",
+            "targetLevel": 30
+        },
+        "76818f507fe7aaeb6422bd0703c64c88": {
+            "type": "positive",
+            "targetLevel": 2
+        }
+    }
+}
+
+###
+
+GET https://peywv4zsif.execute-api.eu-west-1.amazonaws.com/Prod/1/ratings

@@ -8,7 +8,7 @@
   "profile": "default",
   "region": "eu-west-1",
   "configuration": "Release",
-  "s3-prefix": "Api/",
+  "s3-prefix": "lovesmenot/",
   "template": "serverless.template",
   "template-parameters": ""
 }
