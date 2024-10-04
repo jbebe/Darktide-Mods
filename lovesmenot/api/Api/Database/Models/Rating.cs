@@ -5,7 +5,7 @@ using Api.Services.Models;
 namespace Api.Database.Models
 {
     [DynamoDBTable("lovesmenot")]
-    public record DynamoDbRating : BaseEntity, IRating, IBaseEntity
+    internal record DynamoDbRating : BaseEntity, IRating, IBaseEntity
     {
         static string IBaseEntity.HashKey => "rating";
 

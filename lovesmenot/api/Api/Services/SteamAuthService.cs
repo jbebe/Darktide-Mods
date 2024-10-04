@@ -32,7 +32,7 @@ namespace Api.Services
             await HttpContext.ChallengeAsync(SteamAuthenticationDefaults.AuthenticationScheme, properties);
         }
 
-        internal async Task<string> HandleCallbackAsync()
+        internal async Task HandleCallbackAsync()
         {
             // Validate via Steam
             var type = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
@@ -65,7 +65,7 @@ namespace Api.Services
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return tokenString;
+            HttpContext.Response.Redirect($"{Constants.Auth.WebsiteUrl}#token={tokenString}", permanent: false);
         }
     }
 }

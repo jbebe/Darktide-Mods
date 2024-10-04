@@ -68,7 +68,7 @@ export function App() {
   const params = new URLSearchParams(location.hash.slice(1))
   const token = params.get('token')
   const isCallback = token !== null
-  const lambdaPrefix = import.meta.env.VITE_LOVESMENOT_API_URL
+  const lambdaPrefix = import.meta.env.VITE_API_URL
   
   function copyToken(evt: JSX.TargetedMouseEvent<HTMLInputElement>): void {
     navigator.clipboard.writeText(token!)

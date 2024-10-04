@@ -25,7 +25,7 @@ namespace Api
         /// <summary>
         /// A score is usable if its absolute value is bigger than n times the max level (n max level player)
         /// </summary>
-        public const int UsableScore = 0; // TEST ONLY
+        public const int UsableScore = UsableRaterCount * MaxLevel;
 
         public static class Auth
         {
@@ -50,6 +50,8 @@ namespace Api
             /// Issuer of generated jwt tokens
             /// </summary>
             public const string PlatformId = "pid";
+
+            public static string WebsiteUrl => Environment.GetEnvironmentVariable("LOVESMENOT_WEBSITE_URL")!;
         }
     }
 }

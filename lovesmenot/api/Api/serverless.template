@@ -15,7 +15,8 @@
                 "Timeout": 30,
                 "Environment": {
                     "Variables": {
-                        "STEAM_WEB_API_KEY": "${SteamWebApiKey}"
+                        "STEAM_WEB_API_KEY": "${SteamWebApiKey}",
+                        "LOVESMENOT_JWT_KEY": "${LovesMeNotJwtKey}"
                     }
                 },
                 "Role": {

@@ -1,61 +1,98 @@
 ﻿using Api.Database;
+using Api.Services;
 using Api.Services.Models;
 
 namespace Test
 {
     internal class MockRating : IRating
     {
-        public string EntityType { get; set; } = string.Empty;
+        public string EntityType => string.Empty;
 
         public required string Id {get;init;}
         
         public required DateTime Created {get;init;}
         
-        public required Metadata Metadata {get;init;}
+        public required Dictionary<string, Rater> Ratings {get;init;}
         
-        public required Dictionary<string, Rater> RatedBy {get;init;}
-        
+        public DateTime? Updated { get; set; }
+    }
+
+    internal class MockAccount : IAccount
+    {
+        public string EntityType => string.Empty;
+
+        public required string Id { get; init; }
+
+        public int CharacterLevel { get; set; }
+
+        public required HashSet<string> Reefs { get; set; }
+
+        public required HashSet<string> Friends { get; set; }
+
+        public required DateTime Created { get; init; }
+
         public DateTime? Updated { get; set; }
     }
 
     internal class MockDatabaseService : IDatabaseService
     {
-        public Dictionary<string, MockRating> Db = [];
+        public Dictionary<string, MockAccount> AccountsDb = [];
+        
+        public Dictionary<string, MockRating> RatingsDb = [];
 
-        public IRating CreateEntity(string id, Dictionary<string, Rater> ratedBy, Metadata metadata)
+        public void Clear()
+        {
+            AccountsDb.Clear();
+            RatingsDb.Clear();
+        }
+
+        public IAccount CreateAccount(string id, int characterLevel, string reef, string[] friends, DateTime created)
+        {
+            return new MockAccount
+            {
+                Id = id,
+                CharacterLevel = characterLevel,
+                Reefs = [reef],
+                Friends = new HashSet<string>(friends),
+                Created = created,
+            };
+        }
+
+        public IRating CreateRating(string id, Dictionary<string, Rater> ratings, DateTime created)
         {
             return new MockRating
             {
                 Id = id,
-                Created = DateTime.UtcNow,
-                Metadata = metadata,
-                RatedBy = ratedBy,
+                Ratings = ratings,
+                Created = created,
             };
         }
 
-        public Task CreateOrUpdateAsync(IRating rating, CancellationToken cancellationToken)
+        public Task CreateOrUpdateAccountAsync(IAccount entity, CancellationToken cancellationToken)
         {
-            if (rating is MockRating mockRating)
-            {
-                Db[rating.Id] = mockRating;
-            }
-            else
-            {
-                throw new ArgumentException();
-            }
-
+            AccountsDb[entity.Id] = (MockAccount)entity;
             return Task.CompletedTask;
+        }
+
+        public Task CreateOrUpdateRatingAsync(IRating entity, CancellationToken cancellationToken)
+        {
+            RatingsDb[entity.Id] = (MockRating)entity;
+            return Task.CompletedTask;
+        }
+
+        public Task<IAccount?> GetAccountAsync(string id, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(AccountsDb.TryGetValue(id, out var account) ? (IAccount)account : null);
         }
 
         public Task<IRating?> GetRatingAsync(string id, CancellationToken cancellationToken)
         {
-            Db.TryGetValue(id, out var rating);
-            return Task.FromResult<IRating?>(rating);
+            return Task.FromResult(RatingsDb.TryGetValue(id, out var rating) ? (IRating)rating : null);
         }
 
         public Task<List<IRating>> GetRatingsAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(Db.Values.Cast<IRating>().ToList());
+            return Task.FromResult(RatingsDb.Values.Cast<IRating>().ToList());
         }
     }
 }

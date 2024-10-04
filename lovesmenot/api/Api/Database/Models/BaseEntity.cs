@@ -2,7 +2,7 @@
 
 namespace Api.Database.Models
 {
-    public abstract record BaseEntity : IBaseEntity
+    internal abstract record BaseEntity : IBaseEntity
     {
         public static string HashKey => throw new NotImplementedException();
 

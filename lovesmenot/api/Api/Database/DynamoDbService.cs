@@ -6,7 +6,7 @@ using Api.Services.Models;
 
 namespace Api.Database
 {
-    public class DynamoDbService : IDatabaseService
+    internal class DynamoDbService : IDatabaseService
     {
         public IDynamoDBContext Context { get; }
 

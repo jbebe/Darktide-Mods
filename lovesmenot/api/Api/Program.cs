@@ -35,6 +35,7 @@ builder.Services
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
+            ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = Constants.Auth.JwtIssuer,
@@ -67,7 +68,7 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/", () => "Loves Me, Loves Me Not 🌸");
+app.MapGet("/", () => "Loves Me Not API 🌸");
 app.MapGet($"{Constants.ApiVersion}/ratings", (RatingsService ratingsService, CancellationToken cancellationToken)
     => ratingsService.GetRatingsAsync(cancellationToken)).RequireAuthorization(authPolicy);
 app.MapPost($"{Constants.ApiVersion}/ratings", ([FromBody] RatingRequest request, RatingsService ratingsService) 

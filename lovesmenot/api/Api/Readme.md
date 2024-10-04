@@ -7,7 +7,7 @@ dotnet lambda commandline params:
 
 ```bash
 # deploy lambda
-dotnet lambda deploy-serverless --s3-bucket lovesmenot-deploy --stack-name lovesmenot-stack --template-parameters "SteamWebApiKey=$env:STEAM_WEB_API_KEY"
+dotnet lambda deploy-serverless --s3-bucket lovesmenot-deploy --stack-name lovesmenot-stack --template-parameters "SteamWebApiKey=$env:STEAM_WEB_API_KEY;LovesMeNotJwtKey=$env:LOVESMENOT_JWT_KEY"
 
 # delete lambda
 dotnet lambda delete-serverless --stack-name lovesmenot-stack

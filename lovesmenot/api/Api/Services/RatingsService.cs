@@ -44,6 +44,7 @@ namespace Api.Services
             {
                 var ratedId = kvp.Key;
                 var ratedInfo = kvp.Value;
+                await UpdateAccountAsync(ratedId, ratedInfo.CharacterLevel, request.Reef, [], now, cancellationToken);
                 await UpdateRatingAsync(ratedId, raterId, request.CharacterLevel, ratedInfo.Type, now, cancellationToken);
             }
         }
