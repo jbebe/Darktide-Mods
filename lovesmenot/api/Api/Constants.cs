@@ -1,4 +1,7 @@
-﻿namespace Api
+﻿using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+namespace Api
 {
     public static class Constants
     {
@@ -24,12 +27,7 @@
         /// </summary>
         public const int UsableScore = 0; // TEST ONLY
 
-        /// <summary>
-        /// Issuer of generated jwt tokens
-        /// </summary>
-        public const string JwtIssuer = "lovesmenot";
-
-        public static class Secrets
+        public static class Auth
         {
             /// <summary>
             /// Api key for querying steam user data (<see href="https://steamcommunity.com/dev/apikey"/>)
@@ -39,7 +37,19 @@
             /// <summary>
             /// Jwt key that signs tokens
             /// </summary>
-            public static string JwtKey => Environment.GetEnvironmentVariable("LOVESMENOT_JWT_KEY")!;
+            private static string JwtKey => Environment.GetEnvironmentVariable("LOVESMENOT_JWT_KEY")!;
+
+            public static SymmetricSecurityKey JwtKeyObject => new(Encoding.UTF8.GetBytes(JwtKey));
+
+            /// <summary>
+            /// Issuer of generated jwt tokens
+            /// </summary>
+            public const string JwtIssuer = "lovesmenot";
+
+            /// <summary>
+            /// Issuer of generated jwt tokens
+            /// </summary>
+            public const string PlatformId = "pid";
         }
     }
 }

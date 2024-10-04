@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Api.Services
@@ -37,11 +39,11 @@ namespace Api.Services
             var steamIdPrefix = "https://steamcommunity.com/openid/id/";
             var steamIdRaw = HttpContext.User.Claims.Single(x => x.Type == type && x.Value.StartsWith(steamIdPrefix));
             var steamId = steamIdRaw.Value[steamIdPrefix.Length..];
-            
+
             // Get owned games
-            var ownedGamesUrl = 
-                "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?" + 
-                $"key={Constants.Secrets.SteamWebApiKey}&format=json&steamid={steamId}";
+            var ownedGamesUrl =
+                "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?" +
+                $"key={Constants.Auth.SteamWebApiKey}&format=json&steamid={steamId}";
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(ownedGamesUrl);
             response.EnsureSuccessStatusCode();
@@ -51,15 +53,16 @@ namespace Api.Services
             if (!ownsDarktide) throw new Exception();
 
             // Create token
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.Secrets.JwtKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var credentials = new SigningCredentials(Constants.Auth.JwtKeyObject, SecurityAlgorithms.HmacSha256);
+            // steamId is a numeric string so we don't have to lower it
+            byte[] hashBytes = MD5.HashData(Encoding.ASCII.GetBytes($"steam:{steamId}"));
+            var hashedId = Convert.ToHexString(hashBytes).ToLowerInvariant();
             var token = new JwtSecurityToken(
-                Constants.JwtIssuer,
-                Constants.JwtIssuer,
-                null,
+                issuer: Constants.Auth.JwtIssuer,
+                claims: [new Claim(type: Constants.Auth.PlatformId, value: hashedId)],
                 expires: DateTime.Now.AddYears(1),
-                signingCredentials: credentials);
-
+                signingCredentials: credentials
+            );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
             return tokenString;

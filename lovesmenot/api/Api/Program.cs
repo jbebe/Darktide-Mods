@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
@@ -29,21 +28,17 @@ builder.Services
     })
     .AddSteam(options =>
     {
-        options.ApplicationKey = Constants.Secrets.SteamWebApiKey;
+        options.ApplicationKey = Constants.Auth.SteamWebApiKey;
     })
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = Constants.JwtIssuer,
-            ValidAudience = Constants.JwtIssuer,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    Constants.Secrets.JwtKey))
+            ValidIssuer = Constants.Auth.JwtIssuer,
+            IssuerSigningKey = Constants.Auth.JwtKeyObject,
         };
     });
 
@@ -75,8 +70,8 @@ app.UseAuthorization();
 app.MapGet("/", () => "Loves Me, Loves Me Not 🌸");
 app.MapGet($"{Constants.ApiVersion}/ratings", (RatingsService ratingsService, CancellationToken cancellationToken)
     => ratingsService.GetRatingsAsync(cancellationToken)).RequireAuthorization(authPolicy);
-app.MapPost($"{Constants.ApiVersion}/ratings", ([FromBody] RatingRequest request, RatingsService ratingsService)
-    => ratingsService.UpdateRatingAsync(request, CancellationToken.None)).RequireAuthorization(authPolicy);
+app.MapPost($"{Constants.ApiVersion}/ratings", ([FromBody] RatingRequest request, RatingsService ratingsService) 
+    => ratingsService.UpdateAsync(request, CancellationToken.None)).RequireAuthorization(authPolicy);
 app.MapGet($"auth/steam", (SteamAuthService authService)
     => authService.ChallengeAsync());
 app.MapGet($"callback/steam", (SteamAuthService authService)

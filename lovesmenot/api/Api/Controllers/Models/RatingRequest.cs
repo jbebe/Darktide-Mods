@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Api.Controllers.Models
+﻿namespace Api.Controllers.Models
 {
     public record TargetRequest
     {
@@ -12,30 +10,30 @@ namespace Api.Controllers.Models
         /// <summary>
         /// Experience points of the rated character
         /// </summary>
-        public int TargetLevel { get; set; }
+        public required int CharacterLevel { get; set; }
     }
 
     public record RatingRequest
     {
         /// <summary>
-        /// Account GUID hash of the rating player
-        /// </summary>
-        public required string SourceHash { get; set; }
-
-        /// <summary>
         /// Experience points of the rating character
         /// </summary>
-        public int SourceLevel { get; set; }
+        public required int CharacterLevel { get; set; }
 
         /// <summary>
         /// Superset of cloud provider region.
         /// </summary>
         /// <example>eu</example>
-        public required string SourceReef { get; set; }
+        public required string Reef { get; set; }
         
         /// <summary>
         /// KEY: Account GUID hash of the rated player
         /// </summary>
-        public required Dictionary<string, TargetRequest> Targets { get; set; }
+        public required Dictionary<string, TargetRequest> Accounts { get; set; }
+
+        /// <summary>
+        /// Hash of player's friend's account id
+        /// </summary>
+        public required string[] Friends { get; set; }
     }
 }

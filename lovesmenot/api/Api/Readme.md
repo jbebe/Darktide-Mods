@@ -1,5 +1,6 @@
 Steam auth:
 	https://steamcommunity.com/dev
+	https://steamcommunity.com/dev/apikey
 
 dotnet lambda commandline params:
 	https://github.com/aws/aws-extensions-for-dotnet-cli/blob/80c2ace6319aa7514731004774f4d4791878fc3e/src/Amazon.Lambda.Tools/LambdaDefinedCommandOptions.cs#L241

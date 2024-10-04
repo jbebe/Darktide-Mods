@@ -71,6 +71,23 @@ Link mod folder to darktide mod folder:
 
 #### [Sequence diagram for sync/local behavior](https://sequencediagram.org/index.html#initialData=C4S2BsFMAIFkHsAm1EENiugM3PA7gFAEAOqATqAMYikB2wcqItsktArieVTavXEgAiqAM4ALAEbxyiLhRDU6DADLwJEgJ5yeS6IPZlmAcwDiqALaRtC3vwCitRGctFa8YDHgA3SGUbNWDgAuaGcYMVFoEQwKSFk5aAAxEDJo6FAXNw9ob19-FjZ2EIA5eBziX3QQeFoCYDEySFRkAGUNWkocrCwCWCYCjgBaAD4+gMKQsiraIwBeXGaAJWmjAAoASjqGptb2zpre-sD2EdWAVnWxgaLoKdAZ2aNIYGX7oxENgjZ40j82jq6PSynh8fgQiGE4ikMhCAAVGiIRNAANaQDTpMoVVIgNJoDBbRrNaD-fa1YE5UECCGiSTSMiIOEIpGo9HAMrsYgLZAAMiiey+jlc7hBeVU6g0jMgIjYDDuxgAOrQJKI4jlaFFIOAsAA6OUzIi-Yl7QEEcm5Pz6QwzMIhaUMaVa3UrAk7I0Ag5mymW4w2jX2zU6vVGaC8h062iQPCvYwCn7kN37bqm4UUvIOJwWSBw3wiHH+x1Bl1Eklq5PZc3QdO+kth7URqMrDEasigxW1+vRmbQWbQADeAF9Y0A)
 
+#### Steam id shenanigans
+
+```lua
+local md5 = modRequire 'lovesmenot/nurgle_modules/md5'
+local steamIdString = Application.hex64_to_dec(Steam.user_id())
+print(tostring(md5.sumhexa(steamIdString)))
+-- md5(hex2num(user_id)): 738b28c030b30528e83a6e6cbee2f9b1
+-- md5(real steam id):    738b28c030b30528e83a6e6cbee2f9b1
+```
+
+#### Xbox id shenanigans
+
+```lua
+-- xuid 64-bit unsigned integer 23452345
+-- hexa version: 000901F4BF5B7415 (probably this one is used)
+```
+
 #### REST api
 
 Example:

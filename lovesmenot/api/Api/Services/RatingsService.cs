@@ -1,6 +1,6 @@
 ﻿using Api.Controllers.Models;
 using Api.Database;
-using Api.Services.Models;
+using System.Security.Authentication;
 
 namespace Api.Services
 {
@@ -8,9 +8,14 @@ namespace Api.Services
     {
         private IDatabaseService Db { get; }
 
-        public RatingsService(IDatabaseService db)
+        private IHttpContextAccessor HttpContextAccessor { get; }
+
+        private HttpContext HttpContext => HttpContextAccessor.HttpContext!;
+
+        public RatingsService(IDatabaseService db, IHttpContextAccessor httpContextAccessor)
         {
             Db = db;
+            HttpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Dictionary<string, RatingType>> GetRatingsAsync(CancellationToken cancellationToken)
@@ -28,53 +33,77 @@ namespace Api.Services
             return response;
         }
 
-        public async Task UpdateRatingAsync(RatingRequest request, CancellationToken cancellationToken)
+        public async Task UpdateAsync(RatingRequest request, CancellationToken cancellationToken)
         {
-            var raterId = request.SourceHash;
-            foreach (var kvp in request.Targets)
-            {
-                var targetId = kvp.Key;
-                var target = kvp.Value;
-                var newRater = new Rater
-                {
-                    Type = target.Type,
-                    MaxCharacterLevel = request.SourceLevel,
-                    Reef = request.SourceReef,
-                };
+            var raterId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == Constants.Auth.PlatformId)?.Value
+                ?? throw new AuthenticationException("Could not find platform id");
+            var now = DateTime.UtcNow;
+            await UpdateAccountAsync(raterId, request.CharacterLevel, request.Reef, request.Friends, now, cancellationToken);
 
-                var rating = await Db.GetRatingAsync(targetId, cancellationToken);
-                if (rating == null)
+            foreach (var kvp in request.Accounts)
+            {
+                var ratedId = kvp.Key;
+                var ratedInfo = kvp.Value;
+                await UpdateRatingAsync(ratedId, raterId, request.CharacterLevel, ratedInfo.Type, now, cancellationToken);
+            }
+        }
+
+        private async Task UpdateAccountAsync(
+            string id, int characterLevel, string reef, string[] friends, DateTime timestamp, CancellationToken cancellationToken)
+        {
+            var account = await Db.GetAccountAsync(id, cancellationToken);
+            if (account == null)
+            {
+                account = Db.CreateAccount(id, characterLevel, reef, friends, timestamp);
+            }
+            else
+            {
+                account.CharacterLevel = Math.Max(characterLevel, account.CharacterLevel);
+                account.Reefs.Add(reef);
+                foreach (var friend in friends) account.Friends.Add(friend);
+                account.Updated = timestamp;
+            }
+            await Db.CreateOrUpdateAccountAsync(account, cancellationToken);
+        }
+
+        private async Task UpdateRatingAsync(
+            string ratedId, string raterId, int raterLevel, RatingType ratingType, DateTime timestamp, CancellationToken cancellationToken)
+        {
+            var rating = await Db.GetRatingAsync(ratedId, cancellationToken);
+            var newRater = new Rater
+            {
+                Rating = ratingType,
+                CharacterLevel = raterLevel,
+                Update = timestamp,
+            };
+            if (rating == null)
+            {
+                rating = Db.CreateRating(
+                    ratedId, 
+                    new Dictionary<string, Rater>{ [raterId] = newRater },
+                    timestamp
+                );
+            }
+            else
+            {
+                if (rating.Ratings.TryGetValue(raterId, out var rater))
                 {
-                    
-                    rating = Db.CreateEntity(
-                        targetId,
-                        new Dictionary<string, Rater> { [raterId] = newRater },
-                        new Metadata
-                        {
-                            MaxCharacterLevel = target.TargetLevel,
-                        }
-                    );
+                    if (rater.Rating == ratingType && rater.CharacterLevel == raterLevel)
+                    {
+                        // Nothing to update
+                        return;
+                    }
+                    rater.Rating = ratingType;
+                    rater.CharacterLevel = raterLevel;
+                    rater.Update = timestamp;
                 }
                 else
                 {
-                    rating.Updated = DateTime.UtcNow;
-
-                    // Rater's info
-                    if (rating.RatedBy.TryGetValue(raterId, out var rater))
-                    {
-                        rater.MaxCharacterLevel = Math.Max(rater.MaxCharacterLevel, request.SourceLevel);
-                        rater.Type = target.Type;
-                    }
-                    else
-                    {
-                        rating.RatedBy[request.SourceHash] = newRater;
-                    }
-                    
-                    // Metadata
-                    rating.Metadata.MaxCharacterLevel = Math.Max(rating.Metadata.MaxCharacterLevel, target.TargetLevel);
+                    rating.Ratings[raterId] = newRater;
                 }
-                await Db.CreateOrUpdateAsync(rating, cancellationToken);
+                rating.Updated = DateTime.UtcNow;
             }
+            await Db.CreateOrUpdateRatingAsync(rating, cancellationToken);
         }
     }
 }
