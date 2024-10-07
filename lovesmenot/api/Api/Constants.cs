@@ -30,6 +30,11 @@ namespace Api
         public static class Auth
         {
             /// <summary>
+            /// Own URL of the server
+            /// </summary>
+            public static string SelfUrl => Environment.GetEnvironmentVariable("LOVESMENOT_API_URL")!;
+
+            /// <summary>
             /// Api key for querying steam user data (<see href="https://steamcommunity.com/dev/apikey"/>)
             /// </summary>
             public static string SteamWebApiKey => Environment.GetEnvironmentVariable("STEAM_WEB_API_KEY")!;

@@ -62,6 +62,7 @@ builder.Services.AddSingleton<IDatabaseService, DynamoDbService>();
 builder.Services.AddSingleton<RatingsService>();
 builder.Services.AddSingleton<SteamAuthService>();
 builder.Services.AddSingleton<XboxAuthService>();
+builder.Services.AddHttpClient();
 
 // AWS Lambda specific line; if removed, practically portable
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
@@ -82,8 +83,8 @@ app.MapGet($"auth/xbox", (XboxAuthService authService)
     => authService.Challenge());
 app.MapGet($"callback/steam", (SteamAuthService authService)
     => authService.HandleCallbackAsync());
-app.MapGet($"callback/xbox", ([FromQuery] string code, XboxAuthService authService)
-    => authService.HandleCallbackAsync(code));
+app.MapGet($"callback/xbox", ([FromQuery] string code, XboxAuthService authService, CancellationToken cancellationToken)
+    => authService.HandleCallbackAsync(code, cancellationToken));
 
 app.Run();
 
