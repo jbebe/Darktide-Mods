@@ -120,7 +120,7 @@ function RatingsView:_get_widget_configs()
         lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
     })
 
-    if self._controller:isCommunity() then
+    if self._controller:isCommunity() and self._controller:hasRating() then
         for hash, rating in pairs(self._controller.communityRating) do
             local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
             local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash

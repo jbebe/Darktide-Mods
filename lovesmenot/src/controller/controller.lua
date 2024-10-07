@@ -137,6 +137,11 @@ function controller:isCommunity()
     return isCommunity
 end
 
+---@return string | nil
+function controller:getAccessToken()
+    return self.dmf:get('lovesmenot_settings_community_access_token')
+end
+
 function controller:hasRating()
     if self:isCommunity() then
         return self.communityRating ~= nil
@@ -165,7 +170,7 @@ end
 
 ---@param accountId string
 ---@param overrideLevel number | nil
----@return RATINGS | nil, boolean | nil
+---@return RATINGS | nil, boolean | nil (rating, isCommunityRating)
 function controller:getRating(accountId, overrideLevel)
     -- Return local rating if exists
     local rating = langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
@@ -177,10 +182,12 @@ function controller:getRating(accountId, overrideLevel)
     if self:isCommunity() then
         local cache = self:addAccountCache(accountId, overrideLevel)
 
-        local communityRating = self.communityRating[cache.idHash]
-        if communityRating then
-            -- show rating with web icon if account has community rating
-            return communityRating, true
+        if self:hasRating() then
+            local communityRating = self.communityRating[cache.idHash]
+            if communityRating then
+                -- show rating with web icon if account has community rating
+                return communityRating, true
+            end
         end
     end
 end

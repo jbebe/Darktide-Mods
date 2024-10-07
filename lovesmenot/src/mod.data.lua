@@ -6,6 +6,9 @@ return {
 	is_togglable = true,
 	options = {
 		widgets = {
+			-- extras:
+			-- lovesmenot_settings_community_access_token
+			--
 			{
 				setting_id = 'lovesmenot_settings_hotkey_group_title',
 				type = 'group',
@@ -38,7 +41,6 @@ return {
 			{
 				setting_id = 'lovesmenot_settings_community',
 				type = 'checkbox',
-				require_restart = true,
 				default_value = false,
 				sub_widgets = {
 					{

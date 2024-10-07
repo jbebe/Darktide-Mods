@@ -39,17 +39,7 @@ return {
 		en = 'Hides all visual signs of your own community ranking (for sensitive souls)'
 	},
 
-	-- Accounts dashboard
-	lovesmenot_ratingsview_title = {
-		en = 'Account ratings'
-	},
-	lovesmenot_ratingsview_local_description = {
-		en = 'These are the accounts you rated so far. Click on any account to revoke your rating.'
-	},
-	lovesmenot_ratingsview_community_description = {
-		en =
-		'These are the accounts you rated so far. Click on any account to revoke your rating.\n(Community accounts cannot be revoked)'
-	},
+	-- Dashboard delete modal
 	lovesmenot_ratingsview_delete_title = {
 		en = 'Rehabilitate Account',
 	},
@@ -61,6 +51,43 @@ return {
 	},
 	lovesmenot_ratingsview_delete_no = {
 		en = 'Cancel',
+	},
+
+	-- Turn on community modal
+	lovesmenot_community_create_token_title = {
+		en = 'Generate Access Token',
+	},
+	lovesmenot_community_create_token_description = {
+		en = 'In order to access the community version of this mod, you need to ' ..
+			'generate an access token.\n' ..
+			'Press Cancel to exit the dialog.',
+	},
+	lovesmenot_community_create_token_step_1 = {
+		en = '1. The button below takes you to the authentication site:'
+	},
+	lovesmenot_community_create_token_url = {
+		en = '\u{e06f} Get Access',
+	},
+	lovesmenot_community_create_token_step_2 = {
+		en = '2. Paste the generated token here:'
+	},
+	lovesmenot_community_create_token_step_3 = {
+		en = '3. Save the token to your settings file:'
+	},
+	lovesmenot_community_create_token_save = {
+		en = 'Save',
+	},
+
+	-- Accounts dashboard
+	lovesmenot_ratingsview_title = {
+		en = 'Account ratings'
+	},
+	lovesmenot_ratingsview_local_description = {
+		en = 'These are the accounts you rated so far. Click on any account to revoke your rating.'
+	},
+	lovesmenot_ratingsview_community_description = {
+		en =
+		'These are the accounts you rated so far. Click on any account to revoke your rating.\n(Community accounts cannot be revoked)'
 	},
 	lovesmenot_ratingsview_griditem_title = {
 		en = '%s %s | %s %s'

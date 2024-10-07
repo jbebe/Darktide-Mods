@@ -103,7 +103,7 @@ Managers.backend:url_request(url, {
     },
     headers = {
       headerName = headerData,
-  }
+    }
 	}):next(
     function(responseBody){ 
       processData(responseBody)

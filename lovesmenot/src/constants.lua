@@ -25,6 +25,7 @@ local version = 1
 return {
     VERSION = version,
     API_PREFIX = 'https://localhost:53531/' .. version,
+    AUTH_URL = 'http://localhost:5173',
     RATINGS = RATINGS,
     SYMBOLS = SYMBOLS,
     COLORS = {
