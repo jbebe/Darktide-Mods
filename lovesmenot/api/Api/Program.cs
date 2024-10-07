@@ -1,5 +1,6 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
+using AngleSharp.Dom;
 using Api;
 using Api.Controllers.Models;
 using Api.Database;
@@ -18,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.Converters.Add(
         new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
-
+builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -60,11 +61,13 @@ builder.Services.AddSingleton<IDynamoDBContext>(services =>
 builder.Services.AddSingleton<IDatabaseService, DynamoDbService>();
 builder.Services.AddSingleton<RatingsService>();
 builder.Services.AddSingleton<SteamAuthService>();
+builder.Services.AddSingleton<XboxAuthService>();
 
 // AWS Lambda specific line; if removed, practically portable
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 
 var app = builder.Build();
+app.UseExceptionHandler(_ => { }); // asp.net bug
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -75,8 +78,12 @@ app.MapPost($"{Constants.ApiVersion}/ratings", ([FromBody] RatingRequest request
     => ratingsService.UpdateAsync(request, CancellationToken.None)).RequireAuthorization(authPolicy);
 app.MapGet($"auth/steam", (SteamAuthService authService)
     => authService.ChallengeAsync());
+app.MapGet($"auth/xbox", (XboxAuthService authService)
+    => authService.Challenge());
 app.MapGet($"callback/steam", (SteamAuthService authService)
     => authService.HandleCallbackAsync());
+app.MapGet($"callback/xbox", ([FromQuery] string code, XboxAuthService authService)
+    => authService.HandleCallbackAsync(code));
 
 app.Run();
 

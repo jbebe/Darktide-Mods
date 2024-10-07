@@ -1,22 +1,21 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
+using Api.Services.Models;
 
 namespace Api.Database.Models
 {
-    internal abstract record BaseEntity : IBaseEntity
+    internal abstract record BaseEntity : IEntity
     {
-        public static string HashKey => throw new NotImplementedException();
+        public abstract string EntityType { get; set; }
 
-        [DynamoDBHashKey]
-        public string EntityType => HashKey;
+        public abstract string Id { get; set; }
 
-        [DynamoDBRangeKey]
-        public required string Id { get; init; }
-
-        public required DateTime Created { get; init; }
+        public required DateTime Created { get; set; }
 
         public DateTime? Updated { get; set; }
 
         [DynamoDBVersion]
-        public int? Version { get; }
+        public int? Version { get; set; }
+
+        public BaseEntity(string entityType) => EntityType = entityType;
     }
 }

@@ -19,6 +19,7 @@ namespace Api.Database
         {
             return new DynamoDbRating
             {
+                EntityType = DynamoDbRating.HashKey,
                 Id = id,
                 Ratings = ratings,
                 Created = created,
@@ -29,6 +30,7 @@ namespace Api.Database
         {
             return new DynamoDbAccount
             {
+                EntityType= DynamoDbAccount.HashKey,
                 Id = id,
                 CharacterLevel = characterLevel,
                 Reefs = [reef],
@@ -56,24 +58,24 @@ namespace Api.Database
         }
 
         public async Task<IRating?> GetRatingAsync(string id, CancellationToken cancellationToken)
-            => await GetEntityAsync<DynamoDbRating>(id, cancellationToken);
+            => await GetEntityAsync<DynamoDbRating>(DynamoDbRating.HashKey, id, cancellationToken);
 
         public async Task<IAccount?> GetAccountAsync(string id, CancellationToken cancellationToken)
-            => await GetEntityAsync<DynamoDbAccount>(id, cancellationToken);
+            => await GetEntityAsync<DynamoDbAccount>(DynamoDbAccount.HashKey, id, cancellationToken);
 
         public async Task<List<IRating>> GetRatingsAsync(CancellationToken cancellationToken)
-            => await GetEntitiesAsync<DynamoDbRating, IRating>(cancellationToken);
+            => await GetEntitiesAsync<DynamoDbRating, IRating>(DynamoDbRating.HashKey, cancellationToken);
 
         private async Task CreateOrUpdateAsync<T>(T entity, CancellationToken cancellationToken) where T : BaseEntity
         {
             await Context.SaveAsync(entity, cancellationToken);
         }
 
-        private async Task<T?> GetEntityAsync<T>(string id, CancellationToken cancellationToken) where T : class, IBaseEntity
+        private async Task<T?> GetEntityAsync<T>(string hashValue, string sortValue, CancellationToken cancellationToken) where T : BaseEntity
         {
             try
             {
-                return await Context.LoadAsync<T>(T.HashKey, id, cancellationToken);
+                return await Context.LoadAsync<T>(hashValue, sortValue, cancellationToken);
             }
             catch (AmazonDynamoDBException)
             {
@@ -83,10 +85,10 @@ namespace Api.Database
             // throws if different error
         }
 
-        private async Task<List<TIface>> GetEntitiesAsync<TEntity, TIface>(CancellationToken cancellationToken)
-            where TEntity : IBaseEntity, TIface
+        private async Task<List<TIface>> GetEntitiesAsync<TEntity, TIface>(string hashValue, CancellationToken cancellationToken)
+            where TEntity : IEntity, TIface
         {
-            var search = Context.QueryAsync<TEntity>(TEntity.HashKey);
+            var search = Context.QueryAsync<TEntity>(hashValue);
             var results = await search.GetRemainingAsync(cancellationToken);
             return results.Cast<TIface>().ToList();
         }

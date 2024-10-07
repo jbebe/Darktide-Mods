@@ -5,11 +5,22 @@ using Api.Services.Models;
 namespace Api.Database.Models
 {
     [DynamoDBTable("lovesmenot")]
-    internal record DynamoDbRating : BaseEntity, IRating, IBaseEntity
+    internal record DynamoDbRating : BaseEntity, IRating
     {
-        static string IBaseEntity.HashKey => "rating";
+        [DynamoDBIgnore]
+        public const string HashKey = "rating";
 
         /// <inheritdoc />
-        public required Dictionary<string, Rater> Ratings { get; init; }
+        [DynamoDBHashKey]
+        public override required string EntityType { get; set; }
+
+        /// <inheritdoc />
+        [DynamoDBRangeKey]
+        public override required string Id { get; set; }
+
+        /// <inheritdoc />
+        public required Dictionary<string, Rater> Ratings { get; set; }
+
+        public DynamoDbRating() : base(HashKey) { }
     }
 }

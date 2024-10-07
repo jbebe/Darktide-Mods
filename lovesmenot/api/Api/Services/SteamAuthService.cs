@@ -65,7 +65,8 @@ namespace Api.Services
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            HttpContext.Response.Redirect($"{Constants.Auth.WebsiteUrl}#token={tokenString}", permanent: false);
+            string typedUrl = Constants.Auth.WebsiteUrlTyped(AuthenticationType.Steam);
+            HttpContext.Response.Redirect($"{typedUrl}#token={tokenString}", permanent: false);
         }
     }
 }

@@ -10,11 +10,11 @@
         /// <summary>
         /// All continents where the player played
         /// </summary>
-        HashSet<string> Reefs { get; }
+        HashSet<string> Reefs { get; set; }
 
         /// <summary>
         /// The player's friends's hashed ids
         /// </summary>
-        HashSet<string> Friends { get; }
+        HashSet<string> Friends { get; set; }
     }
 }

@@ -5,17 +5,17 @@
         /// <summary>
         /// Type of the entity
         /// </summary>
-        string EntityType { get; }
+        string EntityType { get; set; }
 
         /// <summary>
         /// Id of the entity
         /// </summary>
-        string Id { get; }
+        string Id { get; set; }
 
         /// <summary>
         /// Date when entity was created
         /// </summary>
-        DateTime Created { get; }
+        DateTime Created { get; set; }
 
         /// <summary>
         /// Last entity modification date

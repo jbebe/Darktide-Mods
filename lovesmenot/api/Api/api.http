@@ -1,10 +1,8 @@
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
 
-@jwt_auth=Authorization "Bearer {{$processEnv LOVESMENOT_EXAMPLE_TOKEN}}"
-
+@jwt_auth="Bearer {{$processEnv LOVESMENOT_EXAMPLE_TOKEN}}"
 
 POST https://localhost:53531/1/ratings
-{{jwt_auth}}
 Content-Type: application/json
 
 {
@@ -26,6 +24,7 @@ Content-Type: application/json
 ###
 
 GET https://localhost:53531/1/ratings
+Authorization: {{jwt_auth}}
 
 ###
 

@@ -6,22 +6,22 @@ namespace Test
 {
     internal class MockRating : IRating
     {
-        public string EntityType => string.Empty;
+        public string EntityType { get; set; } = string.Empty;
 
-        public required string Id {get;init;}
-        
-        public required DateTime Created {get;init;}
-        
-        public required Dictionary<string, Rater> Ratings {get;init;}
-        
+        public required string Id { get; set; }
+
+        public required DateTime Created { get; set; }
+
+        public required Dictionary<string, Rater> Ratings { get; set; }
+
         public DateTime? Updated { get; set; }
     }
 
     internal class MockAccount : IAccount
     {
-        public string EntityType => string.Empty;
+        public string EntityType { get; set; } = string.Empty;
 
-        public required string Id { get; init; }
+        public required string Id { get; set; }
 
         public int CharacterLevel { get; set; }
 
@@ -29,7 +29,7 @@ namespace Test
 
         public required HashSet<string> Friends { get; set; }
 
-        public required DateTime Created { get; init; }
+        public required DateTime Created { get; set; }
 
         public DateTime? Updated { get; set; }
     }

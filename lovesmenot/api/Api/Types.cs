@@ -3,6 +3,12 @@
     public enum RatingType
     {
         Negative,
-        Positive
+        Positive,
+    }
+
+    public enum AuthenticationType
+    {
+        Steam,
+        Xbox,
     }
 }

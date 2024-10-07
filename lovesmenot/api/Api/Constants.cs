@@ -51,7 +51,22 @@ namespace Api
             /// </summary>
             public const string PlatformId = "pid";
 
+            /// <summary>
+            /// The static website (for auth flow)
+            /// </summary>
             public static string WebsiteUrl => Environment.GetEnvironmentVariable("LOVESMENOT_WEBSITE_URL")!;
+
+            public static string WebsiteUrlTyped(AuthenticationType type) => $"{WebsiteUrl}?type={type.ToString().ToLower()}";
+
+            /// <summary>
+            /// Mandatory parameter for Xbox Live auth flow
+            /// </summary>
+            public static string XboxClientId => Environment.GetEnvironmentVariable("AZURE_APP_CLIENT_ID")!;
+
+            /// <summary>
+            /// Secret for validating auth client legibility
+            /// </summary>
+            public static string XboxSecret => Environment.GetEnvironmentVariable("AZURE_APP_SECRET")!;
         }
     }
 }
