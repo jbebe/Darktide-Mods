@@ -1,0 +1,52 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+@jwt_auth="Bearer {{$processEnv LOVESMENOT_EXAMPLE_TOKEN}}"
+
+POST https://localhost:53531/1/ratings
+Content-Type: application/json
+
+{
+    "sourceHash": "3f76818f507fe7eb6422bd0703c64c88",
+    "sourceLevel": 21,
+    "sourceReef": "eu",
+    "targets": {
+        "0000008006484e0980931833e7ee5a3c": {
+            "type": "negative",
+            "targetLevel": 30
+        },
+        "76818f507fe7aaeb6422bd0703c64c88": {
+            "type": "positive",
+            "targetLevel": 2
+        }
+    }
+}
+
+###
+
+GET https://localhost:53531/1/ratings
+Authorization: {{jwt_auth}}
+
+###
+
+POST https://peywv4zsif.execute-api.eu-west-1.amazonaws.com/Prod/1/ratings
+Content-Type: application/json
+
+{
+    "sourceHash": "3f76818f507fe7eb6422bd0703c64c88",
+    "sourceLevel": 21,
+    "sourceReef": "eu",
+    "targets": {
+        "0000008006484e0980931833e7ee5a3c": {
+            "type": "negative",
+            "targetLevel": 30
+        },
+        "76818f507fe7aaeb6422bd0703c64c88": {
+            "type": "positive",
+            "targetLevel": 2
+        }
+    }
+}
+
+###
+
+GET https://peywv4zsif.execute-api.eu-west-1.amazonaws.com/Prod/1/ratings

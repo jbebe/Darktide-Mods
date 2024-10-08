@@ -1,4 +1,3 @@
-local WwiseGameSyncSettings = require 'scripts/settings/wwise_game_sync/wwise_game_sync_settings'
 local PlayerCharacterOptionsView = require
     'scripts/ui/views/player_character_options_view/player_character_options_view'
 local UIWidget = require 'scripts/managers/ui/ui_widget'
@@ -10,14 +9,25 @@ local function init(controller)
         local playerInfo = self._player_info
         local accountName = playerInfo._presence:account_name()
         local platform = playerInfo:platform() or 'unknown'
-        controller:updateRating({
+        local teammate = {
             accountId = playerInfo:account_id(),
             name = accountName,
             platform = platform,
             characterName = playerInfo:profile().name,
             characterType = playerInfo:profile().archetype.name,
-        })
-        controller:persistRating()
+        }
+
+        local isSuccess = true
+        if controller:isCommunity() then
+            isSuccess = controller:updateCommunityRating(teammate)
+            if isSuccess then
+                isSuccess = controller:uploadCommunityRating()
+            end
+        end
+        if isSuccess then
+            controller:updateLocalRating(teammate)
+            controller:persistLocalRating()
+        end
     end
 
     controller.dmf:hook(PlayerCharacterOptionsView, '_setup_buttons_interactions', function(func, self, ...)

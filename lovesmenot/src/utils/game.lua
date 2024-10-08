@@ -1,5 +1,5 @@
-local Missions = require('scripts/settings/mission/mission_templates')
-local UISoundEvents = require('scripts/settings/ui/ui_sound_events')
+local Missions = require 'scripts/settings/mission/mission_templates'
+local UISoundEvents = require 'scripts/settings/ui/ui_sound_events'
 
 local utils = {}
 
@@ -21,6 +21,8 @@ function utils.isInRealMission()
 end
 
 -- Shows the notification bar at the middle right of the screen without DMF intercepting it
+---@param message string
+---@param isError boolean | nil
 function utils.directNotification(message, isError)
     ---@type Managers
     local managers = Managers

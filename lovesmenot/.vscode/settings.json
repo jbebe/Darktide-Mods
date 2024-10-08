@@ -11,6 +11,10 @@
         "Color",
         "class",
         "modRequire",
+        "setfenv",
+        "cjson",
+        "PLATFORM",
+        "Application",
     ],
     "Lua.codeLens.enable": false,
     "Lua.runtime.special": {

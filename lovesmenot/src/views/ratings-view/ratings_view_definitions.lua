@@ -45,7 +45,7 @@ local function init(controller)
 			vertical_alignment = 'bottom',
 			parent = 'title_divider',
 			horizontal_alignment = 'left',
-			size = { 500, 50 },
+			size = { 600, 50 },
 			position = { 0, -35, 1 }
 		},
 		description_text = {
@@ -157,7 +157,9 @@ local function init(controller)
 				pass_type = 'text',
 				value_id = 'text_2',
 				style_id = 'text_2',
-				value = controller.dmf:localize('lovesmenot_ratingsview_description'),
+				value = controller:isCommunity()
+					and controller.dmf:localize('lovesmenot_ratingsview_community_description')
+					or controller.dmf:localize('lovesmenot_ratingsview_local_description'),
 				style = table.clone(UIFontSettings.body_small)
 			}
 		}, 'description_text'),
@@ -184,6 +186,12 @@ local function init(controller)
 			input_action = 'back',
 			on_pressed_callback = 'cb_on_back_pressed',
 			display_name = 'loc_settings_menu_close_menu',
+			alignment = 'left_alignment'
+		},
+		{
+			input_action = 'hotkey_menu_special_1',
+			on_pressed_callback = 'cb_on_download_ratings_pressed',
+			display_name = 'lovesmenot_ratingsview_download_ratings',
 			alignment = 'left_alignment'
 		}
 	}

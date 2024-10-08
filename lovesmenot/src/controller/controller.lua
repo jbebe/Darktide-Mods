@@ -2,6 +2,10 @@
 ---@module 'lovemenot/src/types/darktide-types'
 ---@module 'lovemenot/src/constants'
 
+local md5 = modRequire 'lovesmenot/nurgle_modules/md5'
+local fun = modRequire 'lovesmenot/nurgle_modules/fun'
+local langUtils = modRequire 'lovesmenot/src/utils/language'
+
 ---@type DmfMod
 local dmf = get_mod('lovesmenot')
 
@@ -45,7 +49,7 @@ end
 ---| 'psyker'
 ---| 'ogryn'
 
----@class RatingAccountType
+---@class RatingAccount
 ---@field rating RATINGS
 ---@field name string
 ---@field platform PlatformType
@@ -53,33 +57,54 @@ end
 ---@field characterType CharacterType
 ---@field creationDate string
 
----@class RatingType
+---@class LocalRating
 ---@field version number
----@field accounts table<string, RatingAccountType>
+---@field accounts table<string, RatingAccount>
 
----@class TeammateType
+---@class Teammate
 ---@field accountId string
 ---@field name string
 ---@field platform PlatformType
 ---@field characterName string
 ---@field characterType CharacterType
+---@field characterLevel number
+
+---@class SyncableRatingItem
+---@field level number
+---@field idHash string
+---@field rating RATINGS
+
+---@alias CommunityRating table<string, RATINGS>
+---@alias SyncableRating table<string, SyncableRatingItem>
+
+---@class CachedInfo
+---@field idHash string
+---@field level number | nil
 
 ---@class LovesMeNot
 ---@field dmf DmfMod | table<string, function>
 ---@field localPlayer HumanPlayer | nil
 ---@field initialized boolean
----@field rating RatingType | nil
+---@field localRating LocalRating | nil
+---@field communityRating CommunityRating | nil
+---@field syncableRating SyncableRating | nil
+---@field accountCache table<string, CachedInfo>
 ---@field teammates table
 ---@field isInMission boolean
 ---@field debugging boolean
----@field loadRating function
----@field persistRating function
+---@field loadLocalRating function
+---@field downloadCommunityRating function
+---@field persistLocalRating function
 ---@field reinit function
 ---@field registerRatingsView function
 ---@field openRatings function
----@field updateRating fun(self: LovesMeNot, teammate: TeammateType)
----@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string): string, boolean
+---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
+---@field updateCommunityRating fun(self: LovesMeNot, teammate: Teammate): boolean
+---@field uploadCommunityRating fun(self: LovesMeNot): boolean
+---@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string, characterId: string): string, boolean
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
+---@field md5 { sumhexa: fun(text: string): string }
+---@field reef string | nil
 local controller = {
     dmf = dmf,
     initialized = false,
@@ -88,11 +113,112 @@ local controller = {
     teammates = {},
     rating = nil,
     debugging = false,
-    timers = timers
+    timers = timers,
+    md5 = md5,
+    accountCache = {},
+    syncableRating = {},
+    localRating = nil,
+    communityRating = nil,
+    reef = nil,
 }
+
+---@param accountId string
+function controller:hash(accountId)
+    local cleanedId, _ = accountId:lower():gsub('[^0-9a-f]+', '')
+    return self.md5.sumhexa(cleanedId)
+end
 
 function controller:canRate()
     return self.initialized and self.isInMission
+end
+
+function controller:isCommunity()
+    local isCommunity = self.dmf:get('lovesmenot_settings_community')
+    return isCommunity
+end
+
+---@return string | nil
+function controller:getAccessToken()
+    return self.dmf:get('lovesmenot_settings_community_access_token')
+end
+
+function controller:hasRating()
+    if self:isCommunity() then
+        return self.communityRating ~= nil
+    else
+        return self.localRating ~= nil
+    end
+end
+
+---@param accountId string
+---@param level number | nil
+---@return CachedInfo
+function controller:addAccountCache(accountId, level)
+    local cache = self.accountCache[accountId]
+    if cache then
+        cache.level = level or cache.level
+    else
+        cache = {
+            level = level or 1,
+            idHash = self:hash(accountId),
+        }
+    end
+    self.accountCache[accountId] = cache
+
+    return cache
+end
+
+---@param accountId string
+---@param overrideLevel number | nil
+---@return RATINGS | nil, boolean | nil (rating, isCommunityRating)
+function controller:getRating(accountId, overrideLevel)
+    -- Return local rating if exists
+    local rating = langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
+    if rating then
+        return rating
+    end
+
+    -- If community sync is enabled, fall back to it if local rating is not found
+    if self:isCommunity() then
+        local cache = self:addAccountCache(accountId, overrideLevel)
+
+        if self:hasRating() then
+            local communityRating = self.communityRating[cache.idHash]
+            if communityRating then
+                -- show rating with web icon if account has community rating
+                return communityRating, true
+            end
+        end
+    end
+end
+
+function controller:loadLocalPlayerToCache()
+    local backend_interface = Managers.backend.interfaces
+    local promise = backend_interface.progression:get_entity_type_progression('character')
+    promise:next(function(characters_progression)
+        -- Find character with highest level
+        ---@type CharacterProgression
+        local progression = fun.maximum_by(
+        ---@param a CharacterProgression
+        ---@param b CharacterProgression
+            function(a, b)
+                if a.currentLevel > b.currentLevel then
+                    return a
+                else
+                    return b
+                end
+            end,
+            characters_progression)
+
+        -- Set rating of host player
+        self:getRating(self.localPlayer:account_id(), progression.currentLevel)
+    end):catch(function(error)
+        print(table.tostring(error, 5))
+    end)
+end
+
+function controller:hideOwnRating()
+    return self.dmf:get('lovesmenot_settings_community_hide_own_rating')
 end
 
 return controller

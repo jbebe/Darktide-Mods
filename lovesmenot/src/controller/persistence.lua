@@ -5,26 +5,26 @@ local utils = modRequire 'lovesmenot/src/utils/language'
 local function init(controller)
     local ratingPath = utils.os.getenv('APPDATA') .. [[\Fatshark\Darktide\lovesmenot.json]]
 
-    function controller:loadRating()
+    function controller:loadLocalRating()
         local file = utils.io.open(ratingPath, 'r')
         if file ~= nil then
             local rawContent = file:read('*all')
             file:close()
             -- ignore version as of now, no migration needed yet
-            self.rating = json.decode(rawContent)
+            self.localRating = json.decode(rawContent)
         else
             -- file does not exist
         end
     end
 
-    -- TODO: use coroutine debounce and save json more often
+    -- TODO: use coroutine debounce and save json more often?
     -- https://www.lua.org/pil/9.1.html
-    function controller:persistRating()
-        if not self.rating then
+    function controller:persistLocalRating()
+        if not self.localRating then
             return
         end
 
-        local jsonData = json.encode(self.rating)
+        local jsonData = json.encode(self.localRating)
         local file = assert(utils.io.open(ratingPath, 'w'))
         file:write(jsonData)
         file:close()

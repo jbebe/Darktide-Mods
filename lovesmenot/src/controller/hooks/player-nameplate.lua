@@ -9,6 +9,7 @@ local function init(controller)
 
         return markers_by_id
     end
+
     controller.dmf:hook_safe(CLASS.HudElementNameplates, 'update', function(self, dt, t)
         if not controller.timers:canRun('HudElementNameplates_update', t, 2) then return end
         if not controller.initialized then return end
@@ -27,9 +28,10 @@ local function init(controller)
                 if not player_deleted then
                     local widget = marker.widget
                     local content = widget.content
+                    local characterId = player:profile().character_id
 
-                    local newName, isDirty =
-                        controller:formatPlayerName(content.header_text, player._telemetry_subject.account_id)
+                    local newName, isDirty = controller:formatPlayerName(
+                        content.header_text, player._telemetry_subject.account_id, characterId)
                     if isDirty then
                         content.header_text = newName
                         widget.dirty = true

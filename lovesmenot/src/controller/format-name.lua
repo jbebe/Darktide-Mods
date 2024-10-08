@@ -8,8 +8,12 @@ local RATINGS, COLORS, SYMBOLS =
 ---@param controller LovesMeNot
 local function init(controller)
     local NAME_PREFIX = {
-        [RATINGS.AVOID] = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ',
-        [RATINGS.PREFER] = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ',
+        [RATINGS.NEGATIVE] = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ',
+        [RATINGS.POSITIVE] = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ',
+    }
+    local COMMUNITY_NAME_PREFIX = {
+        [RATINGS.NEGATIVE] = SYMBOLS.WEB .. styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ',
+        [RATINGS.POSITIVE] = SYMBOLS.WEB .. styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ',
     }
 
     local function cleanRating(text)
@@ -23,45 +27,49 @@ local function init(controller)
 
         -- strip icon from vanilla name: '{color}<unicode>{reset} <name>' -> '<name>'
         -- TODO: remove all smybols
+        -- {#color(255,75,20)}{#reset()} Martack {#color(216,229,207,120)}[BOT]{#reset()} - 1 
         result = result
+            :gsub('^' .. SYMBOLS.WEB, '')
             :gsub('^%b{}', '')
             :gsub('^' .. SYMBOLS.VETERAN, '')
             :gsub('^' .. SYMBOLS.ZEALOT, '')
             :gsub('^' .. SYMBOLS.PSYKER, '')
             :gsub('^' .. SYMBOLS.OGRYN, '')
             :gsub('^' .. SYMBOLS.TORSO, '')
+            :gsub('^' .. SYMBOLS.FLAME, '')
+            :gsub('^' .. SYMBOLS.WREATH, '')
             :gsub('^%b{}', '')
             :gsub('^ ', '')
 
         return result
     end
 
-    function controller:formatPlayerName(oldText, accountId)
-        if not self.rating then
-            -- rating is not available, skip
-            return oldText, false
+    function controller:formatPlayerName(originalText, accountId)
+        if not self:hasRating() then
+            -- rating is not available due to errors
+            return originalText, false
         end
 
-        local accData = self.rating.accounts[accountId]
-        if not accData then
-            local textRaw = cleanRating(oldText)
-            if oldText == textRaw then
+        local rating, isCommunityRated = self:getRating(accountId)
+        if not rating then
+            -- show default name without any prefixes
+            local cleanedText = cleanRating(originalText)
+            if originalText == cleanedText then
                 -- default player name, unchanged
-                return oldText, false
+                return originalText, false
             end
 
             -- default player name, changed from rated
-            return textRaw, true
+            return cleanedText, true
         end
 
-        local rating = accData.rating
-        local ratingPrefix = NAME_PREFIX[rating]
-        if langUtils.startsWith(oldText, ratingPrefix) then
+        local ratingPrefix = isCommunityRated and COMMUNITY_NAME_PREFIX[rating] or NAME_PREFIX[rating]
+        if langUtils.startsWith(originalText, ratingPrefix) then
             -- prefix already applied
-            return oldText, false
+            return originalText, false
         else
             -- prefix is different, replace it, mark it dirty
-            local textRaw = cleanRating(oldText)
+            local textRaw = cleanRating(originalText)
 
             return ratingPrefix .. textRaw, true
         end

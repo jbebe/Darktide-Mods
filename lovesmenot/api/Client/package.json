@@ -1,0 +1,24 @@
+{
+  "name": "authland",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "set \"VITE_API_URL=https://localhost:53531\" && vite",
+    "dev:prod": "set \"VITE_API_URL=%LOVESMENOT_API_PROD_URL%\" && vite",
+    "build": "tsc -b && set \"VITE_API_URL=https://localhost:53531\" && vite build",
+    "build:prod": "tsc -b && set \"VITE_API_URL=%LOVESMENOT_API_PROD_URL%\" && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build:prod && aws s3 cp dist/index.html s3://lovesmenot.blint.cloud/index.html"
+  },
+  "dependencies": {
+    "preact": "^10.23.1"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.9.0",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1",
+    "vite-minify-css-module": "^1.0.3",
+    "vite-plugin-singlefile": "^2.0.2"
+  }
+}

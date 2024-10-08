@@ -6,6 +6,9 @@ return {
 	is_togglable = true,
 	options = {
 		widgets = {
+			-- extras:
+			-- lovesmenot_settings_community_access_token
+			--
 			{
 				setting_id = 'lovesmenot_settings_hotkey_group_title',
 				type = 'group',
@@ -34,6 +37,18 @@ return {
 				keybind_trigger = 'pressed',
 				keybind_type = 'function_call',
 				function_name = 'openRatings'
+			},
+			{
+				setting_id = 'lovesmenot_settings_community',
+				type = 'checkbox',
+				default_value = false,
+				sub_widgets = {
+					{
+						setting_id = 'lovesmenot_settings_community_hide_own_rating',
+						type = 'checkbox',
+						default_value = false,
+					}
+				}
 			}
 		}
 	}

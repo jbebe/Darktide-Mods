@@ -29,6 +29,33 @@
     * etc..
   * After game on the Mourningstar, dialog with 3 users to vote for good/meh/bad
 
+### Server sync
+
+* When you start the mod, you don't have anything
+* At the main menu, if it's a fresh start (no json) and server sync is enabled, sync all data and persist it in the json
+  * If sync is not enabled, just work with the current setup that we have on the main branch
+  * If sync is enabled, after every game start, sync runs at the beginning, keeping the local db fresh
+  * You can perform a manual sync from the mod menu (is there a button to do so?)
+* If you add a new vote / change the current vote, it's stored with the synced data but the id is also stored in a 'new id table'
+  * if that 'new id table' has any items in it, sync it to the server.
+  * A new toxic or good player is rarely added so it's not a big deal if we have to sync multiple entries at once. We can just use the batch download and upload.
+* If the update was successful (not error callback) we clear the 'new id table' and that's it. We will sync again if needed.
+* What about collision? Oh oh. I don't know.
+
+### Networking
+
+| Reef | (AWS) Region |
+| - | -: |
+| afr-south | aws-af-south-1 |
+| ap-central | aws-ap-southeast-1 |
+| ap-north | aws-ap-northeast-1 <br> aws-ap-northeast-2 |
+| ap-south | aws-ap-southeast-2 |
+| eu | aws-eu-central-1<br>aws-eu-north-1<br>aws-eu-west-1<br>aws-eu-west-2 |
+| hk | aws-ap-east-1 |
+| mei | aws-ap-south-1<br>aws-me-south-1 |
+| sa | aws-sa-east-1 |
+| us-east | aws-ca-central-1<br>aws-us-east-1<br>aws-us-east-2 |
+| us-west | aws-us-west-1<br>aws-us-west-2 |
 
 ### Dev env setup
 
@@ -41,6 +68,51 @@ Link mod folder to darktide mod folder:
 (of course you should also add your mod name to `mod_load_order.txt`)
 
 ### Useful stuff
+
+#### [Sequence diagram for sync/local behavior](https://sequencediagram.org/index.html#initialData=C4S2BsFMAIFkHsAm1EENiugM3PA7gFAEAOqATqAMYikB2wcqItsktArieVTavXEgAiqAM4ALAEbxyiLhRDU6DADLwJEgJ5yeS6IPZlmAcwDiqALaRtC3vwCitRGctFa8YDHgA3SGUbNWDgAuaGcYMVFoEQwKSFk5aAAxEDJo6FAXNw9ob19-FjZ2EIA5eBziX3QQeFoCYDEySFRkAGUNWkocrCwCWCYCjgBaAD4+gMKQsiraIwBeXGaAJWmjAAoASjqGptb2zpre-sD2EdWAVnWxgaLoKdAZ2aNIYGX7oxENgjZ40j82jq6PSynh8fgQiGE4ikMhCAAVGiIRNAANaQDTpMoVVIgNJoDBbRrNaD-fa1YE5UECCGiSTSMiIOEIpGo9HAMrsYgLZAAMiiey+jlc7hBeVU6g0jMgIjYDDuxgAOrQJKI4jlaFFIOAsAA6OUzIi-Yl7QEEcm5Pz6QwzMIhaUMaVa3UrAk7I0Ag5mymW4w2jX2zU6vVGaC8h062iQPCvYwCn7kN37bqm4UUvIOJwWSBw3wiHH+x1Bl1Eklq5PZc3QdO+kth7URqMrDEasigxW1+vRmbQWbQADeAF9Y0A)
+
+#### Steam id shenanigans
+
+```lua
+local md5 = modRequire 'lovesmenot/nurgle_modules/md5'
+local steamIdString = Application.hex64_to_dec(Steam.user_id())
+print(tostring(md5.sumhexa(steamIdString)))
+-- md5(hex2num(user_id)): 738b28c030b30528e83a6e6cbee2f9b1
+-- md5(real steam id):    738b28c030b30528e83a6e6cbee2f9b1
+```
+
+#### Xbox id shenanigans
+
+```lua
+-- xuid 64-bit unsigned integer 23452345
+-- hexa version: 000901F4BF5B7415 (probably this one is used)
+```
+
+#### REST api
+
+Example:
+```lua
+if not Managers.backend:authenticated() then
+  Log.error('Cannot initiate api call if not authenticated to game backend')
+end
+Managers.backend:url_request(url, {
+		require_auth = true, -- this must be true always!
+    method = "POST",
+    body = {
+      placeholder = "",
+    },
+    headers = {
+      headerName = headerData,
+    }
+	}):next(
+    function(responseBody){ 
+      processData(responseBody)
+    }, 
+    function(errorObject){
+      local errorMessage = type(errorObject) == "table" and table.tostring(errorObject, 3) or errorObject
+      Log.warning("<classname>", "Failed to <...> for url '%s' with error: %s", url, errorMessage)
+    })
+```
 
 #### Player infos
 

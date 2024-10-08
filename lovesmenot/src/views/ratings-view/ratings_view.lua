@@ -1,5 +1,3 @@
-local DMF = get_mod('DMF')
-
 local ViewElementInputLegend = require 'scripts/ui/view_elements/view_element_input_legend/view_element_input_legend'
 local ScriptWorld = require 'scripts/foundation/utilities/script_world'
 local UIWidget = require 'scripts/managers/ui/ui_widget'
@@ -8,6 +6,7 @@ local UIRenderer = require 'scripts/managers/ui/ui_renderer'
 local localization = modRequire 'lovesmenot/src/mod.localization'
 local constants = modRequire 'lovesmenot/src/constants'
 local styleUtils = modRequire 'lovesmenot/src/utils/style'
+local gameUtils = modRequire 'lovesmenot/src/utils/game'
 local fun = modRequire 'lovesmenot/nurgle_modules/fun'
 
 ---@class RatingsViewType: BaseViewType
@@ -76,29 +75,29 @@ function RatingsView:on_enter()
 end
 
 local ratingsIconMap = {
-    [constants.RATINGS.AVOID] = constants.SYMBOLS.FLAME,
-    [constants.RATINGS.PREFER] = constants.SYMBOLS.WREATH,
+    [constants.RATINGS.NEGATIVE] = constants.SYMBOLS.FLAME,
+    [constants.RATINGS.POSITIVE] = constants.SYMBOLS.WREATH,
 }
 
 local ratingsColorMap = {
-    [constants.RATINGS.AVOID] = constants.COLORS.ORANGE,
-    [constants.RATINGS.PREFER] = constants.COLORS.GREEN,
+    [constants.RATINGS.NEGATIVE] = constants.COLORS.ORANGE,
+    [constants.RATINGS.POSITIVE] = constants.COLORS.GREEN,
 }
 
----@param a RatingAccountType
----@param b RatingAccountType
+---@param a RatingAccount
+---@param b RatingAccount
 local function compareByCreationDate(a, b)
     return a.creationDate < b.creationDate
 end
 
-function RatingsView:_setup_category_config()
-    local entries = {}
+function RatingsView:_get_widget_configs()
+    local widgetConfig = {}
+    local rawRatings = table.clone(self._controller.localRating and
+        self._controller.localRating.accounts or {})
 
-    local rawRatings = DMF.deepcopy(self._controller.rating and self._controller.rating.accounts or {})
+    ---@alias ExtendedRatingAccount (RatingAccount | { accountId: string })
 
-    ---@alias ExtendedRatingAccountType (RatingAccountType | { accountId: string })
-
-    ---@type ExtendedRatingAccountType[]
+    ---@type ExtendedRatingAccount[]
     local sortedRatings = fun.reduce(function(acc, accountId, accountInfo)
         accountInfo.accountId = accountId
         table.insert(acc, accountInfo)
@@ -106,13 +105,13 @@ function RatingsView:_setup_category_config()
     end, {}, rawRatings)
     table.sort(sortedRatings, compareByCreationDate)
 
-    local avoidRatings, preferRatings = fun.partition(function(x)
-        ---@cast x ExtendedRatingAccountType
-        return x.rating == constants.RATINGS.AVOID
+    local negativeRatings, positiveRatings = fun.partition(function(x)
+        ---@cast x ExtendedRatingAccount
+        return x.rating == constants.RATINGS.NEGATIVE
     end, sortedRatings)
 
-    ---@type ExtendedRatingAccountType[]
-    local groupedRatings = fun.chain(preferRatings, avoidRatings)
+    ---@type ExtendedRatingAccount[]
+    local groupedRatings = fun.chain(positiveRatings, negativeRatings)
 
     self._controller.dmf:add_global_localize_strings({
         lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
@@ -120,6 +119,38 @@ function RatingsView:_setup_category_config()
         lovesmenot_ratingsview_delete_yes = localization.lovesmenot_ratingsview_delete_yes,
         lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
     })
+
+    if self._controller:isCommunity() and self._controller:hasRating() then
+        for hash, rating in pairs(self._controller.communityRating) do
+            local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
+            local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash
+            local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. rating)
+            local ratingIcon = styleUtils.colorize(ratingsColorMap[rating], ratingsIconMap[rating])
+            local ratingIconWithPadding = ratingIcon
+            if rating == constants.RATINGS.NEGATIVE then
+                ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
+            else
+                ratingText = ratingText .. '    '
+            end
+            self._controller.dmf:add_global_localize_strings({
+                [title] = {
+                    en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_title',
+                        ratingIconWithPadding, ratingText, '', hash),
+                },
+                [subtitle] = {
+                    en = constants.SYMBOLS.WEB ..
+                        ' ' .. self._controller.dmf:localize('lovesmenot_ingame_community_rating'),
+                }
+            })
+            local entry = {
+                widget_type = 'settings_button',
+                display_name = title,
+                display_name2 = subtitle,
+            }
+            widgetConfig[#widgetConfig + 1] = entry
+        end
+    end
+
     for _, info in fun.iter(groupedRatings) do
         local title = 'lovesmenot_ratingsview_griditem_title_' .. info.accountId
         local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. info.accountId
@@ -129,9 +160,10 @@ function RatingsView:_setup_category_config()
         local ratingIcon = styleUtils.colorize(ratingsColorMap[info.rating], ratingsIconMap[info.rating])
         local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. info.rating)
         local ratingIconWithPadding = ratingIcon
-        if info.rating == constants.RATINGS.AVOID then
+        if info.rating == constants.RATINGS.NEGATIVE then
             ratingIconWithPadding = '\u{2009}' .. ratingIconWithPadding .. '\u{2009}'
-            ratingText = ratingText .. ' '
+        else
+            ratingText = ratingText .. '  '
         end
         self._controller.dmf:add_global_localize_strings({
             [title] = {
@@ -156,8 +188,8 @@ function RatingsView:_setup_category_config()
                             close_on_pressed = true,
                             text = 'lovesmenot_ratingsview_delete_yes',
                             callback = callback(function()
-                                self._controller.rating.accounts[info.accountId] = nil
-                                self._controller:persistRating()
+                                self._controller.localRating.accounts[info.accountId] = nil
+                                self._controller:persistLocalRating()
                                 self:_reload()
                             end),
                         },
@@ -172,13 +204,19 @@ function RatingsView:_setup_category_config()
                 Managers.event:trigger('event_show_ui_popup', context)
             end
         }
-        entries[#entries + 1] = entry
+        widgetConfig[#widgetConfig + 1] = entry
     end
 
+    -- widget list will be reversed by the grid
+    return widgetConfig
+end
+
+function RatingsView:_setup_category_config()
     local scenegraph_id = 'grid_content_pivot'
     local callback_name = 'cb_on_category_pressed'
-    self._category_content_widgets, self._category_alignment_list = self:_setup_content_widgets(entries, scenegraph_id,
-        callback_name)
+    local widgetConfig = self:_get_widget_configs()
+    self._category_content_widgets, self._category_alignment_list =
+        self:_setup_content_widgets(widgetConfig, scenegraph_id, callback_name)
     local scrollbar_widget_id = 'scrollbar'
     local grid_scenegraph_id = 'background'
     local grid_pivot_scenegraph_id = 'grid_content_pivot'
@@ -193,8 +231,8 @@ function RatingsView:_setup_content_grid_scrollbar(grid, widget_id, grid_scenegr
     local widgets_by_name = self._widgets_by_name
     local scrollbar_widget = widgets_by_name[widget_id]
 
-    if DMF:get('dmf_options_scrolling_speed') and widgets_by_name and widgets_by_name['scrollbar'] then
-        widgets_by_name['scrollbar'].content.scroll_speed = DMF:get('dmf_options_scrolling_speed')
+    if self._controller.dmf:get('dmf_options_scrolling_speed') and widgets_by_name and widgets_by_name['scrollbar'] then
+        widgets_by_name['scrollbar'].content.scroll_speed = self._controller.dmf:get('dmf_options_scrolling_speed')
     end
 
     grid:assign_scrollbar(scrollbar_widget, grid_pivot_scenegraph_id, grid_scenegraph_id)
@@ -265,11 +303,6 @@ function RatingsView:_setup_input_legend()
         local legend_input = legend_inputs[i]
         local on_pressed_callback = legend_input.on_pressed_callback and callback(self, legend_input.on_pressed_callback)
         local visibility_function = legend_input.visibility_function
-        if legend_input.display_name == 'loc_scoreboard_delete' then
-            visibility_function = function()
-                return nil
-            end
-        end
         self._input_legend_element:add_entry(legend_input.display_name, legend_input.input_action, visibility_function,
             on_pressed_callback, legend_input.alignment)
     end
@@ -319,10 +352,6 @@ function RatingsView:_draw_grid(grid, widgets, interaction_widget, dt, t, input_
                 if hotspot then
                     hotspot.force_disabled = not is_grid_hovered
                     local is_active = hotspot.is_focused or hotspot.is_hover
-
-                    if is_active and widget.content.entry and (widget.content.entry.tooltip_text or widget.content.entry.disabled_by and not table.is_empty(widget.content.entry.disabled_by)) then
-                        --self:_set_tooltip_data(widget)
-                    end
                 end
 
                 UIWidget.draw(widget, ui_renderer)
@@ -347,6 +376,17 @@ end
 
 function RatingsView:cb_on_back_pressed()
     self.ui_manager:close_view('ratings_view')
+end
+
+function RatingsView:cb_on_download_ratings_pressed()
+    if self._controller:isCommunity() then
+        self._controller:uploadCommunityRating()
+        self._controller:downloadCommunityRating()
+    end
+    self._controller:persistLocalRating()
+    gameUtils.directNotification(
+        self._controller.dmf:localize('lovesmenot_ratingsview_download_ratings_notif'))
+    self:_setup_category_config()
 end
 
 --

@@ -8,6 +8,7 @@
 ---@field aim_assist_data string
 ---@field _telemetry_game_session any
 ---@field _debug_name string
+---@field _telemetry_subject { account_id: string, character_id: string, bot: boolean }
 ---@field _session_id string
 ---@field _unique_id string
 ---@field _peer_id string
@@ -36,7 +37,7 @@
 ---@field is_human_controlled function
 ---@field name function
 ---@field set_profile function
----@field profile function
+---@field profile fun(): PlayerProfile
 ---@field has_local_profile function
 ---@field archetype_name function
 ---@field breed_name function
@@ -662,3 +663,24 @@
 ---@field using_cursor_navigation function
 ---@field widget_hotspot_content function
 ---@field widgets_by_name function
+
+---@class CharacterProgression
+---@field id string Character id
+---@field currentLevel number [1,30]
+---@field currentXp number actual xp regardless of level
+---@field currentXpInLevel number
+---@field neededXpForNextLevel number xp for next level or -1 if already max level
+---@field eligibleForLevel boolean
+---@field talentPoints number unlocked talent points [0,30]
+---@field type string
+
+---@class PlayerProfile
+---@field personal { character_height: number }
+---@field archetype { name: string }
+---@field character_id string
+---@field name string character name
+---@field specialization string e.g. psyker_2 veteran_1
+---@field current_level number
+---@field gender 'male' | 'female'
+---@field selected_voice string
+---@field talent_points number

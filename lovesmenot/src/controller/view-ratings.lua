@@ -8,7 +8,7 @@ local function init(controller)
 
     function controller:registerRatingsView()
         self.dmf:add_global_localize_strings({
-            -- TODO: move to localization
+            -- not shown anywhere, just a placeholder
             loc_ratings_view_display_name = {
                 en = 'Ratings',
             }
