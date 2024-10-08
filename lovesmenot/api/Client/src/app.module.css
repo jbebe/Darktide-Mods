@@ -49,13 +49,13 @@
 
 .background {
     background-size: cover;
+    min-height: 1550px;
 }
 
 .background, .layout {
     position: absolute;
     width: 100%;
     min-width: 550px;
-    min-height: 100%;
 }
 
 .layout {
@@ -221,4 +221,11 @@
 
 .blue {
     color: #76cdff;
+}
+
+.error {
+    border-right: #d10000 solid 3px;
+    background-color: #5d2929;
+    padding: 10px 20px;
+    color: #ff9292;
 }

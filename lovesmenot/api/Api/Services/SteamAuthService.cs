@@ -25,7 +25,8 @@ namespace Api.Services
             // Validate via Steam
             var type = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
             var steamIdPrefix = "https://steamcommunity.com/openid/id/";
-            var steamIdRaw = HttpContext.User.Claims.Single(x => x.Type == type && x.Value.StartsWith(steamIdPrefix));
+            var steamIdRaw = HttpContext.User.Claims.FirstOrDefault(x => x.Type == type && x.Value.StartsWith(steamIdPrefix)) 
+                ?? throw new AuthException(InternalError.SteamClaimMissing);
             var steamId = steamIdRaw.Value[steamIdPrefix.Length..];
 
             // Get owned games
@@ -34,11 +35,13 @@ namespace Api.Services
                 $"key={Constants.Auth.SteamWebApiKey}&format=json&steamid={steamId}";
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(ownedGamesUrl);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+                throw new AuthException(InternalError.SteamGetOwnedGamesError, response.StatusCode);
             var ownedGamesType = await response.Content.ReadFromJsonAsync<GetOwnedGamesResponseType>();
-            var darktideAppId = 1361210;
-            var ownsDarktide = ownedGamesType?.Response?.Games?.Any(x => x.AppId == darktideAppId) == true;
-            if (!ownsDarktide) throw new Exception();
+            var ownsDarktide = ownedGamesType?.Response?.Games?
+                .Any(x => x.AppId == Constants.Auth.SteamDarktideId) == true;
+            if (!ownsDarktide)
+                throw new AuthException(InternalError.SteamNoOwnership);
 
             // Create token
             // No need to lower steamId for normalization as it's numeric

@@ -30,6 +30,16 @@ namespace Api
         public static class Auth
         {
             /// <summary>
+            /// Steam Dartkide id
+            /// </summary>
+            public const int SteamDarktideId = 1361210;
+            
+            /// <summary>
+            /// Xbox Dartkide id (game title)
+            /// </summary>
+            public const int XboxDarktideId = 1684508835;
+
+            /// <summary>
             /// Own URL of the server
             /// </summary>
             public static string SelfUrl => Environment.GetEnvironmentVariable("LOVESMENOT_API_URL")!;
@@ -61,7 +71,9 @@ namespace Api
             /// </summary>
             public static string WebsiteUrl => Environment.GetEnvironmentVariable("LOVESMENOT_WEBSITE_URL")!;
 
-            public static string WebsiteUrlTyped(AuthenticationType type) => $"{WebsiteUrl}?type={type.ToString().ToLower()}";
+            public static string WebsiteUrlWithTyped(AuthenticationType type) => $"{WebsiteUrl}?type={type.ToString().ToLower()}";
+
+            public static string WebsiteUrlWithError(PublicError code) => $"{WebsiteUrl}?error={code}";
 
             /// <summary>
             /// Mandatory parameter for Xbox Live auth flow

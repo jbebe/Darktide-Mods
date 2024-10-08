@@ -1,6 +1,5 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
-using AngleSharp.Dom;
 using Api;
 using Api.Controllers.Models;
 using Api.Database;
@@ -15,6 +14,13 @@ using System.Text.Json.Serialization;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+//
+// Helper/third-party services
+//
 
 builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.Converters.Add(
@@ -43,14 +49,12 @@ builder.Services
             IssuerSigningKey = Constants.Auth.JwtKeyObject,
         };
     });
-
 var authPolicy = new AuthorizationPolicyBuilder()
     .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
     .RequireAuthenticatedUser()
     .Build();
 builder.Services.AddAuthorizationBuilder().SetDefaultPolicy(authPolicy);
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddSingleton<IDynamoDBContext>(services =>
 {
     var client = new AmazonDynamoDBClient();
@@ -58,6 +62,11 @@ builder.Services.AddSingleton<IDynamoDBContext>(services =>
     context.ConverterCache.Add(typeof(RatingType), new DynamoDbEnumConverter<RatingType>());
     return context;
 });
+
+//
+// First party services
+//
+
 builder.Services.AddSingleton<IDatabaseService, DynamoDbService>();
 builder.Services.AddSingleton<RatingsService>();
 builder.Services.AddSingleton<SteamAuthService>();
@@ -68,9 +77,13 @@ builder.Services.AddHttpClient();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 
 var app = builder.Build();
-app.UseExceptionHandler(_ => { }); // asp.net bug
+app.UseExceptionHandler(_ => { /* required, an asp.net bug */ });
 app.UseAuthentication();
 app.UseAuthorization();
+
+//
+// Routes
+//
 
 app.MapGet("/", () => "Loves Me Not API 🌸");
 app.MapGet($"{Constants.ApiVersion}/ratings", (RatingsService ratingsService, CancellationToken cancellationToken)
@@ -83,8 +96,9 @@ app.MapGet($"auth/xbox", (XboxAuthService authService)
     => authService.Challenge());
 app.MapGet($"callback/steam", (SteamAuthService authService)
     => authService.HandleCallbackAsync());
-app.MapGet($"callback/xbox", ([FromQuery] string code, XboxAuthService authService, CancellationToken cancellationToken)
-    => authService.HandleCallbackAsync(code, cancellationToken));
+app.MapGet($"callback/xbox", ([FromQuery] string? code, [FromQuery] string? error, 
+    XboxAuthService authService, CancellationToken cancellationToken)
+    => authService.HandleCallbackAsync(code, error, cancellationToken));
 
 app.Run();
 

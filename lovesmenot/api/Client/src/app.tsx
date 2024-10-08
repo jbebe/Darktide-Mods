@@ -4,6 +4,12 @@ import xbox from './assets/xbox.svg'
 import styles from './app.module.css'
 import { JSX } from 'preact/jsx-runtime'
 
+enum ErrorCode {
+  Internal = 'Internal',
+  NoOwnership = 'NoOwnership',
+  AuthCancelled = 'AuthCancelled',
+}
+
 function merge(...args: (string | { [_: string]: boolean })[]){
   const result = []
   for (const value of args){
@@ -65,8 +71,9 @@ function Color({ children, value }: { children: string, value: 'yellow' | 'blue'
 }
 
 export function App() {
-  const params = new URLSearchParams(location.hash.slice(1))
-  const token = params.get('token')
+  const errorCode = new URLSearchParams(location.search).get('error');
+  const hashParams = new URLSearchParams(location.hash.slice(1))
+  const token = hashParams.get('token')
   const isCallback = token !== null
   const lambdaPrefix = import.meta.env.VITE_API_URL
   
@@ -77,6 +84,18 @@ export function App() {
     setTimeout(() => copy.style.opacity = '0', 2000);
   }
   
+  function mapErrorToMessage(error: ErrorCode){
+    const returnToHome = <><br/><a href="/">Click here</a> to return to the homepage.</>
+    switch (error){
+      case ErrorCode.AuthCancelled:
+        return <>You cancelled the authentication flow.{returnToHome}</>
+      case ErrorCode.NoOwnership:
+        return <>According to your chosen platform you do not own Darktide. Thus we will not create an access token.{returnToHome}</>
+      case ErrorCode.Internal:
+        return <>An internal server error occurred. Let me know if I can help with it on Discord.{returnToHome}</>
+    }
+  }
+
   if (isCallback){
     const newUrl = location.href.replace(location.hash, '');
     history.replaceState({}, '', newUrl)
@@ -91,7 +110,8 @@ export function App() {
           <div className={styles.content}>
             <Header />
             <hr />
-            {isCallback ? <>
+            {errorCode && <div className={styles.error}>{mapErrorToMessage(errorCode as ErrorCode)}</div>}
+            {!errorCode && isCallback && <>
               <p style={{ textAlign: 'center' }}>
                 Copy the following code and paste it in your game
               </p>
@@ -99,16 +119,16 @@ export function App() {
                 <input type="text" defaultValue={token} readOnly onClick={(evt) => copyToken(evt)} />
                 <div className={styles.copy}>Copied</div>
               </div>
-            </> 
-            : <>
+            </>}
+            {!errorCode && !isCallback && <>
               <p style={{ textAlign: 'center' }}>
                 Login to your gaming platform to get an <Color value='blue'>access token</Color>
               </p>
               <div className={styles.buttonContainer}>
                 <Button href={`${lambdaPrefix}/auth/steam`} icon={steam}>Steam</Button>
-                <Button disabled icon={xbox}>Xbox</Button>
+                <Button href={`${lambdaPrefix}/auth/xbox`} icon={xbox}>Xbox</Button>
               </div>
-              </>}
+            </>}
             <hr />
             <h4>What is this?</h4>
             <p>
@@ -118,32 +138,52 @@ export function App() {
               On the other hand, if you turn on <Color value='yellow'>community rating</Color> in the mod settings, your ratings are synced to a server
               where everyone else using the mod can see it, helping the community avoid toxic players and quickly noticing good players.
             </p>
-            <h4>So that means I can be falsely accused? Why not?</h4>
+            <h4>So that means I can be falsely accused?</h4>
             <p>
               From day one, the algorithm for ratings takes into account false single and even group votes.
               In order to be rated toxic, you need some ranked players to rate you over time. 
               To answer your question, people can't just rate you bad out of spite. 
-              That would not be a good feature.
+              That would be wrong.
             </p>
             <h4>How can I access <Color value='yellow'>community rating</Color>?</h4>
             <p>
               You need an <Color value='blue'>access token</Color>.
               This token binds to your gaming platform account (Steam/Xbox), meaning 
               for one Steam account you get one access token.
-              If you acquired said token, copy it, open Darktide and paste it into the popup input field.
+              If you acquired said token, copy it, head back to Darktide and paste it into the input field.
               You are ready to send and receive community ratings.
             </p>
-            <h4>Is that platform login button safe?</h4>
+            <h4>Are those two login buttons safe?</h4>
             <p>
-              The login button redirects you to the gaming platform.
-              The only information I obtain through said platform is your account id 
-              if the login succeeds.
+              Steam:<br/>
+              The Steam button redirects you to the Steam App login page.
+              It is not an actual app that will be linked to your account, just a method to securely get your account id.
+              Once you press Sign In, our servers receive only your account id (which is public information)
+              and given that, the server queries your owned games, looking for Darktide.
+              If Darktide has been found, your <Color value='blue'>access token</Color> is returned to you and no information is stored.
+            </p>
+            <p>
+              Xbox:<br/>
+              The login button redirects you to the Xbox Live login page.
+              If you press Cancel, you will be redirected to this page.
+              If you press Accept, the server will have temporal access to some basic information of your account.
+              Once your ownership of Darktide is determined, the temporal access is lost and your <Color value='blue'>access token</Color> is generated.
             </p>
             <h4>Why didn't I get my <Color value='blue'>token</Color>?</h4>
             <ul>
               <li>You cancelled your gaming platform login flow</li>
-              <li>Your profile is not public</li>
-              <li>You do not own Darktide</li>
+              <li>
+                Your Steam profile is not public - 
+                Although I tested it with a private profile, 
+                the documentation says we cannot list your owned games if your profile is set to private. 
+                Try it, if an error occurs, change your Steam profile to public.
+              </li>
+              <li>
+                You do not own Darktide - 
+                Xbox users might experience an issue where you actually own Dartkide but an error occurs.
+                If you don't have at least one achivement, our servers cannot determine if you own Dartkide. 
+                Sorry for that, it's a limitation of the Xbox platform.
+              </li>
             </ul>
             <hr />
             <p style={{ textAlign: 'center'}}>

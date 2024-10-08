@@ -11,7 +11,7 @@ namespace Api.Services
 
         private static string RedirectUrl => $"{Constants.Auth.SelfUrl}/callback/xbox";
 
-        private const string Scope = "XboxLive.signin";
+        private const string Scope = "xboxlive.signin offline_access openid email";
 
         private const string CodeForAccessTokenUrl = "https://login.live.com/oauth20_token.srf";
 
@@ -39,17 +39,32 @@ namespace Api.Services
             HttpContext.Response.Redirect(authUrl, permanent: false);
         }
 
-        async Task HandleCallbackAsync(string code, CancellationToken cancellationToken)
+        public async Task HandleCallbackAsync(string? code, string? error, CancellationToken cancellationToken)
         {
+            if (code == null)
+            {
+                if (error == "access_denied")
+                    throw new AuthException(InternalError.AuthCancelled);
+                throw new AuthException(InternalError.XboxLoginError);
+            }
+
             // Create token to access xbox api
-            var (claims, stsTokenResponse) = await ExchangeCodeForAccessTokenAsync(code, cancellationToken);
+            (UserTokenResponseClaimsItem Claims, UserTokenResponse TokenResponse) authResult;
+            try
+            {
+                authResult = await ExchangeCodeForAccessTokenAsync(code, cancellationToken);
+            } 
+            catch (Exception ex)
+            {
+                throw new AuthException(InternalError.XboxTokenExchangeError, exception: ex);
+            }
             
             // Check if user owns Darktide
-            await CheckForDarktideAsync(claims, stsTokenResponse.Token, cancellationToken);
+            await CheckForDarktideAsync(authResult.Claims, authResult.TokenResponse.Token, cancellationToken);
 
             // Create token
             // No need to lower xuid for normalization as it's numeric
-            RedirectToWebsiteWithAccessToken(AuthenticationType.Steam, claims.xid!);
+            RedirectToWebsiteWithAccessToken(AuthenticationType.Xbox, authResult.Claims.xid!);
         }
 
         private async Task CheckForDarktideAsync(UserTokenResponseClaimsItem item, string token, CancellationToken cancellationToken)
@@ -57,7 +72,6 @@ namespace Api.Services
             var client = HttpFactory.CreateClient();
             client.DefaultRequestHeaders.Add("X-Xbl-Contract-Version", "2");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("XBL3.0", $"x={item.uhs};{token}");
-            const long darkideId = 1684508835;
 
             // Check if user has any achivements for Darktide
             // Why don't we just query all owned games of the user?
@@ -68,16 +82,14 @@ namespace Api.Services
             // Because it returns "Missing title Id claim.",
             // meaning we need to be authorized as a game publisher to access the api.
             var response = await client.GetAsync(
-                    $"https://achievements.xboxlive.com/users/xuid({item.xid})/history/titles?maxItems=1&titleId={darkideId}",
+                    $"https://achievements.xboxlive.com/users/xuid({item.xid})/history/titles?maxItems=1&titleId={Constants.Auth.XboxDarktideId}",
                     cancellationToken);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+                throw new AuthException(InternalError.XboxGetAchivementsError, response.StatusCode);
             var achivements = (await response.Content.ReadFromJsonAsync<AchivementsResponse>(cancellationToken))!;
-            if (achivements.titles.Length == 1)
-            {
-                return;
-            }
-
-            throw new Exception("You don't have Dartkide");
+            
+            if (achivements.titles.Length == 0)
+                throw new AuthException(InternalError.XboxNoOwnership);
         }
 
 #pragma warning disable IDE1006
@@ -92,8 +104,8 @@ namespace Api.Services
             string code,
             string client_id,
             string grant_type,
-		    string redirect_uri,
-		    string scope,
+            string redirect_uri,
+            string scope,
             string client_secret
         );
 
@@ -108,13 +120,13 @@ namespace Api.Services
 
         record UserTokenRequestProperties(
             string AuthMethod,
-			string SiteName,
-			string RpsTicket
+            string SiteName,
+            string RpsTicket
         );
 
         record UserTokenRequest(
             string RelyingParty,
-			string TokenType,
+            string TokenType,
             UserTokenRequestProperties Properties
         );
 
