@@ -1,20 +1,13 @@
-﻿using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.WebUtilities;
 using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using static AspNet.Security.OpenId.OpenIdAuthenticationConstants;
 
 namespace Api.Services
 {
-    public class XboxAuthService
+    public class XboxAuthService: AuthServiceBase
     {
-        private IHttpContextAccessor HttpContextAccessor { get; }
-
         private IHttpClientFactory HttpFactory { get; }
-
-        private HttpContext HttpContext => HttpContextAccessor.HttpContext!;
 
         private static string RedirectUrl => $"{Constants.Auth.SelfUrl}/callback/xbox";
 
@@ -24,9 +17,8 @@ namespace Api.Services
 
         private JsonSerializerOptions JsonOptions { get; }
 
-        public XboxAuthService(IHttpContextAccessor httpContextAccessor, IHttpClientFactory factory)
+        public XboxAuthService(IHttpContextAccessor httpContextAccessor, IHttpClientFactory factory): base(httpContextAccessor)
         {
-            HttpContextAccessor = httpContextAccessor;
             HttpFactory = factory;
             JsonOptions = new JsonSerializerOptions
             {
@@ -47,38 +39,17 @@ namespace Api.Services
             HttpContext.Response.Redirect(authUrl, permanent: false);
         }
 
-        internal async Task HandleCallbackAsync(string code, CancellationToken cancellationToken)
+        async Task HandleCallbackAsync(string code, CancellationToken cancellationToken)
         {
+            // Create token to access xbox api
             var (claims, stsTokenResponse) = await ExchangeCodeForAccessTokenAsync(code, cancellationToken);
             
-            // check darktide
+            // Check if user owns Darktide
             await CheckForDarktideAsync(claims, stsTokenResponse.Token, cancellationToken);
 
-            // return with JWT token
-        }
-
-        record AchivementHistoryResponseTitle(
-            string lastUnlock,
-            int titleId,
-            string serviceConfigId,
-            string titleType,
-            string platform,
-            string name,
-            int earnedAchievements,
-            int currentGamerscore,
-            int maxGamerscore
-        );
-
-        class AchivementHistoryResponse: XboxGetBase
-        {
-            public AchivementHistoryResponseTitle[] titles { get; set; }
-        }
-
-        record XboxGetBasePagingInfo(string continuationToken, int totalRecords);
-
-        class XboxGetBase
-        {
-            public XboxGetBasePagingInfo pagingInfo { get; set; }
+            // Create token
+            // No need to lower xuid for normalization as it's numeric
+            RedirectToWebsiteWithAccessToken(AuthenticationType.Steam, claims.xid!);
         }
 
         private async Task CheckForDarktideAsync(UserTokenResponseClaimsItem item, string token, CancellationToken cancellationToken)
@@ -86,22 +57,36 @@ namespace Api.Services
             var client = HttpFactory.CreateClient();
             client.DefaultRequestHeaders.Add("X-Xbl-Contract-Version", "2");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("XBL3.0", $"x={item.uhs};{token}");
-
-            var response = await client.GetAsync($"https://achievements.xboxlive.com/users/xuid({item.xid})/history/titles", cancellationToken);
-            // TODO: use continuation token
-            response.EnsureSuccessStatusCode();
-            var history = (await response.Content.ReadFromJsonAsync<AchivementHistoryResponse>(cancellationToken))!;
             const long darkideId = 1684508835;
-            if (history.titles.Any(x => x.titleId == darkideId))
+
+            // Check if user has any achivements for Darktide
+            // Why don't we just query all owned games of the user?
+            // https://github.com/microsoft/xbox-live-api/issues/559
+            // > Is there any way to retrieve xbox live account games?
+            // > Not as far as I know
+            // Why don't we just query activities for Darktide?
+            // Because it returns "Missing title Id claim.",
+            // meaning we need to be authorized as a game publisher to access the api.
+            var response = await client.GetAsync(
+                    $"https://achievements.xboxlive.com/users/xuid({item.xid})/history/titles?maxItems=1&titleId={darkideId}",
+                    cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var achivements = (await response.Content.ReadFromJsonAsync<AchivementsResponse>(cancellationToken))!;
+            if (achivements.titles.Length == 1)
             {
                 return;
             }
 
-            // TODO: dig through api for Darktide related info
-            // https://learn.microsoft.com/en-us/gaming/gdk/_content/gc/reference/live/rest/uri/atoc-xboxlivews-reference-uris
+            throw new Exception("You don't have Dartkide");
         }
 
 #pragma warning disable IDE1006
+
+        class AchivementsResponse
+        {
+            // The actual content of the response is not important for us
+            public required object[] titles { get; set; }
+        }
 
         record CodeForAccessTokenRequest(
             string code,
@@ -221,7 +206,8 @@ namespace Api.Services
                 );
                 Console.WriteLine(JsonSerializer.Serialize(request));
                 client.DefaultRequestHeaders.Add("X-Xbl-Contract-Version", "2");
-                var response = await client.PostAsJsonAsync("https://user.auth.xboxlive.com/user/authenticate", request, JsonOptions, cancellationToken);
+                var response = await client.PostAsJsonAsync(
+                    "https://user.auth.xboxlive.com/user/authenticate", request, JsonOptions, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 userTokenResponse = (await response.Content.ReadFromJsonAsync<UserTokenResponse>(cancellationToken))!;
             }
@@ -240,7 +226,8 @@ namespace Api.Services
                         SandboxId: "RETAIL"
                     )
                 );
-                var response = await client.PostAsJsonAsync("https://xsts.auth.xboxlive.com/xsts/authorize", request, JsonOptions, cancellationToken);
+                var response = await client.PostAsJsonAsync(
+                    "https://xsts.auth.xboxlive.com/xsts/authorize", request, JsonOptions, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 stsTokenResponse = (await response.Content.ReadFromJsonAsync<UserTokenResponse>(cancellationToken))!;
             }

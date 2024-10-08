@@ -1,10 +1,5 @@
 ﻿using AspNet.Security.OpenId.Steam;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Api.Services
 {
@@ -12,16 +7,9 @@ namespace Api.Services
     public record GetOwnedGamesResponse(GetOwnedGamesGame[]? Games/*, ... */);
     public record GetOwnedGamesResponseType(GetOwnedGamesResponse? Response);
 
-    public class SteamAuthService
+    public class SteamAuthService: AuthServiceBase
     {
-        private IHttpContextAccessor HttpContextAccessor { get; }
-
-        private HttpContext HttpContext => HttpContextAccessor.HttpContext!;
-
-        public SteamAuthService(IHttpContextAccessor httpContextAccessor)
-        {
-            HttpContextAccessor = httpContextAccessor;
-        }
+        public SteamAuthService(IHttpContextAccessor httpContextAccessor): base(httpContextAccessor) { }
 
         public async Task ChallengeAsync()
         {
@@ -53,20 +41,8 @@ namespace Api.Services
             if (!ownsDarktide) throw new Exception();
 
             // Create token
-            var credentials = new SigningCredentials(Constants.Auth.JwtKeyObject, SecurityAlgorithms.HmacSha256);
-            // steamId is a numeric string so we don't have to lower it
-            byte[] hashBytes = MD5.HashData(Encoding.ASCII.GetBytes($"steam:{steamId}"));
-            var hashedId = Convert.ToHexString(hashBytes).ToLowerInvariant();
-            var token = new JwtSecurityToken(
-                issuer: Constants.Auth.JwtIssuer,
-                claims: [new Claim(type: Constants.Auth.PlatformId, value: hashedId)],
-                expires: DateTime.Now.AddYears(1),
-                signingCredentials: credentials
-            );
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            string typedUrl = Constants.Auth.WebsiteUrlTyped(AuthenticationType.Steam);
-            HttpContext.Response.Redirect($"{typedUrl}#token={tokenString}", permanent: false);
+            // No need to lower steamId for normalization as it's numeric
+            RedirectToWebsiteWithAccessToken(AuthenticationType.Steam, steamId);
         }
     }
 }
