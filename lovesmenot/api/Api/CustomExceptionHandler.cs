@@ -114,7 +114,8 @@ namespace Api
                 {
                     code = modEx.ErrorCode.ToPublic();
                 }
-                httpContext.Response.Redirect(Constants.Auth.WebsiteUrlWithError(code), permanent: false);
+
+                httpContext.Response.WriteAsync(code.ToString(), cancellationToken);
 
                 return ValueTask.FromResult(true);
             }

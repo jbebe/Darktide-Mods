@@ -49,6 +49,17 @@ return {
 						default_value = false,
 					}
 				}
+			},
+			{
+				setting_id = 'lovesmenot_settings_loglevel',
+				type = 'dropdown',
+				default_value = 'error',
+				options = {
+					{ text = "lovesmenot_settings_loglevel_error",   value = 'error' },
+					{ text = "lovesmenot_settings_loglevel_warning", value = 'warning' },
+					{ text = "lovesmenot_settings_loglevel_info",    value = 'info' },
+					{ text = "lovesmenot_settings_loglevel_debug",   value = 'debug' },
+				},
 			}
 		}
 	}

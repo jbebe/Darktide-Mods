@@ -1,5 +1,66 @@
 ---@meta
 
+---@class PlayerInfo
+---@field _presence table
+---@field _platform_social table
+---@field _account_id string
+---@field _account_name string
+---@field _activity_id string
+---@field _friend_status 'none' | 'friend' | 'invite' | 'invited' | 'ignored'
+---@field _is_blocked boolean
+---@field _is_party_member boolean
+---@field _is_text_muted boolean
+---@field _is_voice_muted boolean
+---@field _online_status 'offline' | 'platform_online' | 'online' | 'reconnecting'
+---@field _player_unique_id string
+---@field _last_time_played_with function
+---@field _presence_account_id_change_callback function
+---@field init function
+---@field destroy function
+---@field set_account function
+---@field set_platform_social function
+---@field platform_social function
+---@field account_id function
+---@field user_display_name function
+---@field platform_icon function
+---@field online_status function
+---@field is_friend function
+---@field friend_status function
+---@field set_friend_status function
+---@field is_blocked function
+---@field is_platform_blocked function
+---@field set_is_blocked function
+---@field is_text_muted function
+---@field set_is_text_muted function
+---@field is_voice_muted function
+---@field set_is_voice_muted function
+---@field last_time_played_with function
+---@field set_last_time_played_with function
+---@field cross_play_disabled function
+---@field cross_play_disabled_in_party function
+---@field is_cross_playing function
+---@field is_myself function
+---@field is_platform_friend function
+---@field platform fun(): PlatformType
+---@field platform_user_id function
+---@field player_activity_id function
+---@field player_activity_loc_string function
+---@field character_name function
+---@field character_level function
+---@field character_id function
+---@field is_own_player function
+---@field num_party_members function
+---@field num_mission_members function
+---@field party_status function
+---@field set_is_party_member function
+---@field party_id function
+---@field peer_id function
+---@field profile function
+---@field first_update_promise function
+---@field _update_presence function
+---@field _get_presence function
+---@field __tostring function
+
 ---@class HumanPlayer
 ---@field player_unit string | nil
 ---@field viewport_name string

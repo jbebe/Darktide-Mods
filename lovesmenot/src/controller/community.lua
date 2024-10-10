@@ -1,4 +1,3 @@
-local DMF = get_mod("DMF")
 local BackendUtilities = require('scripts/foundation/managers/backend/utilities/backend_utilities')
 
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
@@ -6,7 +5,6 @@ local netUtils = modRequire 'lovesmenot/src/utils/network'
 local langUtils = modRequire 'lovesmenot/src/utils/language'
 
 ---@param controller LovesMeNot
----@
 local function init(controller)
     function controller:downloadCommunityRating()
         local accessToken = controller:getAccessToken()
@@ -20,8 +18,10 @@ local function init(controller)
                 gameUtils.directNotification(self.dmf:localize('lovesmenot_ingame_self_status', selfRating), false)
             end
         end):catch(function(error)
-            gameUtils.directNotification('Community server is unreachable. Mod is temporarily disabled.', true)
-            DMF.set_mod_state(controller.dmf, false, false)
+            -- TODO: move to localization
+            gameUtils.directNotification('Community server is unreachable. Reload game to retry.', true)
+            -- TODO: change every disable mod to initialized = false
+            controller.initialized = false
         end)
     end
 
@@ -46,17 +46,17 @@ local function init(controller)
         for _, item in pairs(self.syncableRating) do
             targets[item.idHash] = {
                 type = item.rating,
-                targetLevel = item.level,
+                characterLevel = item.level,
             }
         end
 
         local sourceCache = self.accountCache[self.localPlayer._account_id]
         ---@type RatingRequest
         local request = {
-            sourceHash = sourceCache.idHash,
-            sourceLevel = sourceCache.level,
-            sourceReef = BackendUtilities.prefered_mission_region,
-            targets = targets
+            characterLevel = sourceCache.level,
+            reef = BackendUtilities.prefered_mission_region,
+            accounts = targets,
+            friends = self.localPlayerFriends,
         }
         netUtils.updateRatings(accessToken, request):next(function()
             self.syncableRating = {}

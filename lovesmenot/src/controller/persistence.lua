@@ -3,7 +3,7 @@ local utils = modRequire 'lovesmenot/src/utils/language'
 
 ---@param controller LovesMeNot
 local function init(controller)
-    local ratingPath = utils.os.getenv('APPDATA') .. [[\Fatshark\Darktide\lovesmenot.json]]
+    local ratingPath = controller:getConfigPath() .. [[\lovesmenot.json]]
 
     function controller:loadLocalRating()
         local file = utils.io.open(ratingPath, 'r')

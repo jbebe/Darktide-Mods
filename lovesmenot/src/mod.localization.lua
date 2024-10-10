@@ -38,6 +38,21 @@ return {
 	lovesmenot_settings_community_hide_own_rating_description = {
 		en = 'Hides all visual signs of your own community ranking (for sensitive souls)'
 	},
+	lovesmenot_settings_loglevel = {
+		en = 'Log level'
+	},
+	lovesmenot_settings_loglevel_error = {
+		en = 'Error',
+	},
+	lovesmenot_settings_loglevel_warning = {
+		en = 'Warning',
+	},
+	lovesmenot_settings_loglevel_info = {
+		en = 'Info',
+	},
+	lovesmenot_settings_loglevel_debug = {
+		en = 'Debug',
+	},
 
 	-- Dashboard delete modal
 	lovesmenot_ratingsview_delete_title = {

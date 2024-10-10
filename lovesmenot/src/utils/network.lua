@@ -34,13 +34,13 @@ end
 
 ---@class TargetRequest
 ---@field type RATINGS
----@field targetLevel number
+---@field characterLevel number
 
 ---@class RatingRequest
----@field sourceHash string
----@field sourceLevel number
----@field sourceReef string
----@field targets table<string, TargetRequest>
+---@field characterLevel number
+---@field reef string
+---@field accounts table<string, TargetRequest>
+---@field friends string[]
 
 ---@param accessToken string
 ---@param request RatingRequest

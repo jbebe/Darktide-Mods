@@ -5,6 +5,7 @@
 local md5 = modRequire 'lovesmenot/nurgle_modules/md5'
 local fun = modRequire 'lovesmenot/nurgle_modules/fun'
 local langUtils = modRequire 'lovesmenot/src/utils/language'
+local utils = modRequire 'lovesmenot/src/utils/language'
 
 ---@type DmfMod
 local dmf = get_mod('lovesmenot')
@@ -105,8 +106,10 @@ end
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
 ---@field md5 { sumhexa: fun(text: string): string }
 ---@field reef string | nil
+---@field logFileHandle file* | nil
 local controller = {
     dmf = dmf,
+
     initialized = false,
     isInMission = false,
     localPlayer = nil,
@@ -120,7 +123,41 @@ local controller = {
     localRating = nil,
     communityRating = nil,
     reef = nil,
+    localPlayerFriends = {},
 }
+
+function controller:getConfigPath()
+    local appDataPath = utils.os.getenv('APPDATA')
+    if IS_GDK then
+        return appDataPath .. [[\Fatshark\MicrosoftStore\Darktide]]
+    else
+        return appDataPath .. [[\Fatshark\Darktide]]
+    end
+end
+
+---@type table<LogLevel, number>
+local LogLevelMap = {
+    debug = 1,
+    info = 2,
+    warning = 3,
+    error = 4,
+}
+
+---@param level LogLevel
+---@param message string
+function controller:log(level, message)
+    local logLevel = self.dmf:get('lovesmenot_settings_loglevel')
+    if LogLevelMap[level] < LogLevelMap[logLevel] then
+        return
+    end
+
+    local loggedLine = ('[%s] %s'):format(
+        level,
+        type(message) == 'table' and table.tostring(message) or tostring(message)
+    );
+    print('[lovesmenot]' .. loggedLine)
+    self.logFileHandle:write(loggedLine .. '\n')
+end
 
 ---@param accountId string
 function controller:hash(accountId)
@@ -211,7 +248,6 @@ function controller:loadLocalPlayerToCache()
             characters_progression)
 
         -- Set rating of host player
-        self:getRating(self.localPlayer:account_id(), progression.currentLevel)
     end):catch(function(error)
         print(table.tostring(error, 5))
     end)
