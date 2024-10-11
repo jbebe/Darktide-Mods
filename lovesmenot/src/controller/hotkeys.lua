@@ -19,27 +19,32 @@ local function init(controller)
         local isError = false
         ---@type RatingAccount
         local copy = table.clone(teammate)
-        local creationDate = languageUtils.os.date(constants.DATE_FORMAT)
-        ---@cast creationDate string
+        local creationDate = languageUtils.os.date(constants.DATE_FORMAT) --[[ @as string ]]
         copy.creationDate = creationDate
-        if not self.localRating.accounts[teammate.accountId] then
+        if not self.localRating.accounts[teammate.uid] then
             -- account has not been rated yet, create object
             copy.rating = RATINGS.NEGATIVE
-            self.localRating.accounts[teammate.accountId] = copy
-            message = controller.dmf:localize('lovesmenot_ingame_notification_set', teammate.characterName,
-                controller.dmf:localize('lovesmenot_ingame_rating_negative'))
+            self.localRating.accounts[teammate.uid] = copy
+            message = controller.dmf:localize(
+                'lovesmenot_ingame_notification_set',
+                teammate.characterName,
+                controller.dmf:localize('lovesmenot_ingame_rating_negative')
+            )
             message = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ' .. message
             isError = true
-        elseif self.localRating.accounts[teammate.accountId].rating == RATINGS.NEGATIVE then
+        elseif self.localRating.accounts[teammate.uid].rating == RATINGS.NEGATIVE then
             -- account hasn been rated, cycle to positive
             copy.rating = RATINGS.POSITIVE
-            self.localRating.accounts[teammate.accountId] = copy
-            message = controller.dmf:localize('lovesmenot_ingame_notification_set', teammate.characterName,
-                controller.dmf:localize('lovesmenot_ingame_rating_positive'))
+            self.localRating.accounts[teammate.uid] = copy
+            message = controller.dmf:localize(
+                'lovesmenot_ingame_notification_set',
+                teammate.characterName,
+                controller.dmf:localize('lovesmenot_ingame_rating_positive')
+            )
             message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ' .. message
         else
             -- account was rated, remove from table
-            self.localRating.accounts[teammate.accountId] = nil
+            self.localRating.accounts[teammate.uid] = nil
             message = controller.dmf:localize('lovesmenot_ingame_notification_unset', teammate.characterName)
             message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.CHECK) .. ' ' .. message
         end
@@ -48,49 +53,52 @@ local function init(controller)
         gameUtils.directNotification(message, isError)
     end
 
+    -- Remark: updateLocalRating and updateCommunityRating are decoupled because the logic is vastly different
     function controller:updateCommunityRating(teammate)
         if not self.accountCache then
+            self:log('error', 'Account cache is not initialized', 'controller:updateCommunityRating')
             return false
         end
-        local cache = self.accountCache[teammate.accountId]
+        local cache = self.accountCache[teammate.uid]
         if not cache then
-            print('Account id is not found in account cache')
+            self:log('error', 'Player uid is not found in account cache', 'controller:updateCommunityRating')
             return false
         end
 
         local isCacheLoaded = cache.level ~= nil
         if not isCacheLoaded then
-            print('Cached account is not fully loaded')
+            self:log('error', 'Player level is not loaded yet', 'controller:updateCommunityRating')
             return false
         end
 
-        if not self.localRating or not self.localRating.accounts[teammate.accountId] then
+        local hash = cache.hash
+        if not self.localRating or not self.localRating.accounts[teammate.uid] then
             -- account has not been rated yet, create object
-            self.syncableRating[teammate.accountId] = {
+            self.syncableRating[hash] = {
                 level = cache.level,
-                idHash = cache.idHash,
                 rating = RATINGS.NEGATIVE,
             }
-        elseif self.localRating.accounts[teammate.accountId].rating == RATINGS.NEGATIVE then
+        elseif self.localRating.accounts[teammate.uid].rating == RATINGS.NEGATIVE then
             -- account hasn been rated, cycle to positive
-            self.syncableRating[teammate.accountId] = {
+            self.syncableRating[hash] = {
                 level = cache.level,
-                idHash = cache.idHash,
                 rating = RATINGS.POSITIVE,
             }
         else
             -- account was rated, remove from table
-            self.syncableRating[teammate.accountId] = nil
+            self.syncableRating[hash] = nil
         end
 
         return true
     end
 
     function controller:rateTeammate(teammateIndex)
-        if not self:canRate() then
+        if not self.initialized or not self.isInMission then
+            self:log('info', 'User tried to rate people outside of mission', 'controller:rateTeammate')
             return
         end
 
+        ---@type Teammate | nil
         local selected = nil
         if teammateIndex == 1 and #self.teammates > 0 then
             selected = self.teammates[teammateIndex]

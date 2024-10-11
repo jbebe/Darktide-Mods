@@ -36,14 +36,19 @@ namespace Api.Services
         public async Task UpdateAsync(RatingRequest request, CancellationToken cancellationToken)
         {
             var raterId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == Constants.Auth.PlatformId)?.Value
-                ?? throw new AuthenticationException("Could not find platform id");
+                ?? throw new AuthException(InternalError.CallerIdMissing);
+
             var now = DateTime.UtcNow;
             await UpdateAccountAsync(raterId, request.CharacterLevel, request.Reef, request.Friends, now, cancellationToken);
+
+            if (request.Accounts.Any(x => x.Key == raterId))
+                throw new ModException(InternalError.SelfRating);
 
             foreach (var kvp in request.Accounts)
             {
                 var ratedId = kvp.Key;
                 var ratedInfo = kvp.Value;
+
                 await UpdateAccountAsync(ratedId, ratedInfo.CharacterLevel, request.Reef, [], now, cancellationToken);
                 await UpdateRatingAsync(ratedId, raterId, request.CharacterLevel, ratedInfo.Type, now, cancellationToken);
             }

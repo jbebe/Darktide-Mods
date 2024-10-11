@@ -244,5 +244,18 @@ namespace Test
             ratings = await Client.GetRatingsAsync(jwt, CancellationToken.None);
             Assert.Empty(ratings);
         }
+
+        [Fact]
+        public async Task UpdateRating_Cannot_Vote_Self()
+        {
+            var targetHash = Faker.Random.Hash(32);
+
+            var (jwt, sourceHash) = RandomAccessToken;
+            var request = CreateRequest(sourceHash, sourceLevel: Constants.MaxLevel, type: RatingType.Positive);
+            await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            {
+                await Client.CreateRatingAsync(jwt, request, CancellationToken.None);
+            });
+        }
     }
 }

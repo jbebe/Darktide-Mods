@@ -1,8 +1,19 @@
 local json = modRequire 'lovesmenot/nurgle_modules/json'
+
 local utils = modRequire 'lovesmenot/src/utils/language'
+local langUtils = modRequire 'lovesmenot/src/utils/language'
 
 ---@param controller LovesMeNot
 local function init(controller)
+    function controller:getConfigPath()
+        local appDataPath = langUtils.os.getenv('APPDATA')
+        if IS_GDK then
+            return appDataPath .. [[\Fatshark\MicrosoftStore\Darktide]]
+        else
+            return appDataPath .. [[\Fatshark\Darktide]]
+        end
+    end
+
     local ratingPath = controller:getConfigPath() .. [[\lovesmenot.json]]
 
     function controller:loadLocalRating()
@@ -13,12 +24,10 @@ local function init(controller)
             -- ignore version as of now, no migration needed yet
             self.localRating = json.decode(rawContent)
         else
-            -- file does not exist
+            self:log('info', 'Local rating file does not exist, skipping', 'controller:loadLocalRating')
         end
     end
 
-    -- TODO: use coroutine debounce and save json more often?
-    -- https://www.lua.org/pil/9.1.html
     function controller:persistLocalRating()
         if not self.localRating then
             return

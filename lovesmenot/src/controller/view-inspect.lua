@@ -5,34 +5,36 @@ local ButtonPassTemplates = require 'scripts/ui/pass_templates/button_pass_templ
 
 ---@param controller LovesMeNot
 local function init(controller)
-    function PlayerCharacterOptionsView._on_rate_pressed(self)
+    function PlayerCharacterOptionsView:_on_rate_pressed()
+        ---@type PlayerInfo
         local playerInfo = self._player_info
         local accountName = playerInfo._presence:account_name()
-        local platform = playerInfo:platform() or 'unknown'
+        local platform = playerInfo:platform()
+        local playerProfile = playerInfo:profile()
+        ---@type Teammate
         local teammate = {
-            accountId = playerInfo:account_id(),
             name = accountName,
             platform = platform,
-            characterName = playerInfo:profile().name,
-            characterType = playerInfo:profile().archetype.name,
+            characterName = playerProfile.name,
+            characterType = playerProfile.archetype.name,
+            characterLevel = playerProfile:character_level(),
+            uid = controller:uid(platform, playerInfo:platform_user_id())
         }
-
-        local isSuccess = true
         if controller:isCommunity() then
-            isSuccess = controller:updateCommunityRating(teammate)
-            if isSuccess then
-                isSuccess = controller:uploadCommunityRating()
+            if controller:updateCommunityRating(teammate) then
+                controller:uploadCommunityRatingAsync():next(function()
+                    -- only update local rating if remote succeeded
+                    controller:updateLocalRating(teammate)
+                    controller:persistLocalRating()
+                end)
             end
-        end
-        if isSuccess then
+        else
             controller:updateLocalRating(teammate)
             controller:persistLocalRating()
         end
     end
 
-    controller.dmf:hook(PlayerCharacterOptionsView, '_setup_buttons_interactions', function(func, self, ...)
-        func(self, ...)
-
+    controller.dmf:hook_safe(PlayerCharacterOptionsView, '_setup_buttons_interactions', function(self)
         local widgets_by_name = self._widgets_by_name
         widgets_by_name.rate_button.content.hotspot.pressed_callback = callback(self, '_on_rate_pressed')
         self._button_gamepad_navigation_list = {
@@ -43,9 +45,7 @@ local function init(controller)
         }
     end)
 
-    controller.dmf:hook(PlayerCharacterOptionsView, 'init', function(func, self, ...)
-        func(self, ...)
-
+    controller.dmf:hook_safe(PlayerCharacterOptionsView, 'init', function(self)
         local sceneGraphs = self._definitions.scenegraph_definition
         sceneGraphs.rate_button = {
             horizontal_alignment = 'left',
@@ -61,17 +61,10 @@ local function init(controller)
                 13,
             },
         }
-
-        controller.dmf:add_global_localize_strings({
-            loc_ratings_character_options_rate = {
-                en = 'Toggle player rating'
-            }
-        })
-
         local widgets = self._definitions.widget_definitions
         widgets.rate_button = UIWidget.create_definition(ButtonPassTemplates.terminal_button, 'rate_button', {
             visible = true,
-            original_text = Localize('loc_ratings_character_options_rate'),
+            original_text = Localize('lovesmenot_inspectview_options_rate'),
         })
     end)
 end

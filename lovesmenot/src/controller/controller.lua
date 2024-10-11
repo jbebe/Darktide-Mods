@@ -2,175 +2,62 @@
 ---@module 'lovemenot/src/types/darktide-types'
 ---@module 'lovemenot/src/constants'
 
+local RegionLatency = require 'scripts/backend/region_latency'
+
 local md5 = modRequire 'lovesmenot/nurgle_modules/md5'
 local fun = modRequire 'lovesmenot/nurgle_modules/fun'
+
+local localization = modRequire 'lovesmenot/src/mod.localization'
+local constants = modRequire 'lovesmenot/src/constants'
 local langUtils = modRequire 'lovesmenot/src/utils/language'
-local utils = modRequire 'lovesmenot/src/utils/language'
-
----@type DmfMod
-local dmf = get_mod('lovesmenot')
-
----@class TimersType
----@field functions table<string, number>
-local timers = {
-    functions = {}
-}
-
--- Whether the execution of code should be debounced by given seconds
--- We can save execution time by skipping logic when not really needed
-function timers:canRun(functionName, currentSecs, sleepSecs)
-    local lastTick = self.functions[functionName]
-    if not lastTick then
-        -- first call
-        self.functions[functionName] = currentSecs
-        return true
-    end
-
-    if (currentSecs - lastTick) >= sleepSecs then
-        -- called after delay achieved
-        self.functions[functionName] = currentSecs
-        return true
-    end
-
-    -- called before delay achieved
-    return false
-end
-
----@module 'lovemenot/src/constants'
-
----@alias PlatformType
----| 'steam'
----| 'xbox'
----| 'psn'
----| 'unknown'
-
----@alias CharacterType
----| 'zealot'
----| 'veteran'
----| 'psyker'
----| 'ogryn'
-
----@class RatingAccount
----@field rating RATINGS
----@field name string
----@field platform PlatformType
----@field characterName string
----@field characterType CharacterType
----@field creationDate string
-
----@class LocalRating
----@field version number
----@field accounts table<string, RatingAccount>
-
----@class Teammate
----@field accountId string
----@field name string
----@field platform PlatformType
----@field characterName string
----@field characterType CharacterType
----@field characterLevel number
-
----@class SyncableRatingItem
----@field level number
----@field idHash string
----@field rating RATINGS
-
----@alias CommunityRating table<string, RATINGS>
----@alias SyncableRating table<string, SyncableRatingItem>
-
----@class CachedInfo
----@field idHash string
----@field level number | nil
+local gameUtils = modRequire 'lovesmenot/src/utils/game'
 
 ---@class LovesMeNot
 ---@field dmf DmfMod | table<string, function>
----@field localPlayer HumanPlayer | nil
+---@field logFileHandle file* | nil
 ---@field initialized boolean
----@field localRating LocalRating | nil
----@field communityRating CommunityRating | nil
----@field syncableRating SyncableRating | nil
----@field accountCache table<string, CachedInfo>
----@field teammates table
----@field isInMission boolean
----@field debugging boolean
----@field loadLocalRating function
----@field downloadCommunityRating function
----@field persistLocalRating function
----@field reinit function
----@field registerRatingsView function
----@field openRatings function
+---@field teammates Teammate[] Teammates list. Index 1,2,3 always refer to the right person, their position is fixed.
+---@field localRating LocalRating | nil (key: uid) Local rating with detailed account information
+---@field ownUid string | nil Host player's own uid (platform:platform_user_id)
+---@field ownHash string | nil Host player's own hash
+---@field communityRating CommunityRating (key: hash) Rating coming from the api in (hash, info) format
+---@field syncableRating SyncableRating (key: hash) Syncable ratings we upload to the api (hash, info) format
+---@field accountCache AccountCache (key: uid) Cached data for accounts. Hash and level is harder to get so we cache it.
+---@field reef string | nil Metadata for the api
+---@field localPlayerFriends string[] Host player's friend hash
+---@field isInMission boolean Whether the host is in a level
+---@field loadLocalRating fun(self: LovesMeNot)
+---@field persistLocalRating fun(self: LovesMeNot)
+---@field init fun(self: LovesMeNot)
+---@field registerRatingsView fun(self: LovesMeNot)
+---@field openRatings fun(self: LovesMeNot)
 ---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
+---@field downloadCommunityRatingAsync fun(self: LovesMeNot): Promise
 ---@field updateCommunityRating fun(self: LovesMeNot, teammate: Teammate): boolean
----@field uploadCommunityRating fun(self: LovesMeNot): boolean
----@field formatPlayerName fun(self: LovesMeNot, oldText: string, accountId: string, characterId: string): string, boolean
+---@field uploadCommunityRatingAsync fun(self: LovesMeNot): Promise
+---@field formatPlayerName fun(self: LovesMeNot, oldText: string, uid: string, characterId: string): string, boolean (newName, isDirty)
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
 ---@field md5 { sumhexa: fun(text: string): string }
----@field reef string | nil
----@field logFileHandle file* | nil
+---@field getConfigPath fun(self: LovesMeNot): string
+---@field log fun(self: LovesMeNot, level: LogLevel, message: string, category: string | nil)
 local controller = {
-    dmf = dmf,
-
+    dmf = get_mod('lovesmenot'),
     initialized = false,
     isInMission = false,
-    localPlayer = nil,
     teammates = {},
-    rating = nil,
-    debugging = false,
-    timers = timers,
+    timers = gameUtils.createTimer(),
     md5 = md5,
     accountCache = {},
     syncableRating = {},
-    localRating = nil,
-    communityRating = nil,
-    reef = nil,
+    communityRating = {},
     localPlayerFriends = {},
 }
 
-function controller:getConfigPath()
-    local appDataPath = utils.os.getenv('APPDATA')
-    if IS_GDK then
-        return appDataPath .. [[\Fatshark\MicrosoftStore\Darktide]]
-    else
-        return appDataPath .. [[\Fatshark\Darktide]]
-    end
-end
+-- Getters
 
----@type table<LogLevel, number>
-local LogLevelMap = {
-    debug = 1,
-    info = 2,
-    warning = 3,
-    error = 4,
-}
-
----@param level LogLevel
----@param message string
-function controller:log(level, message)
-    local logLevel = self.dmf:get('lovesmenot_settings_loglevel')
-    if LogLevelMap[level] < LogLevelMap[logLevel] then
-        return
-    end
-
-    local loggedLine = ('[%s] %s'):format(
-        level,
-        type(message) == 'table' and table.tostring(message) or tostring(message)
-    );
-    print('[lovesmenot]' .. loggedLine)
-    self.logFileHandle:write(loggedLine .. '\n')
-end
-
----@param accountId string
-function controller:hash(accountId)
-    local cleanedId, _ = accountId:lower():gsub('[^0-9a-f]+', '')
-    return self.md5.sumhexa(cleanedId)
-end
-
-function controller:canRate()
-    return self.initialized and self.isInMission
-end
-
+---@return boolean
 function controller:isCommunity()
-    local isCommunity = self.dmf:get('lovesmenot_settings_community')
+    local isCommunity = self.dmf:get('lovesmenot_settings_community') == true
     return isCommunity
 end
 
@@ -179,82 +66,198 @@ function controller:getAccessToken()
     return self.dmf:get('lovesmenot_settings_community_access_token')
 end
 
-function controller:hasRating()
-    if self:isCommunity() then
-        return self.communityRating ~= nil
-    else
-        return self.localRating ~= nil
-    end
+function controller:hideOwnRating()
+    return self.dmf:get('lovesmenot_settings_community_hide_own_rating')
 end
 
----@param accountId string
+-- Initializer
+
+function controller:init()
+    controller:log('info', 'Begin mod initialization', 'controller:init')
+
+    if self.initialized then
+        controller:log('info', 'Mod is already initialized', 'controller:init')
+        return
+    end
+
+    local platform = Managers.data_service.social:platform()
+    local platformId = Managers.account:platform_user_id()
+    if platform == nil or platformId == nil then
+        self:log('error', 'Gaming platform data is not available', 'controller:init')
+        return
+    else
+        local uid = controller:uid(platform, platformId)
+        self.ownHash = controller:hash(uid)
+    end
+
+    -- load log file
+    if self.logFileHandle ~= nil then
+        self:log('info', 'Log file closed', 'controller:init')
+        self.logFileHandle:close()
+    end
+    local ratingPath = self:getConfigPath() .. [[\lovesmenot.log]]
+    self.logFileHandle = langUtils.io.open(ratingPath, 'a')
+    self.logFileHandle:write('- - - - - - - - - - - - - - - - - -\n')
+    self.logFileHandle:write(('- LOG START: %s  -\n'):format(langUtils.os.date(constants.DATE_FORMAT)))
+    self.logFileHandle:write('- - - - - - - - - - - - - - - - - -\n')
+    self:log('info', 'Log file opened', 'controller:init')
+
+    -- load community rating
+    if self:isCommunity() then
+        RegionLatency:get_preferred_reef():next(function(data)
+            self:log('info', 'Reef info loaded', 'controller:init/get_preferred_reef')
+            self.reef = data
+        end):catch(function(error)
+            self:log('error', error, 'controller:init/get_preferred_reef')
+        end)
+        Managers.data_service.social:fetch_friends():next(function(friends)
+            local friendsCache = {}
+            local cacheIter = 1
+            for i = 1, #friends do
+                ---@type PlayerInfo
+                local playerInfo = friends[i]
+                local platformUserId = playerInfo:platform_user_id()
+                if platformUserId then
+                    friendsCache[cacheIter] = self:hash(playerInfo:platform(), platformUserId)
+                    cacheIter = cacheIter + 1
+                else
+                    self:log('warning', 'Missing platform id', 'controller:init/fetch_friends')
+                end
+            end
+            self.localPlayerFriends = friendsCache
+        end):catch(function(error)
+            self:log('error', error, 'controller:init/fetch_friends')
+        end)
+        local accessToken = self:getAccessToken()
+        if accessToken ~= nil then
+            self:downloadCommunityRatingAsync()
+            self:loadLocalPlayerToCache()
+        else
+            self:log('error', 'Missing access token, revert to local mode', 'controller:init')
+            self.dmf:set('lovesmenot_settings_community', false, false)
+            self:init()
+            return
+        end
+    end
+
+    -- load local rating
+    self:loadLocalRating()
+
+    -- load extras
+    self.isInMission = gameUtils.isInRealMission()
+    self:registerRatingsView()
+
+    -- load localized string
+    controller.dmf:add_global_localize_strings({
+        lovesmenot_ratingsview_download_ratings = localization.lovesmenot_ratingsview_download_ratings,
+        lovesmenot_ratingsview_download_ratings_notif = localization.lovesmenot_ratingsview_download_ratings_notif,
+        lovesmenot_community_create_token_title = localization.lovesmenot_community_create_token_title,
+        lovesmenot_community_create_token_description = localization.lovesmenot_community_create_token_description,
+        lovesmenot_community_create_token_step_1 = localization.lovesmenot_community_create_token_step_1,
+        lovesmenot_community_create_token_url = localization.lovesmenot_community_create_token_url,
+        lovesmenot_community_create_token_step_2 = localization.lovesmenot_community_create_token_step_2,
+        lovesmenot_community_create_token_step_3 = localization.lovesmenot_community_create_token_step_3,
+        lovesmenot_community_create_token_save = localization.lovesmenot_community_create_token_save,
+        lovesmenot_inspectview_options_rate = localization.lovesmenot_inspectview_options_rate,
+        lovesmenot_ratingsview_title = localization.lovesmenot_ratingsview_title,
+        lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
+        lovesmenot_ratingsview_delete_description = localization.lovesmenot_ratingsview_delete_description,
+        lovesmenot_ratingsview_delete_yes = localization.lovesmenot_ratingsview_delete_yes,
+        lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
+    })
+
+    -- mod is initialized at this state
+    -- pending promises may
+    self.initialized = true
+end
+
+-- Methods
+
+-- Creates a unique LovesMeNot id for player
+---@param platform Platform
+---@param platformId string
+---@return string
+function controller:uid(platform, platformId)
+    return ('%s:%s'):format(platform:lower(), Application.hex64_to_dec(platformId))
+end
+
+-- Generates hash from unique id
+-- remark: sumhexa is already lowercased
+---@param platform PlatformType
+---@param platformId string
+---@return string
+---@overload fun(uid: string): string
+function controller:hash(platform, platformId)
+    local uid = platform
+    if platformId then
+        uid = self:uid(platform, platformId)
+    end
+    return self.md5.sumhexa(uid)
+end
+
+---@param uid string
 ---@param level number | nil
 ---@return CachedInfo
-function controller:addAccountCache(accountId, level)
-    local cache = self.accountCache[accountId]
+function controller:addAccountCache(uid, level)
+    local cache = self.accountCache[uid]
     if cache then
         cache.level = level or cache.level
     else
         cache = {
             level = level or 1,
-            idHash = self:hash(accountId),
+            hash = self:hash(uid),
         }
     end
-    self.accountCache[accountId] = cache
+    self.accountCache[uid] = cache
 
     return cache
 end
 
----@param accountId string
+---@param uid string
 ---@param overrideLevel number | nil
----@return RATINGS | nil, boolean | nil (rating, isCommunityRating)
-function controller:getRating(accountId, overrideLevel)
+---@return RATINGS | nil, boolean | nil (positive/negative, isCommunityRating)
+function controller:getRating(uid, overrideLevel)
     -- Return local rating if exists
-    local rating = langUtils.coalesce(self.localRating, 'accounts', accountId, 'rating')
+    local rating = langUtils.coalesce(self.localRating, 'accounts', uid, 'rating')
     if rating then
         return rating
     end
 
     -- If community sync is enabled, fall back to it if local rating is not found
     if self:isCommunity() then
-        local cache = self:addAccountCache(accountId, overrideLevel)
-
-        if self:hasRating() then
-            local communityRating = self.communityRating[cache.idHash]
-            if communityRating then
-                -- show rating with web icon if account has community rating
-                return communityRating, true
-            end
+        local cache = self:addAccountCache(uid, overrideLevel)
+        local communityRating = self.communityRating[cache.hash]
+        if communityRating then
+            -- show rating with web icon if account has community rating
+            return communityRating, true
         end
     end
 end
 
 function controller:loadLocalPlayerToCache()
     local backend_interface = Managers.backend.interfaces
-    local promise = backend_interface.progression:get_entity_type_progression('character')
-    promise:next(function(characters_progression)
-        -- Find character with highest level
-        ---@type CharacterProgression
-        local progression = fun.maximum_by(
-        ---@param a CharacterProgression
-        ---@param b CharacterProgression
-            function(a, b)
-                if a.currentLevel > b.currentLevel then
-                    return a
-                else
-                    return b
-                end
-            end,
-            characters_progression)
+    backend_interface.progression:get_entity_type_progression('character')
+        :next(function(characters_progression)
+            -- Find character with highest level
+            ---@type CharacterProgression
+            local progression = fun.maximum_by(
+            ---@param a CharacterProgression
+            ---@param b CharacterProgression
+                function(a, b)
+                    if a.currentLevel > b.currentLevel then
+                        return a
+                    else
+                        return b
+                    end
+                end,
+                characters_progression)
 
-        -- Set rating of host player
-    end):catch(function(error)
-        print(table.tostring(error, 5))
-    end)
-end
-
-function controller:hideOwnRating()
-    return self.dmf:get('lovesmenot_settings_community_hide_own_rating')
+            -- Set rating of host player
+            self:getRating(self.ownUid, progression.currentLevel)
+        end)
+        :catch(function(error)
+            self:log('error', error, 'controller:loadLocalPlayerToCache/get_entity_type_progression')
+        end)
 end
 
 return controller

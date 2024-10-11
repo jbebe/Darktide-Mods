@@ -6,51 +6,44 @@ local langUtils = modRequire 'lovesmenot/src/utils/language'
 
 ---@param controller LovesMeNot
 local function init(controller)
-    function controller:downloadCommunityRating()
-        local accessToken = controller:getAccessToken()
-        if accessToken == nil then
-            return
-        end
-        netUtils.getRatings(accessToken):next(function(ratings)
+    function controller:downloadCommunityRatingAsync()
+        local accessToken = controller:getAccessToken() --[[ @as string ]]
+
+        ---@param ratings CommunityRating
+        return netUtils.getRatingsAsync(accessToken):next(function(ratings)
             self.communityRating = ratings
-            local selfRating = ratings[self.localPlayer._account_id]
+            local selfRating = ratings[self.ownHash]
             if selfRating ~= nil and not self:hideOwnRating() then
+                self:log('info', 'User received the rating of themself', 'controller:downloadCommunityRatingAsync')
                 gameUtils.directNotification(self.dmf:localize('lovesmenot_ingame_self_status', selfRating), false)
             end
         end):catch(function(error)
-            -- TODO: move to localization
-            gameUtils.directNotification('Community server is unreachable. Reload game to retry.', true)
-            -- TODO: change every disable mod to initialized = false
+            self:log('error', error, 'controller:downloadCommunityRatingAsync/getRatingsAsync')
+            gameUtils.directNotification(
+                controller.dmf:localize('lovesmenot_ingame_community_error'),
+                true
+            )
             controller.initialized = false
         end)
     end
 
-    function controller:uploadCommunityRating()
-        local localPlayer = controller.localPlayer
-        if not localPlayer then
-            -- player is not loaded yet
-            return false
-        end
-        local accessToken = controller:getAccessToken()
-        if accessToken == nil then
-            -- access token is not set yet
-            return false
-        end
+    function controller:uploadCommunityRatingAsync()
         if langUtils.isEmpty(self.syncableRating) then
             -- nothing to sync to cloud
-            return false
+            ---@cast Promise Promise
+            return Promise.resolved(nil)
         end
 
         ---@type table<string, TargetRequest>
         local targets = {}
-        for _, item in pairs(self.syncableRating) do
-            targets[item.idHash] = {
+        for hash, item in pairs(self.syncableRating) do
+            targets[hash] = {
                 type = item.rating,
                 characterLevel = item.level,
             }
         end
 
-        local sourceCache = self.accountCache[self.localPlayer._account_id]
+        local sourceCache = self.accountCache[self.ownHash]
         ---@type RatingRequest
         local request = {
             characterLevel = sourceCache.level,
@@ -58,11 +51,18 @@ local function init(controller)
             accounts = targets,
             friends = self.localPlayerFriends,
         }
-        netUtils.updateRatings(accessToken, request):next(function()
-            self.syncableRating = {}
-        end)
+        local accessToken = controller:getAccessToken() --[[ @as string ]]
 
-        return true
+        return netUtils.updateRatingsAsync(accessToken, request):next(function()
+            self.syncableRating = {}
+        end):catch(function(error)
+            self:log('error', error, 'controller:uploadCommunityRatingAsync/updateRatingsAsync')
+            gameUtils.directNotification(
+                controller.dmf:localize('lovesmenot_ingame_community_error'),
+                true
+            )
+            controller.initialized = false
+        end)
     end
 end
 

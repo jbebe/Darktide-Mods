@@ -3,7 +3,6 @@ local ScriptWorld = require 'scripts/foundation/utilities/script_world'
 local UIWidget = require 'scripts/managers/ui/ui_widget'
 local UIWidgetGrid = require 'scripts/ui/widget_logic/ui_widget_grid'
 local UIRenderer = require 'scripts/managers/ui/ui_renderer'
-local localization = modRequire 'lovesmenot/src/mod.localization'
 local constants = modRequire 'lovesmenot/src/constants'
 local styleUtils = modRequire 'lovesmenot/src/utils/style'
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
@@ -92,35 +91,10 @@ end
 
 function RatingsView:_get_widget_configs()
     local widgetConfig = {}
-    local rawRatings = table.clone(self._controller.localRating and
-        self._controller.localRating.accounts or {})
 
-    ---@alias ExtendedRatingAccount (RatingAccount | { accountId: string })
+    -- load community ratings
 
-    ---@type ExtendedRatingAccount[]
-    local sortedRatings = fun.reduce(function(acc, accountId, accountInfo)
-        accountInfo.accountId = accountId
-        table.insert(acc, accountInfo)
-        return acc
-    end, {}, rawRatings)
-    table.sort(sortedRatings, compareByCreationDate)
-
-    local negativeRatings, positiveRatings = fun.partition(function(x)
-        ---@cast x ExtendedRatingAccount
-        return x.rating == constants.RATINGS.NEGATIVE
-    end, sortedRatings)
-
-    ---@type ExtendedRatingAccount[]
-    local groupedRatings = fun.chain(positiveRatings, negativeRatings)
-
-    self._controller.dmf:add_global_localize_strings({
-        lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
-        lovesmenot_ratingsview_delete_description = localization.lovesmenot_ratingsview_delete_description,
-        lovesmenot_ratingsview_delete_yes = localization.lovesmenot_ratingsview_delete_yes,
-        lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
-    })
-
-    if self._controller:isCommunity() and self._controller:hasRating() then
+    if self._controller:isCommunity() then
         for hash, rating in pairs(self._controller.communityRating) do
             local title = 'lovesmenot_ratingsview_griditem_title_' .. hash
             local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. hash
@@ -151,11 +125,27 @@ function RatingsView:_get_widget_configs()
         end
     end
 
-    for _, info in fun.iter(groupedRatings) do
-        local title = 'lovesmenot_ratingsview_griditem_title_' .. info.accountId
-        local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. info.accountId
-        local playerInfo = Managers.data_service.social:get_player_info_by_account_id(info.accountId)
-        local playerAvailability = playerInfo._presence._immaterium_entry.status
+    -- load local ratings
+    ---@type LocalRatingAccounts
+    local rawRatings = table.clone(self._controller.localRating and self._controller.localRating.accounts or {})
+    ---@alias ExtendedRatingAccount (RatingAccount | { uid: string })
+    ---@type ExtendedRatingAccount[]
+    local sortedRatings = fun.reduce(function(acc, uid, accountInfo)
+        accountInfo.uid = uid
+        table.insert(acc, accountInfo)
+        return acc
+    end, {}, rawRatings)
+    table.sort(sortedRatings, compareByCreationDate)
+    local negativeRatings, positiveRatings = fun.partition(function(x)
+        ---@cast x ExtendedRatingAccount
+        return x.rating == constants.RATINGS.NEGATIVE
+    end, sortedRatings)
+    ---@type ExtendedRatingAccount[]
+    local groupedRatings = fun.chain(positiveRatings, negativeRatings)
+    for _, data in fun.iter(groupedRatings) do
+        local info = data --[[@as ExtendedRatingAccount]]
+        local title = 'lovesmenot_ratingsview_griditem_title_' .. info.uid
+        local subtitle = 'lovesmenot_ratingsview_griditem_subtitle_' .. info.uid
         local platformIcon = constants.PLATFORMS[info.platform]
         local ratingIcon = styleUtils.colorize(ratingsColorMap[info.rating], ratingsIconMap[info.rating])
         local ratingText = self._controller.dmf:localize('lovesmenot_ingame_rating_' .. info.rating)
@@ -172,7 +162,7 @@ function RatingsView:_get_widget_configs()
             },
             [subtitle] = {
                 en = self._controller.dmf:localize('lovesmenot_ratingsview_griditem_subtitle',
-                    info.characterName, info.characterType, playerAvailability, info.creationDate),
+                    info.characterName, info.characterType, info.creationDate),
             }
         })
         local entry = {
@@ -188,7 +178,7 @@ function RatingsView:_get_widget_configs()
                             close_on_pressed = true,
                             text = 'lovesmenot_ratingsview_delete_yes',
                             callback = callback(function()
-                                self._controller.localRating.accounts[info.accountId] = nil
+                                self._controller.localRating.accounts[info.uid] = nil
                                 self._controller:persistLocalRating()
                                 self:_reload()
                             end),
@@ -351,7 +341,6 @@ function RatingsView:_draw_grid(grid, widgets, interaction_widget, dt, t, input_
 
                 if hotspot then
                     hotspot.force_disabled = not is_grid_hovered
-                    local is_active = hotspot.is_focused or hotspot.is_hover
                 end
 
                 UIWidget.draw(widget, ui_renderer)
@@ -380,8 +369,8 @@ end
 
 function RatingsView:cb_on_download_ratings_pressed()
     if self._controller:isCommunity() then
-        self._controller:uploadCommunityRating()
-        self._controller:downloadCommunityRating()
+        self._controller:uploadCommunityRatingAsync()
+        self._controller:downloadCommunityRatingAsync()
     end
     self._controller:persistLocalRating()
     gameUtils.directNotification(

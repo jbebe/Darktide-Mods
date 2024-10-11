@@ -1,6 +1,10 @@
 ---@meta
 
----@class PlayerInfo
+---@class BaseClass
+---@field __class_name string
+---@field __deleted boolean
+
+---@class PlayerInfo: BaseClass
 ---@field _presence table
 ---@field _platform_social table
 ---@field _account_id string
@@ -61,7 +65,7 @@
 ---@field _get_presence function
 ---@field __tostring function
 
----@class HumanPlayer
+---@class HumanPlayer: BaseClass
 ---@field player_unit string | nil
 ---@field viewport_name string
 ---@field owned_units table
@@ -745,3 +749,28 @@
 ---@field gender 'male' | 'female'
 ---@field selected_voice string
 ---@field talent_points number
+
+---@alias Platform 'steam' | 'xbox' | 'psn' | 'Unknown'
+
+---@class Promise
+---@field next fun(self: Promise, callback: fun(input: any): any): Promise
+---@field init fun(self: Promise)
+---@field catch fun(self: Promise, callback: fun(error: any)): Promise
+---@field resolve fun(self: Promise, value: any)
+---@field reject fun(self: Promise)
+---@field cancel fun(self: Promise)
+---@field is_canceled fun(self: Promise)
+---@field is_rejected fun(self: Promise)
+---@field is_fulfilled fun(self: Promise)
+---@field is_pending fun(self: Promise)
+---@field update fun()
+---@field all fun(): Promise
+---@field race fun(): Promise
+---@field _check_delayed fun()
+---@field _check_predicate fun()
+---@field resolved fun(value: any): Promise
+---@field rejected fun(): Promise
+---@field delay fun(): Promise
+---@field until_true fun(predicate: fun(): boolean): Promise
+---@field until_value_is_true fun(): Promise
+---@field reset fun()

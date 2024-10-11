@@ -44,13 +44,8 @@ local function init(controller)
         return result
     end
 
-    function controller:formatPlayerName(originalText, accountId)
-        if not self:hasRating() then
-            -- rating is not available due to errors
-            return originalText, false
-        end
-
-        local rating, isCommunityRated = self:getRating(accountId)
+    function controller:formatPlayerName(originalText, uid)
+        local rating, isCommunityRated = self:getRating(uid)
         if not rating then
             -- show default name without any prefixes
             local cleanedText = cleanRating(originalText)

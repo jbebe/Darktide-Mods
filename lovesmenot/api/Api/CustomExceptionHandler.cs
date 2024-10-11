@@ -7,6 +7,11 @@ namespace Api
     public enum InternalError
     {
         Unknown,
+
+        //
+        // Auth errors
+        //
+
         // Steam user id claim is missing, can't proceed further
         SteamClaimMissing,
         // Auth or other error during GetOwnedGames call
@@ -23,6 +28,16 @@ namespace Api
         XboxGetAchivementsError,
         // User does not own Darktide in Xbox
         XboxNoOwnership,
+
+        //
+        // Mod errors
+        //
+        
+        // User rated themself with a forged api call
+        SelfRating,
+
+        // Jwt token valid, but missing platform id
+        CallerIdMissing
     }
 
     public enum PublicError
@@ -30,6 +45,7 @@ namespace Api
         Internal,
         NoOwnership,
         AuthCancelled,
+        UserError,
     }
 
     public static class InternalErrorExtensions
@@ -44,6 +60,7 @@ namespace Api
                 case InternalError.XboxLoginError:
                 case InternalError.XboxTokenExchangeError:
                 case InternalError.XboxGetAchivementsError:
+                case InternalError.CallerIdMissing:
                     return PublicError.Internal;
                 
                 case InternalError.SteamNoOwnership:
@@ -52,7 +69,10 @@ namespace Api
                 
                 case InternalError.AuthCancelled:
                     return PublicError.AuthCancelled;
-                
+
+                case InternalError.SelfRating:
+                    return PublicError.UserError;
+
                 default:
                     return PublicError.Internal;
             }

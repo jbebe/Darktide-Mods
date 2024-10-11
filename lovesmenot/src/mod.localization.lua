@@ -108,13 +108,18 @@ return {
 		en = '%s %s | %s %s'
 	},
 	lovesmenot_ratingsview_griditem_subtitle = {
-		en = 'Operative: %s (%s) | %s | %s'
+		en = 'Operative: %s (%s) | %s'
 	},
 	lovesmenot_ratingsview_download_ratings = {
 		en = 'Sync now'
 	},
 	lovesmenot_ratingsview_download_ratings_notif = {
 		en = 'Database successfully updated'
+	},
+
+	-- Player inspect view
+	lovesmenot_inspectview_options_rate = {
+		en = 'Cycle player rating'
 	},
 
 	-- Ingame text
@@ -135,5 +140,9 @@ return {
 	},
 	lovesmenot_ingame_community_rating = {
 		en = 'Community'
+	},
+	lovesmenot_ingame_community_error = {
+		en = 'Community server is unreachable. ' ..
+			'Turn off community rating if the problem persists and reload the mod.'
 	},
 }

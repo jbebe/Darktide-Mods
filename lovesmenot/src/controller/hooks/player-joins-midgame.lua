@@ -6,13 +6,17 @@ local function init(controller)
             if not controller.timers:canRun('HudElementTeamPanelHandler_update', t, 2) then return end
             if not controller.initialized then return end
 
+            ---@type Teammate[]
             local communityPlayers = {}
-            for _, data in ipairs(self._player_panels_array) do
-                ---@type HumanPlayer
+            local teammatesChanged = false
+            for idx, data in ipairs(self._player_panels_array) do
+                ---@type PlayerInfo
                 local player = data.player
-                local accountId = player:account_id()
-                accountId = player._telemetry_subject.account_id
-                local isBot = false -- accountId == nil
+                local platform = player:platform()
+                local platformId = player:platform_user_id()
+                local uid = controller:uid(platform, platformId)
+                print('classname: ' .. player.__class_name)
+                local isBot = not player:is_human_controlled()
                 if not isBot then
                     local panel = data.panel
                     local widget = panel._widgets_by_name.player_name
@@ -21,37 +25,40 @@ local function init(controller)
 
                     -- Format name (host player, optionally)
                     local showHostPlayerRating = not controller:hideOwnRating()
-                    local isHostPlayer = accountId == controller.localPlayer._account_id
+                    local isHostPlayer = platformId == controller.ownUid
                     if not isHostPlayer or showHostPlayerRating then
                         local character_id = profile and profile.character_id
-                        local newName, isDirty = controller:formatPlayerName(content.text, accountId, character_id)
+                        local newName, isDirty = controller:formatPlayerName(content.text, uid, character_id)
                         if isDirty then
                             content.text = newName
                             widget.dirty = isDirty
                         end
                     end
 
-                    -- add other players to teammates list
-                    if not isHostPlayer then
+                    -- add other players to teammates list if neccessary
+                    local teammateAtIndex = controller.teammates[idx]
+                    local shouldCreateTeammate = teammateAtIndex == nil or teammateAtIndex.uid ~= uid
+                    if not isHostPlayer and shouldCreateTeammate then
                         local characterName = profile.name
-                        local playerInfo = Managers.data_service.social:get_player_info_by_account_id(accountId)
-                        if playerInfo then
-                            local accountName = playerInfo._presence:account_name()
-                            local platform = playerInfo:platform() or 'unknown'
-                            table.insert(communityPlayers, {
-                                accountId = accountId,
-                                name = accountName,
-                                platform = platform,
-                                characterName = characterName,
-                                characterType = profile.archetype.name,
-                            })
-                        end
+                        ---@type Teammate
+                        local teammate = {
+                            uid = uid,
+                            name = player._presence:account_name(),
+                            platform = platform,
+                            platformId = platformId,
+                            characterName = characterName,
+                            characterType = profile.archetype.name,
+                            characterLevel = profile.current_level,
+                        }
+                        table.insert(communityPlayers, teammate)
+                        teammatesChanged = true
                     end
                 end
             end
 
-            -- TODO: only update teammates if something has changed
-            controller.teammates = communityPlayers
+            if teammatesChanged then
+                controller.teammates = communityPlayers
+            end
         end)
 end
 

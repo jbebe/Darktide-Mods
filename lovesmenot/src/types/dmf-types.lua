@@ -16,7 +16,8 @@
 ---@field remove_require_path function
 ---@field delete function
 ---@field get_readable_name function
----@field set function
+---@field get fun(self, setting_id: string): any
+---@field set fun(self, setting_id: string, setting_value: any, notify_mod: boolean): nil
 ---@field is_enabled function
 ---@field add_require_path function
 ---@field get_require_store function
@@ -43,7 +44,6 @@
 ---@field register_view function
 ---@field init function
 ---@field localize function
----@field get function
 ---@field get_internal_data function
 ---@field io_read_content function
 ---@field info function

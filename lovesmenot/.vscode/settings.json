@@ -16,7 +16,8 @@
         "PLATFORM",
         "Application",
         "IS_GDK",
-        "HAS_STEAM"
+        "HAS_STEAM",
+        "Promise"
     ],
     "Lua.codeLens.enable": false,
     "Lua.runtime.special": {

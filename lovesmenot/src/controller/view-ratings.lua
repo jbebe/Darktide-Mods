@@ -7,19 +7,12 @@ local function init(controller)
     local ratingsViewName = 'ratings_view'
 
     function controller:registerRatingsView()
-        self.dmf:add_global_localize_strings({
-            -- not shown anywhere, just a placeholder
-            loc_ratings_view_display_name = {
-                en = 'Ratings',
-            }
-        })
-
         self.dmf:add_require_path('lovesmenot/src/views/ratings-view/ratings_view')
         self.dmf:add_require_path('lovesmenot/src/views/ratings-view/ratings_view_definitions')
         self.dmf:add_require_path('lovesmenot/src/views/ratings-view/ratings_view_settings')
         self.dmf:register_view({
             view_name = ratingsViewName,
-            display_name = 'loc_ratings_view_display_name',
+            display_name = 'lovesmenot_ratingsview_title',
             view_settings = {
                 init_view_function = function(ingame_ui_context)
                     return true
