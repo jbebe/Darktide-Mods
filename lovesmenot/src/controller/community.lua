@@ -3,6 +3,7 @@ local BackendUtilities = require('scripts/foundation/managers/backend/utilities/
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
 local netUtils = modRequire 'lovesmenot/src/utils/network'
 local langUtils = modRequire 'lovesmenot/src/utils/language'
+local constants = modRequire 'lovesmenot/src/constants'
 
 ---@param controller LovesMeNot
 local function init(controller)
@@ -18,10 +19,15 @@ local function init(controller)
                 gameUtils.directNotification(self.dmf:localize('lovesmenot_ingame_self_status', selfRating), false)
             end
         end):catch(function(error)
-            self:log('error', error, 'controller:downloadCommunityRatingAsync/getRatingsAsync')
+            self:log(
+                'error',
+                error and error.description or 'Network error',
+                'controller:downloadCommunityRatingAsync/getRatingsAsync'
+            )
             gameUtils.directNotification(
                 controller.dmf:localize('lovesmenot_ingame_community_error'),
-                true
+                true,
+                constants.NOTIFICATION_DELAY_LONG
             )
             controller.initialized = false
         end)

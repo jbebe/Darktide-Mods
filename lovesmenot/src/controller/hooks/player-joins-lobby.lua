@@ -2,13 +2,14 @@
 local function init(controller)
     -- player joins the lobby
     -- remarks: here we don't have to worry about bots because they join after the game has started
-    ---@param player PlayerInfo
+    ---@param player HumanPlayer | RemotePlayer
     controller.dmf:hook_safe(CLASS.LobbyView, '_sync_player', function(self, unique_id, player)
         if not controller.initialized then return end
 
+        local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
         local profile = player:profile()
-        local platform = player:platform()
-        local platformId = player:platform_user_id()
+        local platform = playerInfo:platform()
+        local platformId = playerInfo:platform_user_id()
         local uid = controller:uid(platform, platformId)
 
         -- format player name

@@ -1,3 +1,4 @@
+local Missions = require 'scripts/settings/mission/mission_templates'
 local UISoundEvents = require 'scripts/settings/ui/ui_sound_events'
 
 local utils = {}
@@ -5,7 +6,8 @@ local utils = {}
 -- Shows the notification bar at the middle right of the screen without DMF intercepting it
 ---@param message string
 ---@param isError boolean | nil
-function utils.directNotification(message, isError)
+---@param delaySec number | nil
+function utils.directNotification(message, isError, delaySec)
     ---@type Managers
     local managers = Managers
     if managers.event then
@@ -22,10 +24,27 @@ function utils.directNotification(message, isError)
                 'alert',
                 { text = message } or '',
                 nil,
-                UISoundEvents.default_click
+                UISoundEvents.default_click,
+                nil,
+                delaySec
             )
         end
     end
+end
+
+-- Checks if the player is currently in a mission and that mission is not the Mourningstar
+function utils.isInMission()
+    ---@type Managers
+    local managers = Managers
+    if managers.state.mission then
+        local mission_name = managers.state.mission:mission_name()
+        if mission_name then
+            local mission_settings = Missions[mission_name]
+            return mission_settings ~= nil
+        end
+    end
+
+    return false
 end
 
 function utils.createTimer()

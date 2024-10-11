@@ -8,6 +8,7 @@ local controller = modRequire 'lovesmenot/src/controller/controller'
 
 -- controller methods
 modRequire 'lovesmenot/src/controller/persistence' (controller)
+modRequire 'lovesmenot/src/controller/logging' (controller)
 modRequire 'lovesmenot/src/controller/dmf-hooks' (controller)
 modRequire 'lovesmenot/src/controller/community' (controller)
 modRequire 'lovesmenot/src/controller/hotkeys' (controller)

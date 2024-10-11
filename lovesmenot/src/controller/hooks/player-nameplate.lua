@@ -15,16 +15,20 @@ local function init(controller)
         for _, data in pairs(self._nameplate_units) do
             local marker = markersById[data.marker_id]
             if marker then
-                ---@type PlayerInfo
+                ---@type RemotePlayer
                 local player = marker.data
+                local isBot = not player:is_human_controlled()
                 local isPlayerDeleted = player.__deleted
-                if not isPlayerDeleted then
+                if not isBot and not isPlayerDeleted then
+                    local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
+                    local platform = playerInfo:platform()
+                    local platformId = playerInfo:platform_user_id()
+                    local uid = controller:uid(platform, platformId)
                     local widget = marker.widget
                     local content = widget.content
-                    local characterId = player:profile().character_id
 
                     local newName, isDirty = controller:formatPlayerName(
-                        content.header_text, player:platform_user_id(), characterId)
+                        content.header_text, uid, player:character_id())
                     if isDirty then
                         content.header_text = newName
                         widget.dirty = true

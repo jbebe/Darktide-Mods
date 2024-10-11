@@ -6,18 +6,18 @@ local function init(controller)
             if not controller.timers:canRun('HudElementTeamPanelHandler_update', t, 2) then return end
             if not controller.initialized then return end
 
-            ---@type Teammate[]
-            local communityPlayers = {}
-            local teammatesChanged = false
-            for idx, data in ipairs(self._player_panels_array) do
-                ---@type PlayerInfo
+            ---@type TeammateList
+            local teammates = {}
+            for _, data in pairs(self._player_panels_array) do
+                ---@type HumanPlayer
                 local player = data.player
-                local platform = player:platform()
-                local platformId = player:platform_user_id()
-                local uid = controller:uid(platform, platformId)
-                print('classname: ' .. player.__class_name)
                 local isBot = not player:is_human_controlled()
                 if not isBot then
+                    local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
+                    local platform = playerInfo:platform()
+                    local platformId = playerInfo:platform_user_id()
+                    local uid = controller:uid(platform, platformId)
+
                     local panel = data.panel
                     local widget = panel._widgets_by_name.player_name
                     local content = widget.content
@@ -25,7 +25,7 @@ local function init(controller)
 
                     -- Format name (host player, optionally)
                     local showHostPlayerRating = not controller:hideOwnRating()
-                    local isHostPlayer = platformId == controller.ownUid
+                    local isHostPlayer = uid == controller.ownUid
                     if not isHostPlayer or showHostPlayerRating then
                         local character_id = profile and profile.character_id
                         local newName, isDirty = controller:formatPlayerName(content.text, uid, character_id)
@@ -36,30 +36,24 @@ local function init(controller)
                     end
 
                     -- add other players to teammates list if neccessary
-                    local teammateAtIndex = controller.teammates[idx]
-                    local shouldCreateTeammate = teammateAtIndex == nil or teammateAtIndex.uid ~= uid
-                    if not isHostPlayer and shouldCreateTeammate then
+                    if not isHostPlayer then
                         local characterName = profile.name
                         ---@type Teammate
                         local teammate = {
                             uid = uid,
-                            name = player._presence:account_name(),
+                            name = playerInfo._presence:account_name(),
                             platform = platform,
-                            platformId = platformId,
                             characterName = characterName,
                             characterType = profile.archetype.name,
                             characterLevel = profile.current_level,
                         }
-                        table.insert(communityPlayers, teammate)
-                        teammatesChanged = true
+                        table.insert(teammates, teammate)
                     end
                 end
             end
-
-            if teammatesChanged then
-                controller.teammates = communityPlayers
-            end
-        end)
+            controller.teammates = teammates
+        end
+    )
 end
 
 return init

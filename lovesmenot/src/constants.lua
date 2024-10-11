@@ -31,6 +31,7 @@ return {
     COLORS = {
         ORANGE = '255,75,20',
         GREEN = '133,237,0',
+        GREY = '133,133,133',
     },
     PLATFORMS = {
         steam = SYMBOLS.PLATFORM_STEAM,
@@ -39,4 +40,5 @@ return {
         unknown = SYMBOLS.PLATFORM_UNKNOWN,
     },
     DATE_FORMAT = '!%Y-%m-%d %H:%M:%S', -- UTC date
+    NOTIFICATION_DELAY_LONG = 5,
 }

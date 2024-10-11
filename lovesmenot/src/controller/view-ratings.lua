@@ -55,7 +55,7 @@ local function init(controller)
 
     function controller.dmf.openRatings()
         if not controller.initialized then
-            controller.dmf:error('Lovesmenot is not initialized')
+            controller:log('info', 'Failed to open ratings because mod is not initialized', 'controller:dmf:openRatings')
             return
         end
         if Managers.ui:view_instance(ratingsViewName) then

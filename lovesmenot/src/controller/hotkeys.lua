@@ -46,7 +46,7 @@ local function init(controller)
             -- account was rated, remove from table
             self.localRating.accounts[teammate.uid] = nil
             message = controller.dmf:localize('lovesmenot_ingame_notification_unset', teammate.characterName)
-            message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.CHECK) .. ' ' .. message
+            message = styleUtils.colorize(COLORS.GREY, SYMBOLS.CHECK) .. ' ' .. message
         end
 
         -- user feedback
@@ -98,16 +98,7 @@ local function init(controller)
             return
         end
 
-        ---@type Teammate | nil
-        local selected = nil
-        if teammateIndex == 1 and #self.teammates > 0 then
-            selected = self.teammates[teammateIndex]
-        elseif teammateIndex == 2 and #self.teammates > 1 then
-            selected = self.teammates[teammateIndex]
-        elseif teammateIndex == 3 and #self.teammates > 2 then
-            selected = self.teammates[teammateIndex]
-        end
-
+        local selected = self.teammates[teammateIndex]
         if selected then
             if self:isCommunity() then
                 self:updateCommunityRating(selected)

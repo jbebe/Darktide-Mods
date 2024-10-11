@@ -17,7 +17,7 @@ local function init(controller)
             platform = platform,
             characterName = playerProfile.name,
             characterType = playerProfile.archetype.name,
-            characterLevel = playerProfile:character_level(),
+            characterLevel = playerProfile.current_level,
             uid = controller:uid(platform, playerInfo:platform_user_id())
         }
         if controller:isCommunity() then

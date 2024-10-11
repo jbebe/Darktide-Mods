@@ -81,7 +81,7 @@ local function init(controller)
                                 'Access token registered',
                                 'controller:dmf:on_setting_changed/SaveButton'
                             )
-                            controller:init()
+                            controller:init(true)
                         end,
                     },
                     {
@@ -107,7 +107,7 @@ local function init(controller)
         else
             -- if we have an access token or we change to local mode,
             -- the best way to handle this is to restart the mod
-            controller:init()
+            controller:init(true)
         end
     end
 

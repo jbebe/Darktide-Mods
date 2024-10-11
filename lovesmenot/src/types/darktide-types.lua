@@ -1,5 +1,16 @@
 ---@meta
 
+---@class PlayerProfile
+---@field personal { character_height: number }
+---@field archetype { name: string }
+---@field character_id string
+---@field name string character name
+---@field specialization string e.g. psyker_2 veteran_1
+---@field current_level number
+---@field gender 'male' | 'female'
+---@field selected_voice string
+---@field talent_points number
+
 ---@class BaseClass
 ---@field __class_name string
 ---@field __deleted boolean
@@ -59,7 +70,7 @@
 ---@field set_is_party_member function
 ---@field party_id function
 ---@field peer_id function
----@field profile function
+---@field profile fun(self): PlayerProfile
 ---@field first_update_promise function
 ---@field _update_presence function
 ---@field _get_presence function
@@ -113,6 +124,60 @@
 ---@field get_orientation function
 ---@field unit_is_alive function
 ---@field _create_aim_assist_data function
+
+---@class RemotePlayer: BaseClass
+---@field _account_id any
+---@field _cached_name any
+---@field _connection_channel_id any
+---@field _debug_name any
+---@field _game_state_object any
+---@field _human_controlled any
+---@field _local_player_id any
+---@field _peer_id any
+---@field _profile any
+---@field _session_channel_id any
+---@field _session_id any
+---@field _slot any
+---@field _telemetry_game_session any
+---@field _telemetry_subject any
+---@field _unique_id any
+---@field _wanted_spawn_point any
+---@field input_handler any
+---@field is_server any
+---@field owned_units any
+---@field player_unit any
+---@field remote any
+---@field stat_id any
+---@field init function
+---@field set_wanted_spawn_point function
+---@field wanted_spawn_point function
+---@field type function
+---@field set_slot function
+---@field slot function
+---@field set_session_channel_id function
+---@field connection_channel_id function
+---@field channel_id function
+---@field session_id function
+---@field unique_id function
+---@field peer_id function
+---@field local_player_id function
+---@field account_id function
+---@field character_id function
+---@field character_name function
+---@field is_human_controlled function
+---@field name function
+---@field destroy function
+---@field lag_compensation_rewind_ms function
+---@field lag_compensation_rewind_s function
+---@field create_input_handler function
+---@field destroy_input_handler function
+---@field set_profile function
+---@field profile function
+---@field archetype_name function
+---@field breed_name function
+---@field telemetry_game_session function
+---@field telemetry_subject function
+---@field unit_is_alive function
 
 ---@class Managers
 ---@field wwise_game_sync table
@@ -738,17 +803,6 @@
 ---@field eligibleForLevel boolean
 ---@field talentPoints number unlocked talent points [0,30]
 ---@field type string
-
----@class PlayerProfile
----@field personal { character_height: number }
----@field archetype { name: string }
----@field character_id string
----@field name string character name
----@field specialization string e.g. psyker_2 veteran_1
----@field current_level number
----@field gender 'male' | 'female'
----@field selected_voice string
----@field talent_points number
 
 ---@alias Platform 'steam' | 'xbox' | 'psn' | 'Unknown'
 

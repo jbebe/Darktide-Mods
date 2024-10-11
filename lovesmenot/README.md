@@ -148,6 +148,8 @@ local is_in_training_grounds = game_mode_name == "shooting_range" or game_mode_n
 
 #### Icons
 
+https://media.discordapp.net/attachments/1079235834777186406/1139278220877897868/image.png?ex=670a2446&is=6708d2c6&hm=5f067c8dd5125e78354a272e6eb80e2a171e558915919646ac7415969ce3b8fa&=&format=webp&quality=lossless
+
 * \ue000 logo
 * \ue001 check
 * \ue002 locked

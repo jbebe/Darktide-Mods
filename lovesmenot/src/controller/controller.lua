@@ -8,7 +8,6 @@ local md5 = modRequire 'lovesmenot/nurgle_modules/md5'
 local fun = modRequire 'lovesmenot/nurgle_modules/fun'
 
 local localization = modRequire 'lovesmenot/src/mod.localization'
-local constants = modRequire 'lovesmenot/src/constants'
 local langUtils = modRequire 'lovesmenot/src/utils/language'
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
 
@@ -28,7 +27,7 @@ local gameUtils = modRequire 'lovesmenot/src/utils/game'
 ---@field isInMission boolean Whether the host is in a level
 ---@field loadLocalRating fun(self: LovesMeNot)
 ---@field persistLocalRating fun(self: LovesMeNot)
----@field init fun(self: LovesMeNot)
+---@field init fun(self: LovesMeNot, forceInit: boolean)
 ---@field registerRatingsView fun(self: LovesMeNot)
 ---@field openRatings fun(self: LovesMeNot)
 ---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
@@ -72,13 +71,13 @@ end
 
 -- Initializer
 
-function controller:init()
-    controller:log('info', 'Begin mod initialization', 'controller:init')
-
-    if self.initialized then
+function controller:init(forceInit)
+    if not forceInit and self.initialized then
         controller:log('info', 'Mod is already initialized', 'controller:init')
         return
     end
+
+    controller:log('info', 'Begin mod initialization', 'controller:init')
 
     local platform = Managers.data_service.social:platform()
     local platformId = Managers.account:platform_user_id()
@@ -86,21 +85,9 @@ function controller:init()
         self:log('error', 'Gaming platform data is not available', 'controller:init')
         return
     else
-        local uid = controller:uid(platform, platformId)
-        self.ownHash = controller:hash(uid)
+        self.ownUid = controller:uid(platform, platformId)
+        self.ownHash = controller:hash(self.ownUid)
     end
-
-    -- load log file
-    if self.logFileHandle ~= nil then
-        self:log('info', 'Log file closed', 'controller:init')
-        self.logFileHandle:close()
-    end
-    local ratingPath = self:getConfigPath() .. [[\lovesmenot.log]]
-    self.logFileHandle = langUtils.io.open(ratingPath, 'a')
-    self.logFileHandle:write('- - - - - - - - - - - - - - - - - -\n')
-    self.logFileHandle:write(('- LOG START: %s  -\n'):format(langUtils.os.date(constants.DATE_FORMAT)))
-    self.logFileHandle:write('- - - - - - - - - - - - - - - - - -\n')
-    self:log('info', 'Log file opened', 'controller:init')
 
     -- load community rating
     if self:isCommunity() then
@@ -144,7 +131,7 @@ function controller:init()
     self:loadLocalRating()
 
     -- load extras
-    self.isInMission = gameUtils.isInRealMission()
+    self.isInMission = gameUtils.isInMission()
     self:registerRatingsView()
 
     -- load localized string
