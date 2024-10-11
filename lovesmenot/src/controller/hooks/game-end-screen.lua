@@ -21,7 +21,7 @@ local function init(controller)
                     if uid ~= controller.ownUid then
                         local content = widget.content
                         local newName, isDirty =
-                            controller:formatPlayerName(content.character_name, uid, profile.character_id)
+                            controller:formatPlayerName(content.character_name, uid, profile.current_level)
                         if isDirty then
                             content.character_name = newName
                             widget.dirty = true

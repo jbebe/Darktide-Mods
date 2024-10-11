@@ -27,14 +27,14 @@ local gameUtils = modRequire 'lovesmenot/src/utils/game'
 ---@field isInMission boolean Whether the host is in a level
 ---@field loadLocalRating fun(self: LovesMeNot)
 ---@field persistLocalRating fun(self: LovesMeNot)
----@field init fun(self: LovesMeNot, forceInit: boolean)
+---@field init fun(self: LovesMeNot, forceInit?: boolean)
 ---@field registerRatingsView fun(self: LovesMeNot)
 ---@field openRatings fun(self: LovesMeNot)
 ---@field updateLocalRating fun(self: LovesMeNot, teammate: Teammate)
 ---@field downloadCommunityRatingAsync fun(self: LovesMeNot): Promise
 ---@field updateCommunityRating fun(self: LovesMeNot, teammate: Teammate): boolean
 ---@field uploadCommunityRatingAsync fun(self: LovesMeNot): Promise
----@field formatPlayerName fun(self: LovesMeNot, oldText: string, uid: string, characterId: string): string, boolean (newName, isDirty)
+---@field formatPlayerName fun(self: LovesMeNot, oldText: string, uid: string, overrideLevel?: number): string, boolean (newName, isDirty)
 ---@field rateTeammate fun(self: LovesMeNot, teammateIndex: number)
 ---@field md5 { sumhexa: fun(text: string): string }
 ---@field getConfigPath fun(self: LovesMeNot): string
@@ -72,8 +72,14 @@ end
 -- Initializer
 
 function controller:init(forceInit)
-    if not forceInit and self.initialized then
+    -- TODO: use flag for ongoing initialization & initialize = true when all promises ended
+    if forceInit ~= true and self.initialized then
         controller:log('info', 'Mod is already initialized', 'controller:init')
+        return
+    end
+
+    if Managers.backend._initialized ~= true then
+        controller:log('info', 'BackendManager is not ready yet', 'controller:init')
         return
     end
 
@@ -92,10 +98,10 @@ function controller:init(forceInit)
     -- load community rating
     if self:isCommunity() then
         RegionLatency:get_preferred_reef():next(function(data)
-            self:log('info', 'Reef info loaded', 'controller:init/get_preferred_reef')
             self.reef = data
+            self:log('info', 'Reef info loaded', 'controller:init/get_preferred_reef')
         end):catch(function(error)
-            self:log('error', error, 'controller:init/get_preferred_reef')
+            self:log('error', error.description, 'controller:init/get_preferred_reef')
         end)
         Managers.data_service.social:fetch_friends():next(function(friends)
             local friendsCache = {}
@@ -103,17 +109,22 @@ function controller:init(forceInit)
             for i = 1, #friends do
                 ---@type PlayerInfo
                 local playerInfo = friends[i]
-                local platformUserId = playerInfo:platform_user_id()
-                if platformUserId then
-                    friendsCache[cacheIter] = self:hash(playerInfo:platform(), platformUserId)
-                    cacheIter = cacheIter + 1
-                else
-                    self:log('warning', 'Missing platform id', 'controller:init/fetch_friends')
+                local platform = playerInfo:platform()
+                local isModdingAvailable = platform == 'steam' or platform == 'xbox'
+                if isModdingAvailable then
+                    local friendPlatformId = playerInfo:platform_user_id()
+                    if friendPlatformId then
+                        friendsCache[cacheIter] = self:hash(playerInfo:platform(), friendPlatformId)
+                        cacheIter = cacheIter + 1
+                    else
+                        self:log('warning', 'Missing platform id', 'controller:init/fetch_friends')
+                    end
                 end
             end
             self.localPlayerFriends = friendsCache
+            self:log('info', 'Friends cache loaded', 'controller:init/fetch_friends')
         end):catch(function(error)
-            self:log('error', error, 'controller:init/fetch_friends')
+            self:log('error', error.description, 'controller:init/fetch_friends')
         end)
         local accessToken = self:getAccessToken()
         if accessToken ~= nil then
@@ -204,6 +215,13 @@ end
 ---@param overrideLevel number | nil
 ---@return RATINGS | nil, boolean | nil (positive/negative, isCommunityRating)
 function controller:getRating(uid, overrideLevel)
+    local isCommunity = self:isCommunity()
+    ---@type CachedInfo
+    local cache
+    if isCommunity then
+        cache = self:addAccountCache(uid, overrideLevel)
+    end
+
     -- Return local rating if exists
     local rating = langUtils.coalesce(self.localRating, 'accounts', uid, 'rating')
     if rating then
@@ -211,8 +229,7 @@ function controller:getRating(uid, overrideLevel)
     end
 
     -- If community sync is enabled, fall back to it if local rating is not found
-    if self:isCommunity() then
-        local cache = self:addAccountCache(uid, overrideLevel)
+    if isCommunity then
         local communityRating = self.communityRating[cache.hash]
         if communityRating then
             -- show rating with web icon if account has community rating
@@ -241,9 +258,14 @@ function controller:loadLocalPlayerToCache()
 
             -- Set rating of host player
             self:getRating(self.ownUid, progression.currentLevel)
+            self:log(
+                'info',
+                'Host player loaded into cache',
+                'controller:loadLocalPlayerToCache/get_entity_type_progression'
+            )
         end)
         :catch(function(error)
-            self:log('error', error, 'controller:loadLocalPlayerToCache/get_entity_type_progression')
+            self:log('error', error.description, 'controller:loadLocalPlayerToCache/get_entity_type_progression')
         end)
 end
 

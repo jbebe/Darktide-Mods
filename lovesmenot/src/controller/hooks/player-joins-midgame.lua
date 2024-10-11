@@ -6,7 +6,7 @@ local function init(controller)
             if not controller.timers:canRun('HudElementTeamPanelHandler_update', t, 2) then return end
             if not controller.initialized then return end
 
-            ---@type TeammateList
+            ---@type Teammate[]
             local teammates = {}
             for _, data in pairs(self._player_panels_array) do
                 ---@type HumanPlayer
@@ -27,8 +27,7 @@ local function init(controller)
                     local showHostPlayerRating = not controller:hideOwnRating()
                     local isHostPlayer = uid == controller.ownUid
                     if not isHostPlayer or showHostPlayerRating then
-                        local character_id = profile and profile.character_id
-                        local newName, isDirty = controller:formatPlayerName(content.text, uid, character_id)
+                        local newName, isDirty = controller:formatPlayerName(content.text, uid, profile.current_level)
                         if isDirty then
                             content.text = newName
                             widget.dirty = isDirty

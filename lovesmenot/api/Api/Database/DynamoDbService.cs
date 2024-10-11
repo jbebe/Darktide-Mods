@@ -41,20 +41,20 @@ namespace Api.Database
 
         public async Task CreateOrUpdateRatingAsync(IRating entity, CancellationToken cancellationToken)
         {
-            if (entity is DynamoDbRating rating)
+            if (entity is not DynamoDbRating rating)
             {
-                await CreateOrUpdateAsync(rating, cancellationToken);
+                throw new ArgumentException("Invalid type", nameof(entity));
             }
-            throw new ArgumentException("Invalid type", nameof(entity));
+            await CreateOrUpdateAsync(rating, cancellationToken);
         }
 
         public async Task CreateOrUpdateAccountAsync(IAccount entity, CancellationToken cancellationToken)
         {
-            if (entity is DynamoDbAccount account)
+            if (entity is not DynamoDbAccount account)
             {
-                await CreateOrUpdateAsync(account, cancellationToken);
+                throw new ArgumentException("Invalid type", nameof(entity));
             }
-            throw new ArgumentException("Invalid type", nameof(entity));
+            await CreateOrUpdateAsync(account, cancellationToken);
         }
 
         public async Task<IRating?> GetRatingAsync(string id, CancellationToken cancellationToken)

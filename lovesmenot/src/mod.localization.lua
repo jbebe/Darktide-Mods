@@ -141,6 +141,9 @@ return {
 	lovesmenot_ingame_community_rating = {
 		en = 'Community'
 	},
+	lovesmenot_ingame_community_sync_success = {
+		en = 'Successfully synced %d rating(s) to server'
+	},
 	lovesmenot_ingame_community_error = {
 		en = 'Community server is unreachable. ' ..
 			'Turn off community rating if the problem persists and reload the mod.'

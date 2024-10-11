@@ -18,7 +18,7 @@ local function init(controller)
         local slot = spawnSlots[slotId]
         local content = slot.panel_widget.content
         local characterId = profile and profile.character_id
-        content.character_name, _ = controller:formatPlayerName(content.character_name, uid, characterId)
+        content.character_name, _ = controller:formatPlayerName(content.character_name, uid, profile.current_level)
     end)
 end
 

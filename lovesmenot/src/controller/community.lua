@@ -49,23 +49,33 @@ local function init(controller)
             }
         end
 
-        local sourceCache = self.accountCache[self.ownHash]
+        local sourceCache = self.accountCache[self.ownUid]
         ---@type RatingRequest
         local request = {
             characterLevel = sourceCache.level,
-            reef = BackendUtilities.prefered_mission_region,
+            reef = self.reef,
             accounts = targets,
             friends = self.localPlayerFriends,
         }
         local accessToken = controller:getAccessToken() --[[ @as string ]]
 
         return netUtils.updateRatingsAsync(accessToken, request):next(function()
+            local syncedRatingCount = #langUtils.keys(self.syncableRating)
+            self:log(
+                'info',
+                ('Successfully uploaded %d votes'):format(syncedRatingCount),
+                'controller:uploadCommunityRatingAsync/updateRatingsAsync'
+            )
+            gameUtils.directNotification(
+                controller.dmf:localize('lovesmenot_ingame_community_sync_success', syncedRatingCount)
+            )
             self.syncableRating = {}
         end):catch(function(error)
-            self:log('error', error, 'controller:uploadCommunityRatingAsync/updateRatingsAsync')
+            self:log('error', error.description, 'controller:uploadCommunityRatingAsync/updateRatingsAsync')
             gameUtils.directNotification(
                 controller.dmf:localize('lovesmenot_ingame_community_error'),
-                true
+                true,
+                constants.NOTIFICATION_DELAY_LONG
             )
             controller.initialized = false
         end)

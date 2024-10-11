@@ -6,31 +6,45 @@ local ButtonPassTemplates = require 'scripts/ui/pass_templates/button_pass_templ
 ---@param controller LovesMeNot
 local function init(controller)
     function PlayerCharacterOptionsView:_on_rate_pressed()
-        ---@type PlayerInfo
-        local playerInfo = self._player_info
-        local accountName = playerInfo._presence:account_name()
-        local platform = playerInfo:platform()
-        local playerProfile = playerInfo:profile()
-        ---@type Teammate
-        local teammate = {
-            name = accountName,
-            platform = platform,
-            characterName = playerProfile.name,
-            characterType = playerProfile.archetype.name,
-            characterLevel = playerProfile.current_level,
-            uid = controller:uid(platform, playerInfo:platform_user_id())
-        }
-        if controller:isCommunity() then
-            if controller:updateCommunityRating(teammate) then
-                controller:uploadCommunityRatingAsync():next(function()
-                    -- only update local rating if remote succeeded
-                    controller:updateLocalRating(teammate)
-                    controller:persistLocalRating()
-                end)
+        -- protected call needed to avoid crash on errors
+        local success, response = pcall(function()
+            if not controller.initialized then
+                return
             end
-        else
-            controller:updateLocalRating(teammate)
-            controller:persistLocalRating()
+
+            ---@type PlayerInfo
+            local playerInfo = self._player_info
+            local accountName = playerInfo._presence:account_name()
+            local platform = playerInfo:platform()
+            local playerProfile = playerInfo:profile()
+            ---@type Teammate
+            local teammate = {
+                name = accountName,
+                platform = platform,
+                characterName = playerProfile.name,
+                characterType = playerProfile.archetype.name,
+                characterLevel = playerProfile.current_level,
+                uid = controller:uid(platform, playerInfo:platform_user_id())
+            }
+            if controller:isCommunity() then
+                if controller:updateCommunityRating(teammate) then
+                    controller:uploadCommunityRatingAsync():next(function()
+                        -- only update local rating if remote succeeded
+                        controller:updateLocalRating(teammate)
+                        controller:persistLocalRating()
+                    end)
+                end
+            else
+                controller:updateLocalRating(teammate)
+                controller:persistLocalRating()
+            end
+        end)
+        if not success then
+            controller:log(
+                'error',
+                'Inspect rating failed with message: ' .. tostring(response),
+                'PlayerCharacterOptionsView:_on_rate_pressed'
+            )
         end
     end
 

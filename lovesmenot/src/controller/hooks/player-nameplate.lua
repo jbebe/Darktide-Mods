@@ -28,7 +28,7 @@ local function init(controller)
                     local content = widget.content
 
                     local newName, isDirty = controller:formatPlayerName(
-                        content.header_text, uid, player:character_id())
+                        content.header_text, uid, player:profile().current_level)
                     if isDirty then
                         content.header_text = newName
                         widget.dirty = true
