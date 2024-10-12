@@ -9,6 +9,5 @@
   "region": "eu-west-1",
   "configuration": "Release",
   "s3-prefix": "lovesmenot/",
-  "template": "serverless.template",
-  "template-parameters": ""
+  "template": "serverless.template"
 }

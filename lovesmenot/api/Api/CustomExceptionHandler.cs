@@ -112,7 +112,7 @@ namespace Api
 
         public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            Logger.LogError(exception, message: null);
+            Logger.LogError(exception, message: exception.Message);
             var pathFeature = httpContext.Features.GetRequiredFeature<IExceptionHandlerPathFeature>();
 
             if (pathFeature.Path.StartsWith("/auth/") || pathFeature.Path.StartsWith("/callback/"))
