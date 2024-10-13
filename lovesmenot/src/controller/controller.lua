@@ -14,7 +14,8 @@ local gameUtils = modRequire 'lovesmenot/src/utils/game'
 ---@class LovesMeNot
 ---@field dmf DmfMod | table<string, function>
 ---@field logFileHandle file* | nil
----@field initialized boolean
+---@field initialized boolean Whether mod is initialized and ready to work
+---@field pending boolean Whether initialization is pending or finished
 ---@field teammates Teammate[] Teammates list. Index 1,2,3 always refer to the right person, their position is fixed.
 ---@field localRating LocalRating | nil (key: uid) Local rating with detailed account information
 ---@field ownUid string | nil Host player's own uid (platform:platform_user_id)
@@ -39,9 +40,11 @@ local gameUtils = modRequire 'lovesmenot/src/utils/game'
 ---@field md5 { sumhexa: fun(text: string): string }
 ---@field getConfigPath fun(self: LovesMeNot): string
 ---@field log fun(self: LovesMeNot, level: LogLevel, message: string, category: string | nil)
+---@field initLogging fun(self: LovesMeNot)
 local controller = {
     dmf = get_mod('lovesmenot'),
     initialized = false,
+    pending = false,
     isInMission = false,
     teammates = {},
     timers = gameUtils.createTimer(),
@@ -71,19 +74,38 @@ end
 
 -- Initializer
 
-function controller:init(forceInit)
+function controller:init(force)
     -- TODO: use flag for ongoing initialization & initialize = true when all promises ended
-    if forceInit ~= true and self.initialized then
-        controller:log('info', 'Mod is already initialized', 'controller:init')
+    if force ~= true and self.initialized then
+        self:log('info', 'Mod is already initialized', 'controller:init')
         return
     end
 
-    if Managers.backend._initialized ~= true then
-        controller:log('info', 'BackendManager is not ready yet', 'controller:init')
+    if self.pending then
+        return
+    else
+        self.pending = true
+    end
+
+    -- Check access token
+    local accessToken = self:getAccessToken()
+    if not accessToken then
+        self:log('warning', 'Missing access token, revert to local mode', 'controller:init')
+        self.dmf:set('lovesmenot_settings_community', false, false)
+        self.pending = false
+        self:init()
         return
     end
 
-    controller:log('info', 'Begin mod initialization', 'controller:init')
+    -- Check BackendManager state
+    if not Managers.backend._initialized then
+        controller:log('warning', 'BackendManager is not initialized yet', 'controller:init')
+        self.pending = false
+        return
+    end
+
+    -- Start initialization when backend manager is initialized
+    controller:log('info', 'Mod initialization started', 'controller:init')
 
     local platform = Managers.data_service.social:platform()
     local platformId = Managers.account:platform_user_id()
@@ -95,49 +117,6 @@ function controller:init(forceInit)
         self.ownHash = controller:hash(self.ownUid)
     end
 
-    -- load community rating
-    if self:isCommunity() then
-        RegionLatency:get_preferred_reef():next(function(data)
-            self.reef = data
-            self:log('info', 'Reef info loaded', 'controller:init/get_preferred_reef')
-        end):catch(function(error)
-            self:log('error', error.description, 'controller:init/get_preferred_reef')
-        end)
-        Managers.data_service.social:fetch_friends():next(function(friends)
-            local friendsCache = {}
-            local cacheIter = 1
-            for i = 1, #friends do
-                ---@type PlayerInfo
-                local playerInfo = friends[i]
-                local platform = playerInfo:platform()
-                local isModdingAvailable = platform == 'steam' or platform == 'xbox'
-                if isModdingAvailable then
-                    local friendPlatformId = playerInfo:platform_user_id()
-                    if friendPlatformId then
-                        friendsCache[cacheIter] = self:hash(playerInfo:platform(), friendPlatformId)
-                        cacheIter = cacheIter + 1
-                    else
-                        self:log('warning', 'Missing platform id', 'controller:init/fetch_friends')
-                    end
-                end
-            end
-            self.localPlayerFriends = friendsCache
-            self:log('info', 'Friends cache loaded', 'controller:init/fetch_friends')
-        end):catch(function(error)
-            self:log('error', error.description, 'controller:init/fetch_friends')
-        end)
-        local accessToken = self:getAccessToken()
-        if accessToken ~= nil then
-            self:downloadCommunityRatingAsync()
-            self:loadLocalPlayerToCache()
-        else
-            self:log('error', 'Missing access token, revert to local mode', 'controller:init')
-            self.dmf:set('lovesmenot_settings_community', false, false)
-            self:init()
-            return
-        end
-    end
-
     -- load local rating
     self:loadLocalRating()
 
@@ -146,27 +125,67 @@ function controller:init(forceInit)
     self:registerRatingsView()
 
     -- load localized string
-    controller.dmf:add_global_localize_strings({
-        lovesmenot_ratingsview_download_ratings = localization.lovesmenot_ratingsview_download_ratings,
-        lovesmenot_ratingsview_download_ratings_notif = localization.lovesmenot_ratingsview_download_ratings_notif,
-        lovesmenot_community_create_token_title = localization.lovesmenot_community_create_token_title,
-        lovesmenot_community_create_token_description = localization.lovesmenot_community_create_token_description,
-        lovesmenot_community_create_token_step_1 = localization.lovesmenot_community_create_token_step_1,
-        lovesmenot_community_create_token_url = localization.lovesmenot_community_create_token_url,
-        lovesmenot_community_create_token_step_2 = localization.lovesmenot_community_create_token_step_2,
-        lovesmenot_community_create_token_step_3 = localization.lovesmenot_community_create_token_step_3,
-        lovesmenot_community_create_token_save = localization.lovesmenot_community_create_token_save,
-        lovesmenot_inspectview_options_rate = localization.lovesmenot_inspectview_options_rate,
-        lovesmenot_ratingsview_title = localization.lovesmenot_ratingsview_title,
-        lovesmenot_ratingsview_delete_title = localization.lovesmenot_ratingsview_delete_title,
-        lovesmenot_ratingsview_delete_description = localization.lovesmenot_ratingsview_delete_description,
-        lovesmenot_ratingsview_delete_yes = localization.lovesmenot_ratingsview_delete_yes,
-        lovesmenot_ratingsview_delete_no = localization.lovesmenot_ratingsview_delete_no,
-    })
+    controller.dmf:add_global_localize_strings(localization)
 
-    -- mod is initialized at this state
-    -- pending promises may
-    self.initialized = true
+    -- Mod initialization for local mode finished
+    if not self:isCommunity() then
+        self.initialized = true
+        self.pending = false
+        controller:log('info', 'Mod initialization finished', 'controller:init')
+        return
+    end
+
+    -- load community rating
+    ---@type Promise
+    local get_preferred_reef_promise = RegionLatency:get_preferred_reef():next(function(data)
+        self.reef = data
+        self:log('info', 'Reef info loaded', 'controller:init/get_preferred_reef')
+    end):catch(function(error)
+        self:log('error', error.description, 'controller:init/get_preferred_reef')
+    end)
+    ---@type Promise
+    local fetch_friends_promise = Managers.data_service.social:fetch_friends():next(function(friends)
+        local friendsCache = {}
+        local cacheIter = 1
+        for i = 1, #friends do
+            ---@type PlayerInfo
+            local playerInfo = friends[i]
+            local platform = playerInfo:platform()
+            local isModdingAvailable = platform == 'steam' or platform == 'xbox'
+            if isModdingAvailable then
+                local friendPlatformId = playerInfo:platform_user_id()
+                if friendPlatformId then
+                    friendsCache[cacheIter] = self:hash(playerInfo:platform(), friendPlatformId)
+                    cacheIter = cacheIter + 1
+                else
+                    self:log('warning', 'Missing platform id', 'controller:init/fetch_friends')
+                end
+            end
+        end
+        self.localPlayerFriends = friendsCache
+        self:log('info', 'Friends cache loaded', 'controller:init/fetch_friends')
+    end):catch(function(error)
+        self:log('error', error.description, 'controller:init/fetch_friends')
+    end)
+    local downloadCommunityRatingPromise = self:downloadCommunityRatingAsync()
+    local loadLocalPlayerToCacheAsync = self:loadLocalPlayerToCacheAsync()
+
+    -- Wait for all promises and if they succeed, initialization is done
+    ---@cast Promise Promise
+    Promise.all(
+        get_preferred_reef_promise,
+        fetch_friends_promise,
+        downloadCommunityRatingPromise,
+        loadLocalPlayerToCacheAsync
+    ):next(function()
+        self.initialized = true
+        self.pending = false
+        controller:log('info', 'Mod initialization finished', 'controller:init')
+    end):catch(function(error)
+        self:log('error', 'Cannot initialize mod. Error: ' .. tostring(error), 'controller:init/Promise.all')
+        self.pending = false
+    end)
+    -- End of Promise.all
 end
 
 -- Methods
@@ -238,9 +257,10 @@ function controller:getRating(uid, overrideLevel)
     end
 end
 
-function controller:loadLocalPlayerToCache()
+---@return Promise
+function controller:loadLocalPlayerToCacheAsync()
     local backend_interface = Managers.backend.interfaces
-    backend_interface.progression:get_entity_type_progression('character')
+    return backend_interface.progression:get_entity_type_progression('character')
         :next(function(characters_progression)
             -- Find character with highest level
             ---@type CharacterProgression
@@ -261,12 +281,57 @@ function controller:loadLocalPlayerToCache()
             self:log(
                 'info',
                 'Host player loaded into cache',
-                'controller:loadLocalPlayerToCache/get_entity_type_progression'
+                'controller:loadLocalPlayerToCacheAsync/get_entity_type_progression'
             )
         end)
         :catch(function(error)
-            self:log('error', error.description, 'controller:loadLocalPlayerToCache/get_entity_type_progression')
+            self:log('error', error.description, 'controller:loadLocalPlayerToCacheAsync/get_entity_type_progression')
         end)
+end
+
+---@param playerInfo PlayerInfo
+function controller:forceToggleRatingSafe(playerInfo)
+    -- protected call needed to avoid crash on errors
+    local success, response = pcall(function()
+        if not self.initialized then
+            return
+        end
+
+        local playerProfile = playerInfo:profile()
+        local accountName = playerInfo._presence:account_name()
+        local platform = playerInfo:platform()
+        local platformId = playerInfo:platform_user_id()
+        local uid = self:uid(platform, platformId)
+        ---@type Teammate
+        local teammate = {
+            name = accountName,
+            platform = platform,
+            characterName = playerProfile.name,
+            characterType = playerProfile.archetype.name,
+            characterLevel = playerProfile.current_level,
+            uid = self:uid(platform, playerInfo:platform_user_id())
+        }
+        if self:isCommunity() then
+            self:getRating(uid, playerProfile.current_level)
+            if self:updateCommunityRating(teammate) then
+                self:uploadCommunityRatingAsync():next(function()
+                    -- only update local rating if remote succeeded
+                    self:updateLocalRating(teammate)
+                    self:persistLocalRating()
+                end)
+            end
+        else
+            self:updateLocalRating(teammate)
+            self:persistLocalRating()
+        end
+    end)
+    if not success then
+        self:log(
+            'error',
+            'Cycling rating failed with message: ' .. tostring(response),
+            'controller:forceToggleRatingSafe'
+        )
+    end
 end
 
 return controller

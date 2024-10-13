@@ -18,7 +18,7 @@ local function init(controller)
             return
         end
         local stringifiedMessage = type(message) == 'table' and table.tostring(message) or tostring(message)
-        local loggedLine = ('[%s][%s] %s'):format(category or 'global', level, stringifiedMessage);
+        local loggedLine = ('[%s][%s] %s'):format(level, category or 'global', stringifiedMessage);
         print('[lovesmenot]' .. loggedLine)
         self.logFileHandle:write(loggedLine .. '\n')
 
@@ -30,17 +30,19 @@ local function init(controller)
         end
     end
 
-    -- load log file
-    if controller.logFileHandle ~= nil then
-        controller:log('info', 'Log file closed', 'controller:init')
-        controller.logFileHandle:close()
+    function controller:initLogging()
+        -- load log file
+        if self.logFileHandle ~= nil then
+            self:log('info', 'Log file closed', 'controller:initLogging')
+            self.logFileHandle:close()
+        end
+        local ratingPath = self:getConfigPath() .. [[\lovesmenot.log]]
+        self.logFileHandle = langUtils.io.open(ratingPath, 'a')
+        self.logFileHandle:write('- - - - - - - - - - - - - - - - - -\n')
+        self.logFileHandle:write(('- LOG START: %s  -\n'):format(langUtils.os.date(constants.DATE_FORMAT)))
+        self.logFileHandle:write('- - - - - - - - - - - - - - - - - -\n')
+        self:log('info', 'Log file opened', 'controller:initLogging')
     end
-    local ratingPath = controller:getConfigPath() .. [[\lovesmenot.log]]
-    controller.logFileHandle = langUtils.io.open(ratingPath, 'a')
-    controller.logFileHandle:write('- - - - - - - - - - - - - - - - - -\n')
-    controller.logFileHandle:write(('- LOG START: %s  -\n'):format(langUtils.os.date(constants.DATE_FORMAT)))
-    controller.logFileHandle:write('- - - - - - - - - - - - - - - - - -\n')
-    controller:log('info', 'Log file opened', 'controller:init')
 end
 
 return init

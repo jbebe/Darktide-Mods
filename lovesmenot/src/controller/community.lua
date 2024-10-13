@@ -1,5 +1,3 @@
-local BackendUtilities = require('scripts/foundation/managers/backend/utilities/backend_utilities')
-
 local gameUtils = modRequire 'lovesmenot/src/utils/game'
 local netUtils = modRequire 'lovesmenot/src/utils/network'
 local langUtils = modRequire 'lovesmenot/src/utils/language'
@@ -8,7 +6,7 @@ local constants = modRequire 'lovesmenot/src/constants'
 ---@param controller LovesMeNot
 local function init(controller)
     function controller:downloadCommunityRatingAsync()
-        local accessToken = controller:getAccessToken() --[[ @as string ]]
+        local accessToken = self:getAccessToken() --[[ @as string ]]
 
         ---@param ratings CommunityRating
         return netUtils.getRatingsAsync(accessToken):next(function(ratings)
@@ -25,11 +23,11 @@ local function init(controller)
                 'controller:downloadCommunityRatingAsync/getRatingsAsync'
             )
             gameUtils.directNotification(
-                controller.dmf:localize('lovesmenot_ingame_community_error'),
+                self.dmf:localize('lovesmenot_ingame_community_error'),
                 true,
                 constants.NOTIFICATION_DELAY_LONG
             )
-            controller.initialized = false
+            self.initialized = false
         end)
     end
 
@@ -57,27 +55,27 @@ local function init(controller)
             accounts = targets,
             friends = self.localPlayerFriends,
         }
-        local accessToken = controller:getAccessToken() --[[ @as string ]]
+        local accessToken = self:getAccessToken() --[[ @as string ]]
 
         return netUtils.updateRatingsAsync(accessToken, request):next(function()
             local syncedRatingCount = #langUtils.keys(self.syncableRating)
             self:log(
                 'info',
-                ('Successfully uploaded %d votes'):format(syncedRatingCount),
+                ('Successfully uploaded %d vote(s)'):format(syncedRatingCount),
                 'controller:uploadCommunityRatingAsync/updateRatingsAsync'
             )
             gameUtils.directNotification(
-                controller.dmf:localize('lovesmenot_ingame_community_sync_success', syncedRatingCount)
+                self.dmf:localize('lovesmenot_ingame_community_sync_success', syncedRatingCount)
             )
             self.syncableRating = {}
         end):catch(function(error)
             self:log('error', error.description, 'controller:uploadCommunityRatingAsync/updateRatingsAsync')
             gameUtils.directNotification(
-                controller.dmf:localize('lovesmenot_ingame_community_error'),
+                self.dmf:localize('lovesmenot_ingame_community_error'),
                 true,
                 constants.NOTIFICATION_DELAY_LONG
             )
-            controller.initialized = false
+            self.initialized = false
         end)
     end
 end

@@ -177,11 +177,11 @@ function RatingsView:_get_widget_configs()
                         {
                             close_on_pressed = true,
                             text = 'lovesmenot_ratingsview_delete_yes',
-                            callback = callback(function()
+                            callback = function()
                                 self._controller.localRating.accounts[info.uid] = nil
                                 self._controller:persistLocalRating()
                                 self:_reload()
-                            end),
+                            end,
                         },
                         {
                             close_on_pressed = true,

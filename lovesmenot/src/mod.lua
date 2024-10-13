@@ -14,6 +14,7 @@ modRequire 'lovesmenot/src/controller/community' (controller)
 modRequire 'lovesmenot/src/controller/hotkeys' (controller)
 modRequire 'lovesmenot/src/controller/view-ratings' (controller)
 modRequire 'lovesmenot/src/controller/view-inspect' (controller)
+modRequire 'lovesmenot/src/controller/view-popup' (controller)
 modRequire 'lovesmenot/src/controller/commands' (controller)
 modRequire 'lovesmenot/src/controller/format-name' (controller)
 

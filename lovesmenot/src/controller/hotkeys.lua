@@ -25,10 +25,10 @@ local function init(controller)
             -- account has not been rated yet, create object
             copy.rating = RATINGS.NEGATIVE
             self.localRating.accounts[teammate.uid] = copy
-            message = controller.dmf:localize(
+            message = self.dmf:localize(
                 'lovesmenot_ingame_notification_set',
                 teammate.characterName,
-                controller.dmf:localize('lovesmenot_ingame_rating_negative')
+                self.dmf:localize('lovesmenot_ingame_rating_negative')
             )
             message = styleUtils.colorize(COLORS.ORANGE, SYMBOLS.FLAME) .. ' ' .. message
             isError = true
@@ -36,16 +36,16 @@ local function init(controller)
             -- account hasn been rated, cycle to positive
             copy.rating = RATINGS.POSITIVE
             self.localRating.accounts[teammate.uid] = copy
-            message = controller.dmf:localize(
+            message = self.dmf:localize(
                 'lovesmenot_ingame_notification_set',
                 teammate.characterName,
-                controller.dmf:localize('lovesmenot_ingame_rating_positive')
+                self.dmf:localize('lovesmenot_ingame_rating_positive')
             )
             message = styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ' .. message
         else
             -- account was rated, remove from table
             self.localRating.accounts[teammate.uid] = nil
-            message = controller.dmf:localize('lovesmenot_ingame_notification_unset', teammate.characterName)
+            message = self.dmf:localize('lovesmenot_ingame_notification_unset', teammate.characterName)
             message = styleUtils.colorize(COLORS.GREY, SYMBOLS.CHECK) .. ' ' .. message
         end
 

@@ -5,6 +5,9 @@ local constants = modRequire 'lovesmenot/src/constants'
 local function init(controller)
     ---@param initial_call boolean
     function controller.dmf.on_enabled(initial_call)
+        -- init logging before loading mod
+        controller:initLogging()
+
         -- init mod (again) on reload all mods
         controller:log('info', 'Mod enabled', 'controller:dmf:on_enabled')
         controller:init()

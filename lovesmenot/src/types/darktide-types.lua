@@ -818,7 +818,7 @@
 ---@field is_fulfilled fun(self: Promise)
 ---@field is_pending fun(self: Promise)
 ---@field update fun()
----@field all fun(): Promise
+---@field all fun(...: Promise): Promise
 ---@field race fun(): Promise
 ---@field _check_delayed fun()
 ---@field _check_predicate fun()
