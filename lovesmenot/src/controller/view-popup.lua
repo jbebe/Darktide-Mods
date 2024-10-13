@@ -37,7 +37,7 @@ local function init(controller)
                     num_menu_items = num_menu_items + 1
                 end
             else
-                self:log(
+                controller:log(
                     'warning',
                     'Popup player has no profile data',
                     'ViewElementPlayerSocialPopup:set_player_info'

@@ -56,4 +56,4 @@
 
 ---@alias AccountCache table<string, CachedInfo>
 ---@alias CommunityRating table<string, RATINGS>
----@alias SyncableRating table<string, SyncableRatingItem>
+---@alias SyncableRating table<string, SyncableRatingItem | { delete: true }>

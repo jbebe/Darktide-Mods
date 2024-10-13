@@ -25,14 +25,25 @@
         /// </summary>
         /// <example>eu</example>
         public required string Reef { get; set; }
-        
-        /// <summary>
-        /// KEY: Account GUID hash of the rated player
-        /// </summary>
-        public required Dictionary<string, TargetRequest> Accounts { get; set; }
 
         /// <summary>
-        /// Hash of player's friend's account id
+        /// Rating updates
+        /// </summary>
+        /// <remarks>
+        /// KEY: Platform + Platform Id hash of the rated player
+        /// </remarks>
+        public Dictionary<string, TargetRequest>? Updates { get; set; }
+
+        /// <summary>
+        /// Deletable ratings
+        /// </summary>
+        /// <remarks>
+        /// KEY: Platform + Platform Id hash of the rated player
+        /// </remarks>
+        public HashSet<string>? Deletes { get; set; }
+
+        /// <summary>
+        /// Hash of player's friend
         /// </summary>
         public required string[] Friends { get; set; }
     }

@@ -86,7 +86,9 @@ local function init(controller)
             }
         else
             -- account was rated, remove from table
-            self.syncableRating[hash] = nil
+            self.syncableRating[hash] = {
+                delete = true
+            }
         end
 
         return true

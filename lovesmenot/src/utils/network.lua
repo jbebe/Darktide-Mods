@@ -29,7 +29,8 @@ end
 ---@class RatingRequest
 ---@field characterLevel number
 ---@field reef string
----@field accounts table<string, TargetRequest>
+---@field updates? table<string, TargetRequest>
+---@field deletes? string[]
 ---@field friends string[]
 
 ---@param accessToken string

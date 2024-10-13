@@ -49,14 +49,15 @@ namespace Test
             string? targetHash = null,
             int? sourceLevel = null,
             RatingType? type = null,
-            string[]? friends = null
+            string[]? friends = null,
+            bool? delete = null
         )
         {
             return new RatingRequest
             {
                 CharacterLevel = sourceLevel ?? Faker.Random.Int(1, 30),
                 Reef = Faker.PickRandom("eu", "hk", "mei", "sa"),
-                Accounts = new Dictionary<string, TargetRequest>
+                Updates = delete == true ? null : new Dictionary<string, TargetRequest>
                 {
                     [targetHash ?? Faker.Random.Hash(32)] = new TargetRequest
                     {
@@ -64,6 +65,7 @@ namespace Test
                         CharacterLevel = Faker.Random.Int(1, 30),
                     }
                 },
+                Deletes = delete == true ? [targetHash] : null,
                 Friends = friends ?? [],
             };
         }
@@ -91,7 +93,7 @@ namespace Test
             var rating = Assert.Single(DbService.RatingsDb).Value;
             Assert.InRange(rating.Created, startDate, endDate);
             Assert.Equal(rating.Ratings.Single().Key, raterId);
-            Assert.Equal(request.Accounts.Single().Value.Type, rating.Ratings.Single().Value.Rating);
+            Assert.Equal(request.Updates.Single().Value.Type, rating.Ratings.Single().Value.Rating);
             Assert.InRange(rating.Ratings.Single().Value.Update, startDate, endDate);
 
             // Check account
@@ -99,10 +101,10 @@ namespace Test
             Assert.Equal(request.Reef, rater.Reefs.Single());
             Assert.InRange(rater.Created, startDate, endDate);
             Assert.Equal(request.CharacterLevel, rater.CharacterLevel);
-            var rated = DbService.AccountsDb.Single(x => x.Key == request.Accounts.Single().Key).Value;
+            var rated = DbService.AccountsDb.Single(x => x.Key == request.Updates.Single().Key).Value;
             Assert.Equal(request.Reef, rated.Reefs.Single());
             Assert.InRange(rated.Created, startDate, endDate);
-            Assert.Equal(request.Accounts.Single().Value.CharacterLevel, rated.CharacterLevel);
+            Assert.Equal(request.Updates.Single().Value.CharacterLevel, rated.CharacterLevel);
         }
 
         [Fact]
@@ -158,7 +160,7 @@ namespace Test
             // Check ratings (results are available as the fourth vote just came in)
             ratings = await Client.GetRatingsAsync(jwt, CancellationToken.None);
             var rating = Assert.Single(ratings);
-            Assert.Equal(request.Accounts.Keys.Single(), rating.Key);
+            Assert.Equal(request.Updates.Keys.Single(), rating.Key);
             Assert.Equal(RatingType.Negative, rating.Value);
         }
 
@@ -256,6 +258,27 @@ namespace Test
             {
                 await Client.CreateRatingAsync(jwt, request, CancellationToken.None);
             });
+        }
+
+        [Fact]
+        public async Task UpdateRating_Revoke_Rating()
+        {
+            var targetHash = Faker.Random.Hash(32);
+
+            // Add rating
+            var request = CreateRequest(targetHash);
+            var (jwt, sourceHash) = RandomAccessToken;
+            await Client.CreateRatingAsync(jwt, request, CancellationToken.None);
+
+            // Assert that the rating exists
+            Assert.Single(DbService.RatingsDb.Single().Value.Ratings);
+
+            // Revoke rating
+            request = CreateRequest(targetHash, delete: true);
+            await Client.CreateRatingAsync(jwt, request, CancellationToken.None);
+
+            // Assert that the rating is deleted
+            Assert.Empty(DbService.RatingsDb.Single().Value.Ratings);
         }
     }
 }

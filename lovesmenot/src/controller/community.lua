@@ -39,12 +39,19 @@ local function init(controller)
         end
 
         ---@type table<string, TargetRequest>
-        local targets = {}
+        local deletes = nil
+        local updates = nil
         for hash, item in pairs(self.syncableRating) do
-            targets[hash] = {
-                type = item.rating,
-                characterLevel = item.level,
-            }
+            if item.delete == true then
+                deletes = deletes or {}
+                table.insert(deletes, hash)
+            else
+                updates = updates or {}
+                updates[hash] = {
+                    type = item.rating,
+                    characterLevel = item.level,
+                }
+            end
         end
 
         local sourceCache = self.accountCache[self.ownUid]
@@ -52,7 +59,8 @@ local function init(controller)
         local request = {
             characterLevel = sourceCache.level,
             reef = self.reef,
-            accounts = targets,
+            updates = updates,
+            deletes = deletes,
             friends = self.localPlayerFriends,
         }
         local accessToken = self:getAccessToken() --[[ @as string ]]

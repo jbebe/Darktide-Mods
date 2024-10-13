@@ -1,6 +1,8 @@
 ﻿using Api.Controllers.Models;
 using Api.Database;
 using System.Security.Authentication;
+using static AspNet.Security.OpenId.OpenIdAuthenticationConstants;
+using System.Xml.Linq;
 
 namespace Api.Services
 {
@@ -41,17 +43,40 @@ namespace Api.Services
             var now = DateTime.UtcNow;
             await UpdateAccountAsync(raterId, request.CharacterLevel, request.Reef, request.Friends, now, cancellationToken);
 
-            if (request.Accounts.Any(x => x.Key == raterId))
+            if (request.Updates?.Any(x => x.Key == raterId) == true)
                 throw new ModException(InternalError.SelfRating);
 
-            foreach (var kvp in request.Accounts)
+            if (request.Updates != null)
             {
-                var ratedId = kvp.Key;
-                var ratedInfo = kvp.Value;
+                foreach (var kvp in request.Updates)
+                {
+                    var ratedId = kvp.Key;
+                    var ratedInfo = kvp.Value;
 
-                await UpdateAccountAsync(ratedId, ratedInfo.CharacterLevel, request.Reef, [], now, cancellationToken);
-                await UpdateRatingAsync(ratedId, raterId, request.CharacterLevel, ratedInfo.Type, now, cancellationToken);
+                    await UpdateAccountAsync(ratedId, ratedInfo.CharacterLevel, request.Reef, [], now, cancellationToken);
+                    await UpdateRatingAsync(ratedId, raterId, request.CharacterLevel, ratedInfo.Type, now, cancellationToken);
+                }
             }
+
+            if (request.Deletes != null)
+            {
+                foreach (var hash in request.Deletes)
+                {
+                    await DeleteRatingAsync(hash, raterId, cancellationToken);
+                }
+            }
+        }
+
+        private async Task DeleteRatingAsync(string ratedId, string raterId, CancellationToken cancellationToken)
+        {
+            var rating = await Db.GetRatingAsync(ratedId, cancellationToken);
+            if (rating == null) 
+                return;
+
+            // Remove rater from ratings
+            // If the user has no other ratings, we still keep it
+            rating.Ratings.Remove(raterId);
+            await Db.CreateOrUpdateRatingAsync(rating, cancellationToken);
         }
 
         private async Task UpdateAccountAsync(
