@@ -17,96 +17,90 @@ dotnet lambda deploy-serverless `
 dotnet lambda delete-serverless --stack-name lovesmenot-stack
 ```
 
-CloudFormation:
+LovesMeNotLambdaRole:
+    LovesMeNotLambdaPolicy:
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:DescribeTable",
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetItem",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "arn:aws:dynamodb:eu-west-1:970547337797:table/lovesmenot"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:eu-west-1:970547337797:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Api Gateway:
+    Private IP policy:
 
 ```json
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Transform": "AWS::Serverless-2016-10-31",
-  "Description": "An AWS Serverless Application that uses the ASP.NET Core framework running in Amazon Lambda.",
-  "Parameters": {
-    "SteamWebApiKey": {
-      "Type": "String"
-    },
-    "LovesMeNotJwtKey": {
-      "Type": "String"
-    },
-    "AzureAppClientId": {
-      "Type": "String"
-    },
-    "AzureAppSecret": {
-      "Type": "String"
-    }
-  },
-  "Conditions": {},
-  "Resources": {
-    "AspNetCoreFunction": {
-      "Type": "AWS::Serverless::Function",
-      "Properties": {
-        "Handler": "Api",
-        "Runtime": "dotnet8",
-        "CodeUri": "s3://lovesmenot-deploy/lovesmenot/AspNetCoreFunction-CodeUri-Or-ImageUri-638643528428274141-638643528485839302.zip",
-        "MemorySize": 512,
-        "Timeout": 30,
-        "Environment": {
-          "Variables": {
-            "LOVESMENOT_API_URL": "https://api.lovesmenot.blint.cloud",
-            "STEAM_WEB_API_KEY": {
-              "Ref": "SteamWebApiKey"
-            },
-            "LOVESMENOT_JWT_KEY": {
-              "Ref": "LovesMeNotJwtKey"
-            },
-            "LOVESMENOT_WEBSITE_URL": "https://lovesmenot.blint.cloud",
-            "AZURE_APP_CLIENT_ID": {
-              "Ref": "AzureAppClientId"
-            },
-            "AZURE_APP_SECRET": {
-              "Ref": "AzureAppSecret"
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "execute-api:Invoke",
+            "Resource": "execute-api:/*/*/*",
+            "Condition" : {
+                "NotIpAddress": {
+                    "aws:SourceIp": [ 
+                        "173.245.48.0/20",
+                        "103.21.244.0/22",
+                        "103.22.200.0/22",
+                        "103.31.4.0/22",
+                        "141.101.64.0/18",
+                        "108.162.192.0/18",
+                        "190.93.240.0/20",
+                        "188.114.96.0/20",
+                        "197.234.240.0/22",
+                        "198.41.128.0/17",
+                        "162.158.0.0/15",
+                        "104.16.0.0/13",
+                        "104.24.0.0/14",
+                        "172.64.0.0/13",
+                        "131.0.72.0/22",
+                        "2400:cb00::/32",
+                        "2606:4700::/32",
+                        "2803:f800::/32",
+                        "2405:b500::/32",
+                        "2405:8100::/32",
+                        "2a06:98c0::/29",
+                        "2c0f:f248::/32"
+                    ]
+                }
             }
-          }
         },
-        "Role": {
-          "Fn::Join": [
-            "",
-            [
-              "arn:aws:iam::",
-              {
-                "Ref": "AWS::AccountId"
-              },
-              ":role/LovesMeNotLambdaRole"
-            ]
-          ]
-        },
-        "Policies": [
-          "AWSLambda_FullAccess"
-        ],
-        "Events": {
-          "ProxyResource": {
-            "Type": "Api",
-            "Properties": {
-              "Path": "/{proxy+}",
-              "Method": "ANY"
-            }
-          },
-          "RootResource": {
-            "Type": "Api",
-            "Properties": {
-              "Path": "/",
-              "Method": "ANY"
-            }
-          }
+        {
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "execute-api:Invoke",
+            "Resource": "execute-api:/*/*/*"
         }
-      }
-    }
-  },
-  "Outputs": {
-    "ApiURL": {
-      "Description": "API endpoint URL for Prod environment",
-      "Value": {
-        "Fn::Sub": "https://lmn-api.blint.cloud"
-      }
-    }
-  }
+    ]
 }
 ```
