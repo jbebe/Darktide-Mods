@@ -1,0 +1,14 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "lmn-jwt-validator"
+main = "src/index.ts"
+compatibility_date = "2024-10-04"
+compatibility_flags = ["nodejs_compat"]
+minify = true
+
+[observability]
+enabled = true
+
+# prod worker variables:
+
+[vars]
+LOVESMENOT_JWT_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0tcKrEcx7le3ioubX7nixAMYWF3g588NYpxr7rW3dyGxPphXV2CuDrkW0dpvimGOxhITBFEb9OmZeqkmbOfcjpS+XE0FrZ1H2CTltHTSowyY6FVsrl8wC/AE+AzW6DiyIxyWPXaZMUYL65+jffet2LoWrDJEyen0wjLFNjAMod27u1YPvcFh4pIb11FqdOH3NG8sWfhruzypuiiSLZYU0zsVgH6Ndb14FLG+yFN8Re1njHTyM0WL0tNjIy/MR1BQIKolw1GXp7ySAMyBpt77N2AEDuDTWGIiT9uZsoEpS8DPuXXvd6r9In9ZfBgGwkvRaSXwEgM+ij5xMQdL5uzU7QIDAQAB"

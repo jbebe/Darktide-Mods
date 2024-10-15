@@ -39,7 +39,7 @@ namespace Api
 
                 var publicKeyRaw = Convert.FromBase64String(JwtPublicKey);
                 var publicRsa = new RSACryptoServiceProvider();
-                publicRsa.ImportRSAPublicKey(new ReadOnlySpan<byte>(publicKeyRaw), out _);
+                publicRsa.ImportSubjectPublicKeyInfo(new ReadOnlySpan<byte>(publicKeyRaw), out _);
                 JwtValidateKey = new RsaSecurityKey(publicRsa);
             }
 
