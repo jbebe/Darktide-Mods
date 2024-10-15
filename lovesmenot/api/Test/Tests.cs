@@ -1,10 +1,8 @@
 using Api;
 using Api.Controllers.Models;
 using Api.Database;
+using Api.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace Test
 {
@@ -16,22 +14,8 @@ namespace Test
 
         private MockDatabaseService DbService { get; }
 
-        private (string AccessToken, string Id) RandomAccessToken
-        {
-            get
-            {
-                var credentials = new SigningCredentials(Constants.Auth.JwtKeyObject, SecurityAlgorithms.HmacSha256);
-                var pidHash = Faker.Random.Hash(32);
-                var token = new JwtSecurityToken(
-                    issuer: Constants.Auth.JwtIssuer,
-                    claims: [new Claim(type: Constants.Auth.PlatformId, value: pidHash)],
-                    expires: DateTime.Now.AddYears(1),
-                    signingCredentials: credentials
-                );
-                return (new JwtSecurityTokenHandler().WriteToken(token), pidHash);
-            }
-        }
-
+        private (string AccessToken, string Id) RandomAccessToken => AuthServiceBase.CreateAccessToken(AuthenticationType.Steam, Faker.Random.Hash(32));
+        
         public BasicTests(ApplicationFactory factory)
         {
             Client = factory.CreateClient();

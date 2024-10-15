@@ -46,7 +46,7 @@ builder.Services
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = Constants.Auth.JwtIssuer,
-            IssuerSigningKey = Constants.Auth.JwtKeyObject,
+            IssuerSigningKey = Constants.Auth.JwtValidateKey,
         };
     });
 var authPolicy = new AuthorizationPolicyBuilder()

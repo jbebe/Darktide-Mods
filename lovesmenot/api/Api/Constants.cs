@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Api
@@ -29,6 +30,19 @@ namespace Api
 
         public static class Auth
         {
+            static Auth()
+            {
+                var privateKeyRaw = Convert.FromBase64String(JwtKey);
+                var privateRsa = new RSACryptoServiceProvider();
+                privateRsa.ImportRSAPrivateKey(new ReadOnlySpan<byte>(privateKeyRaw), out _);
+                JwtSignerKey = new RsaSecurityKey(privateRsa);
+
+                var publicKeyRaw = Convert.FromBase64String(JwtPublicKey);
+                var publicRsa = new RSACryptoServiceProvider();
+                publicRsa.ImportRSAPublicKey(new ReadOnlySpan<byte>(publicKeyRaw), out _);
+                JwtValidateKey = new RsaSecurityKey(publicRsa);
+            }
+
             /// <summary>
             /// Steam Dartkide id
             /// </summary>
@@ -50,11 +64,24 @@ namespace Api
             public static string SteamWebApiKey => Environment.GetEnvironmentVariable("STEAM_WEB_API_KEY")!;
 
             /// <summary>
-            /// Jwt key that signs tokens
+            /// Raw 2048 bit RSA256 key that signs tokens
             /// </summary>
             private static string JwtKey => Environment.GetEnvironmentVariable("LOVESMENOT_JWT_KEY")!;
 
-            public static SymmetricSecurityKey JwtKeyObject => new(Encoding.UTF8.GetBytes(JwtKey));
+            /// <summary>
+            /// Raw public key that verifies tokens
+            /// </summary>
+            private static string JwtPublicKey => Environment.GetEnvironmentVariable("LOVESMENOT_JWT_PUBLIC_KEY")!;
+
+            /// <summary>
+            /// Key that signs new JWT tokens
+            /// </summary>
+            public static RsaSecurityKey JwtSignerKey;
+
+            /// <summary>
+            /// Key that validates JWT tokens
+            /// </summary>
+            public static RsaSecurityKey JwtValidateKey;
 
             /// <summary>
             /// Issuer of generated jwt tokens

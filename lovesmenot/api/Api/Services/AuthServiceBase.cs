@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -17,9 +18,9 @@ namespace Api.Services
             HttpContextAccessor = httpContextAccessor;
         }
 
-        protected void RedirectToWebsiteWithAccessToken(AuthenticationType type, string platformId)
+        internal protected static (string AccessToken, string Hash) CreateAccessToken(AuthenticationType type, string platformId)
         {
-            var credentials = new SigningCredentials(Constants.Auth.JwtKeyObject, SecurityAlgorithms.HmacSha256);
+            var credentials = new SigningCredentials(Constants.Auth.JwtSignerKey, SecurityAlgorithms.RsaSha256);
             byte[] hashBytes = MD5.HashData(Encoding.ASCII.GetBytes($"{type.ToString().ToLower()}:{platformId}"));
             var hashedId = Convert.ToHexString(hashBytes).ToLowerInvariant();
             var token = new JwtSecurityToken(
@@ -29,7 +30,14 @@ namespace Api.Services
                 signingCredentials: credentials
             );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-            string typedUrl = Constants.Auth.WebsiteUrlWithTyped(type);
+
+            return (tokenString, hashedId);
+        }
+
+        protected void RedirectToWebsiteWithAccessToken(AuthenticationType type, string platformId)
+        {
+            var tokenString = CreateAccessToken(type, platformId);
+            var typedUrl = Constants.Auth.WebsiteUrlWithTyped(type);
             HttpContext.Response.Redirect($"{typedUrl}#token={tokenString}", permanent: false);
         }
     }
