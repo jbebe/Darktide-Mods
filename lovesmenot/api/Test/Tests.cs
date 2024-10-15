@@ -1,7 +1,6 @@
 using Api;
 using Api.Controllers.Models;
 using Api.Database;
-using Bogus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,7 +12,7 @@ namespace Test
     {
         private HttpClient Client { get; }
 
-        private Faker Faker { get; }
+        private Bogus.Faker Faker { get; }
 
         private MockDatabaseService DbService { get; }
 
@@ -36,7 +35,7 @@ namespace Test
         public BasicTests(ApplicationFactory factory)
         {
             Client = factory.CreateClient();
-            Faker = new Faker();
+            Faker = new Bogus.Faker();
             DbService = (factory.Services.GetRequiredService<IDatabaseService>() as MockDatabaseService)!;
         }
 
@@ -93,7 +92,7 @@ namespace Test
             var rating = Assert.Single(DbService.RatingsDb).Value;
             Assert.InRange(rating.Created, startDate, endDate);
             Assert.Equal(rating.Ratings.Single().Key, raterId);
-            Assert.Equal(request.Updates.Single().Value.Type, rating.Ratings.Single().Value.Rating);
+            Assert.Equal(request.Updates?.Single().Value.Type, rating.Ratings.Single().Value.Rating);
             Assert.InRange(rating.Ratings.Single().Value.Update, startDate, endDate);
 
             // Check account
@@ -101,10 +100,10 @@ namespace Test
             Assert.Equal(request.Reef, rater.Reefs.Single());
             Assert.InRange(rater.Created, startDate, endDate);
             Assert.Equal(request.CharacterLevel, rater.CharacterLevel);
-            var rated = DbService.AccountsDb.Single(x => x.Key == request.Updates.Single().Key).Value;
+            var rated = DbService.AccountsDb.Single(x => x.Key == request.Updates?.Single().Key).Value;
             Assert.Equal(request.Reef, rated.Reefs.Single());
             Assert.InRange(rated.Created, startDate, endDate);
-            Assert.Equal(request.Updates.Single().Value.CharacterLevel, rated.CharacterLevel);
+            Assert.Equal(request.Updates?.Single().Value.CharacterLevel, rated.CharacterLevel);
         }
 
         [Fact]
@@ -160,7 +159,7 @@ namespace Test
             // Check ratings (results are available as the fourth vote just came in)
             ratings = await Client.GetRatingsAsync(jwt, CancellationToken.None);
             var rating = Assert.Single(ratings);
-            Assert.Equal(request.Updates.Keys.Single(), rating.Key);
+            Assert.Equal(request.Updates?.Keys.Single(), rating.Key);
             Assert.Equal(RatingType.Negative, rating.Value);
         }
 
@@ -279,6 +278,55 @@ namespace Test
 
             // Assert that the rating is deleted
             Assert.Empty(DbService.RatingsDb.Single().Value.Ratings);
+        }
+
+        class RetryCallback(int retries)
+        {
+            public class RetryException : Exception { }
+
+            private int Counter = 0;
+
+            public int Retries = retries;
+
+            public Task DoAsync()
+            {
+                if (Counter < Retries)
+                {
+                    Counter += 1;
+                    throw new RetryException();
+                }
+                return Task.CompletedTask;
+            }
+        }
+
+        [Fact]
+        public async Task Utils_RetryOnExceptionAsync()
+        {
+            var ct = CancellationToken.None;
+
+            // Success on first run
+            var retry = new RetryCallback(0);
+            var result = await Utils.RetryOnExceptionAsync<Exception>(retry.DoAsync, ct);
+            Assert.Equal((true, false), result);
+
+            // Success on second run
+            retry = new RetryCallback(1);
+            result = await Utils.RetryOnExceptionAsync<Exception>(retry.DoAsync, ct);
+            Assert.Equal((true, true), result);
+
+            // Success on third run
+            retry = new RetryCallback(2);
+            result = await Utils.RetryOnExceptionAsync<Exception>(retry.DoAsync, ct);
+            Assert.Equal((true, true), result);
+
+            // Fail on any run
+            await Assert.ThrowsAsync<NotImplementedException>(async () =>
+            {
+                await Utils.RetryOnExceptionAsync<ArgumentException>(() =>
+                {
+                    throw new NotImplementedException();
+                }, ct);
+            });
         }
     }
 }

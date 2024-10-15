@@ -88,7 +88,7 @@ app.UseAuthorization();
 app.MapGet("/", () => "Loves Me Not API 🌸");
 app.MapGet($"{Constants.ApiVersion}/ratings", (RatingsService ratingsService, CancellationToken cancellationToken)
     => ratingsService.GetRatingsAsync(cancellationToken)).RequireAuthorization(authPolicy);
-app.MapPost($"{Constants.ApiVersion}/ratings", ([FromBody] RatingRequest request, RatingsService ratingsService) 
+app.MapPost($"{Constants.ApiVersion}/ratings", ([FromBody] RatingRequest request, RatingsService ratingsService)
     => ratingsService.UpdateAsync(request, CancellationToken.None)).RequireAuthorization(authPolicy);
 app.MapGet($"auth/steam", (SteamAuthService authService)
     => authService.ChallengeAsync());
@@ -96,7 +96,7 @@ app.MapGet($"auth/xbox", (XboxAuthService authService)
     => authService.Challenge());
 app.MapGet($"callback/steam", (SteamAuthService authService)
     => authService.HandleCallbackAsync());
-app.MapGet($"callback/xbox", ([FromQuery] string? code, [FromQuery] string? error, 
+app.MapGet($"callback/xbox", ([FromQuery] string? code, [FromQuery] string? error,
     XboxAuthService authService, CancellationToken cancellationToken)
     => authService.HandleCallbackAsync(code, error, cancellationToken));
 

@@ -21,13 +21,6 @@ local function init(controller)
         local loggedLine = ('[%s][%s] %s'):format(level, category or 'global', stringifiedMessage);
         print('[lovesmenot]' .. loggedLine)
         self.logFileHandle:write(loggedLine .. '\n')
-
-        -- pause mod if error happened
-        if level == 'error' then
-            gameUtils.directNotification('LovesMeNot error happened, disabling mod', true)
-            self.logFileHandle:flush()
-            self.initialized = false
-        end
     end
 
     function controller:initLogging()

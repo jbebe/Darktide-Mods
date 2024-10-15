@@ -33,7 +33,7 @@ namespace Api
             /// Steam Dartkide id
             /// </summary>
             public const int SteamDarktideId = 1361210;
-            
+
             /// <summary>
             /// Xbox Dartkide id (game title)
             /// </summary>

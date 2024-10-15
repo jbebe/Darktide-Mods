@@ -7,9 +7,9 @@ namespace Api.Services
     public record GetOwnedGamesResponse(GetOwnedGamesGame[]? Games/*, ... */);
     public record GetOwnedGamesResponseType(GetOwnedGamesResponse? Response);
 
-    public class SteamAuthService: AuthServiceBase
+    public class SteamAuthService : AuthServiceBase
     {
-        public SteamAuthService(IHttpContextAccessor httpContextAccessor): base(httpContextAccessor) { }
+        public SteamAuthService(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor) { }
 
         public async Task ChallengeAsync()
         {
@@ -25,7 +25,7 @@ namespace Api.Services
             // Validate via Steam
             var type = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
             var steamIdPrefix = "https://steamcommunity.com/openid/id/";
-            var steamIdRaw = HttpContext.User.Claims.FirstOrDefault(x => x.Type == type && x.Value.StartsWith(steamIdPrefix)) 
+            var steamIdRaw = HttpContext.User.Claims.FirstOrDefault(x => x.Type == type && x.Value.StartsWith(steamIdPrefix))
                 ?? throw new AuthException(InternalError.SteamClaimMissing);
             var steamId = steamIdRaw.Value[steamIdPrefix.Length..];
 

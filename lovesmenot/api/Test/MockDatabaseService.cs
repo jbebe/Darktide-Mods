@@ -37,7 +37,7 @@ namespace Test
     internal class MockDatabaseService : IDatabaseService
     {
         public Dictionary<string, MockAccount> AccountsDb = [];
-        
+
         public Dictionary<string, MockRating> RatingsDb = [];
 
         public void Clear()

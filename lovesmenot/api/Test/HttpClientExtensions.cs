@@ -41,7 +41,7 @@ namespace Test
         {
             if (accessToken != null)
             {
-                client.DefaultRequestHeaders.Authorization = 
+                client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
             }
         }

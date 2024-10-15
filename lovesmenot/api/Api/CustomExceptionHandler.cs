@@ -32,7 +32,7 @@ namespace Api
         //
         // Mod errors
         //
-        
+
         // User rated themself with a forged api call
         SelfRating,
 
@@ -62,11 +62,11 @@ namespace Api
                 case InternalError.XboxGetAchivementsError:
                 case InternalError.CallerIdMissing:
                     return PublicError.Internal;
-                
+
                 case InternalError.SteamNoOwnership:
                 case InternalError.XboxNoOwnership:
                     return PublicError.NoOwnership;
-                
+
                 case InternalError.AuthCancelled:
                     return PublicError.AuthCancelled;
 
@@ -80,7 +80,7 @@ namespace Api
     }
 
     public class LovesMeNotException(
-        InternalError errorCode, 
+        InternalError errorCode,
         HttpStatusCode? statusCode,
         Exception? exception
     ) : Exception()
@@ -88,7 +88,7 @@ namespace Api
         public InternalError ErrorCode { get; } = errorCode;
 
         public HttpStatusCode? StatusCode { get; } = statusCode;
-        
+
         public Exception? Exception { get; } = exception;
 
         public override string ToString()
@@ -98,12 +98,12 @@ namespace Api
     }
 
     public class AuthException(
-        InternalError code, 
-        HttpStatusCode? statusCode = null, 
+        InternalError code,
+        HttpStatusCode? statusCode = null,
         Exception? exception = null
     ) : LovesMeNotException(code, statusCode, exception);
 
-    public class ModException(InternalError code) 
+    public class ModException(InternalError code)
         : LovesMeNotException(code, statusCode: null, exception: null);
 
     public class CustomExceptionHandler(ILogger<Program> logger) : IExceptionHandler
@@ -123,7 +123,7 @@ namespace Api
                     code = authEx.ErrorCode.ToPublic();
                 }
                 httpContext.Response.Redirect(Constants.Auth.WebsiteUrlWithError(code), permanent: false);
-                
+
                 return ValueTask.FromResult(true);
             }
 

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Api.Services
 {
-    public class XboxAuthService: AuthServiceBase
+    public class XboxAuthService : AuthServiceBase
     {
         private IHttpClientFactory HttpFactory { get; }
 
@@ -17,7 +17,7 @@ namespace Api.Services
 
         private JsonSerializerOptions JsonOptions { get; }
 
-        public XboxAuthService(IHttpContextAccessor httpContextAccessor, IHttpClientFactory factory): base(httpContextAccessor)
+        public XboxAuthService(IHttpContextAccessor httpContextAccessor, IHttpClientFactory factory) : base(httpContextAccessor)
         {
             HttpFactory = factory;
             JsonOptions = new JsonSerializerOptions
@@ -53,12 +53,12 @@ namespace Api.Services
             try
             {
                 authResult = await ExchangeCodeForAccessTokenAsync(code, cancellationToken);
-            } 
+            }
             catch (Exception ex)
             {
                 throw new AuthException(InternalError.XboxTokenExchangeError, exception: ex);
             }
-            
+
             // Check if user owns Darktide
             await CheckForDarktideAsync(authResult.Claims, authResult.TokenResponse.Token, cancellationToken);
 
@@ -87,7 +87,7 @@ namespace Api.Services
             if (!response.IsSuccessStatusCode)
                 throw new AuthException(InternalError.XboxGetAchivementsError, response.StatusCode);
             var achivements = (await response.Content.ReadFromJsonAsync<AchivementsResponse>(cancellationToken))!;
-            
+
             if (achivements.titles.Length == 0)
                 throw new AuthException(InternalError.XboxNoOwnership);
         }
@@ -162,14 +162,14 @@ namespace Api.Services
         );
 
         record XstsTokenRequest(
-            string RelyingParty, 
-            string TokenType, 
+            string RelyingParty,
+            string TokenType,
             XstsTokenRequestProperties Properties
         );
 
 #pragma warning restore IDE1006
 
-        private async Task<(UserTokenResponseClaimsItem Claims, UserTokenResponse stsTokenResponse)> 
+        private async Task<(UserTokenResponseClaimsItem Claims, UserTokenResponse stsTokenResponse)>
             ExchangeCodeForAccessTokenAsync(string code, CancellationToken cancellationToken)
         {
             var client = HttpFactory.CreateClient();

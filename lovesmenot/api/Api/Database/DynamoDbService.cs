@@ -30,7 +30,7 @@ namespace Api.Database
         {
             return new DynamoDbAccount
             {
-                EntityType= DynamoDbAccount.HashKey,
+                EntityType = DynamoDbAccount.HashKey,
                 Id = id,
                 CharacterLevel = characterLevel,
                 Reefs = [reef],

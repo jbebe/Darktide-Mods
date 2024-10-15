@@ -26,5 +26,29 @@ namespace Api
 
             return null;
         }
+
+        private static readonly double[] RetryDelayValues = [0.1, 0.3, 1];
+
+        /// <returns>Whether the callback succeeded</returns>
+        public static async Task<(bool IsSuccess, bool RetryHappened)>
+            RetryOnExceptionAsync<T>(Func<Task> callbackAsync, CancellationToken cancellationToken) where T : Exception
+        {
+            var retryHappened = false;
+            foreach (var delaySec in RetryDelayValues)
+            {
+                try
+                {
+                    await callbackAsync();
+                    return (true, retryHappened);
+                }
+                catch (T)
+                {
+                    retryHappened = true;
+                    await Task.Delay(TimeSpan.FromSeconds(delaySec), cancellationToken);
+                }
+            }
+
+            return (false, retryHappened);
+        }
     }
 }
