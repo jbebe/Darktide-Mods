@@ -36,7 +36,7 @@ namespace Api.Services
 
         protected void RedirectToWebsiteWithAccessToken(AuthenticationType type, string platformId)
         {
-            var tokenString = CreateAccessToken(type, platformId);
+            var (tokenString, _) = CreateAccessToken(type, platformId);
             var typedUrl = Constants.Auth.WebsiteUrlWithTyped(type);
             HttpContext.Response.Redirect($"{typedUrl}#token={tokenString}", permanent: false);
         }
