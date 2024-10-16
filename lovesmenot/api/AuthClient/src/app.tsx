@@ -130,21 +130,6 @@ export function App() {
               </div>
             </>}
             <hr />
-            <h4>What is this?</h4>
-            <p>
-              Loves Me, Loves Me Not is a Darktide mod.
-              It helps you rate people (very bad/very good) during missions for your convenience.
-              This information is stored locally so you can rate as many people as you want.
-              On the other hand, if you turn on <Color value='yellow'>community rating</Color> in the mod settings, your ratings are synced to a server
-              where everyone else using the mod can see it, helping the community avoid toxic players and quickly noticing good players.
-            </p>
-            <h4>So that means I can be falsely accused?</h4>
-            <p>
-              From day one, the algorithm for ratings takes into account false single and even group votes.
-              In order to be rated toxic, you need some ranked players to rate you over time. 
-              To answer your question, people can't just rate you bad out of spite. 
-              That would be wrong.
-            </p>
             <h4>How can I access <Color value='yellow'>community rating</Color>?</h4>
             <p>
               You need an <Color value='blue'>access token</Color>.
@@ -160,7 +145,8 @@ export function App() {
               It is not an actual app that will be linked to your account, just a method to securely get your account id.
               Once you press Sign In, our servers receive only your account id (which is public information)
               and given that, the server queries your owned games, looking for Darktide.
-              If Darktide has been found, your <Color value='blue'>access token</Color> is returned to you and no information is stored.
+              If Darktide has been found, your <Color value='blue'>access token</Color> is returned to you. 
+              No information is stored at any point during this procedure.
             </p>
             <p>
               Xbox:<br/>
@@ -168,6 +154,7 @@ export function App() {
               If you press Cancel, you will be redirected to this page.
               If you press Accept, the server will have temporal access to some basic information of your account.
               Once your ownership of Darktide is determined, the temporal access is lost and your <Color value='blue'>access token</Color> is generated.
+              No information is stored at any point during this procedure.
             </p>
             <h4>Why didn't I get my <Color value='blue'>token</Color>?</h4>
             <ul>
