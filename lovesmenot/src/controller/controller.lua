@@ -88,8 +88,9 @@ function controller:init(force)
     end
 
     -- Check access token
+    local isCommunity = self:isCommunity()
     local accessToken = self:getAccessToken()
-    if not accessToken then
+    if isCommunity and not accessToken then
         self:log('warning', 'Missing access token, revert to local mode', 'controller:init')
         self.dmf:set('lovesmenot_settings_community', false, false)
         self.pending = false
@@ -128,7 +129,7 @@ function controller:init(force)
     controller.dmf:add_global_localize_strings(localization)
 
     -- Mod initialization for local mode finished
-    if not self:isCommunity() then
+    if not isCommunity then
         self.initialized = true
         self.pending = false
         controller:log('info', 'Mod initialization finished', 'controller:init')

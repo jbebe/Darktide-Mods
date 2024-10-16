@@ -3,6 +3,8 @@ local PlayerCharacterOptionsView = require
 local UIWidget = require 'scripts/managers/ui/ui_widget'
 local ButtonPassTemplates = require 'scripts/ui/pass_templates/button_pass_templates'
 
+local constants = modRequire 'lovesmenot/src/constants'
+
 ---@param controller LovesMeNot
 local function init(controller)
     controller.dmf:hook_safe(PlayerCharacterOptionsView, '_setup_buttons_interactions', function(self)
@@ -37,7 +39,7 @@ local function init(controller)
         local widgets = self._definitions.widget_definitions
         widgets.rate_button = UIWidget.create_definition(ButtonPassTemplates.terminal_button, 'rate_button', {
             visible = true,
-            original_text = Localize('lovesmenot_inspectview_options_rate'),
+            original_text = constants.SYMBOLS.WEB .. ' ' .. Localize('lovesmenot_inspectview_options_rate'),
         })
     end)
 end

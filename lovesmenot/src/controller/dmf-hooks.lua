@@ -144,6 +144,10 @@ local function init(controller)
                 controller.teammates = {}
                 if controller:isCommunity() then
                     controller:uploadCommunityRatingAsync()
+                else
+                    gameUtils.directNotification(
+                        controller.dmf:localize('lovesmenot_ingame_local_persist_success')
+                    )
                 end
                 controller:persistLocalRating()
             end

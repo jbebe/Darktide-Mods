@@ -1,21 +1,24 @@
 return {
 	-- Meta
 	lovesmenot_mod_title = {
-		en = 'Loves me, loves me not'
+		en = 'Loves Me, Loves Me Not'
 	},
 	lovesmenot_mod_description = {
-		en = 'Mark toxic or good players for your convenience.\n' ..
-			'Hotkeys only work during missions.\n' ..
-			'Players are indexed by the team hud panel {#under(true)}from bottom-up{#under(false)}.\n' ..
-			'(Teammate #1 will be on the bottom, closest to your avatar)'
+		en = 'Mark toxic and good players while you play!\n' ..
+			'When setting key binds, you should know that players are indexed\n' ..
+			'on the team hud panel {#under(true)}from bottom-up{#under(false)}\n' ..
+			'so Teammate #1 is the closest to your avatar and Teammate #3 is on the top'
 	},
 
 	-- Settings
 	lovesmenot_settings_open_ratings = {
 		en = 'Open accounts dashboard'
 	},
+	lovesmenot_settings_open_ratings_description = {
+		en = 'Manage your ratings and save/sync your stats.'
+	},
 	lovesmenot_settings_hotkey_group_title = {
-		en = 'Manual rating'
+		en = 'Hotkeys'
 	},
 	lovesmenot_settings_hotkey_1_title = {
 		en = 'Change rating of teammate #1'
@@ -33,13 +36,16 @@ return {
 		en = 'Synchronizes ratings between all mod users'
 	},
 	lovesmenot_settings_community_hide_own_rating = {
-		en = 'Hide my community rating'
+		en = 'Snowflake mode'
 	},
 	lovesmenot_settings_community_hide_own_rating_description = {
-		en = 'Hides all visual signs of your own community ranking (for sensitive souls)'
+		en = 'Hides your own community rating. This is only a visual change.'
 	},
 	lovesmenot_settings_loglevel = {
 		en = 'Log level'
+	},
+	lovesmenot_settings_loglevel_description = {
+		en = 'In case you have a bug'
 	},
 	lovesmenot_settings_loglevel_error = {
 		en = 'Error',
@@ -138,6 +144,9 @@ return {
 	lovesmenot_ingame_self_status = {
 		en = 'Congratulations! You are rated as \'%s\' by the community.'
 	},
+	lovesmenot_ingame_local_persist_success = {
+		en = 'Local rating saved to file'
+	},
 	lovesmenot_ingame_community_rating = {
 		en = 'Community'
 	},
@@ -148,4 +157,9 @@ return {
 		en = 'Community server is unreachable. ' ..
 			'Turn off community rating if the problem persists and reload the mod.'
 	},
+
+	-- Generic
+	lovesmenot_empty = {
+		en = ''
+	}
 }
