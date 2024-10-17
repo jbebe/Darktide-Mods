@@ -20,11 +20,12 @@ local SYMBOLS = {
     PLATFORM_UNKNOWN = '\u{e06f}',
 }
 
-local version = 1
+local configVersion = 1
+local apiVersion = 1
 
 return {
-    VERSION = version,
-    API_PREFIX = 'https://localhost:53531/' .. version,
+    VERSION = configVersion,
+    API_PREFIX = 'https://localhost:53531/' .. apiVersion,
     AUTH_URL = 'http://localhost:5173',
     RATINGS = RATINGS,
     SYMBOLS = SYMBOLS,

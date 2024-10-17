@@ -1,6 +1,7 @@
 local json = modRequire 'lovesmenot/nurgle_modules/json'
 
 local utils = modRequire 'lovesmenot/src/utils/language'
+local gameUtils = modRequire 'lovesmenot/src/utils/game'
 local langUtils = modRequire 'lovesmenot/src/utils/language'
 
 ---@param controller LovesMeNot
@@ -33,6 +34,9 @@ local function init(controller)
             return
         end
 
+        gameUtils.directNotification(
+            controller.dmf:localize('lovesmenot_ingame_local_persist_success')
+        )
         local jsonData = json.encode(self.localRating)
         local file = assert(utils.io.open(ratingPath, 'w'))
         file:write(jsonData)

@@ -12,7 +12,9 @@ local function init(controller)
                 ---@type HumanPlayer
                 local player = data.player
                 local isBot = not player:is_human_controlled()
-                if not isBot then
+                if isBot then
+                    table.insert(teammates, false)
+                else
                     local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
                     local platform = playerInfo:platform()
                     local platformId = playerInfo:platform_user_id()
