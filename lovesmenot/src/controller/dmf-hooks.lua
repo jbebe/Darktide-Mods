@@ -62,7 +62,9 @@ local function init(controller)
                     },
                     {
                         margin_bottom = -4,
-                        max_length = 256,
+                        -- jwt tokens are long, especially asymmetric ones,
+                        -- max length needs to be longer than that
+                        max_length = 1024,
                         template_type = 'terminal_input_field',
                         width = 300,
                     },
