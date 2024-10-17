@@ -1,8 +1,8 @@
-
 $version = Read-Host "Mod version"
 $zipFile = "lovesmenot-$version.zip"
 Remove-Item $zipFile -ErrorAction Ignore
 
+Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [System.IO.Compression.ZipFile]::Open(
     (Join-Path -Path $(Resolve-Path -Path ".") -ChildPath $zipFile),
   [System.IO.Compression.ZipArchiveMode]::Create
