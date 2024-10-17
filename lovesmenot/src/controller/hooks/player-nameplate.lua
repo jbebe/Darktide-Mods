@@ -17,21 +17,24 @@ local function init(controller)
             if marker then
                 ---@type RemotePlayer
                 local player = marker.data
-                local isBot = not player:is_human_controlled()
-                local isPlayerDeleted = player.__deleted
-                if not isBot and not isPlayerDeleted then
-                    local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
-                    local platform = playerInfo:platform()
-                    local platformId = playerInfo:platform_user_id()
-                    local uid = controller:uid(platform, platformId)
-                    local widget = marker.widget
-                    local content = widget.content
+                local profile = player:profile()
+                if profile then
+                    local isBot = not player:is_human_controlled()
+                    local isPlayerDeleted = player.__deleted
+                    if not isBot and not isPlayerDeleted then
+                        local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
+                        local platform = playerInfo:platform()
+                        local platformId = playerInfo:platform_user_id()
+                        local uid = controller:uid(platform, platformId)
+                        local widget = marker.widget
+                        local content = widget.content
 
-                    local newName, isDirty = controller:formatPlayerName(
-                        content.header_text, uid, player:profile().current_level)
-                    if isDirty then
-                        content.header_text = newName
-                        widget.dirty = true
+                        local newName, isDirty = controller:formatPlayerName(
+                            content.header_text, uid, profile.current_level)
+                        if isDirty then
+                            content.header_text = newName
+                            widget.dirty = true
+                        end
                     end
                 end
             end

@@ -11,8 +11,9 @@ local function init(controller)
             for _, data in pairs(self._player_panels_array) do
                 ---@type HumanPlayer
                 local player = data.player
+                local profile = player:profile()
                 local isBot = not player:is_human_controlled()
-                if isBot then
+                if isBot or not profile then
                     table.insert(teammates, false)
                 else
                     local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
@@ -23,7 +24,6 @@ local function init(controller)
                     local panel = data.panel
                     local widget = panel._widgets_by_name.player_name
                     local content = widget.content
-                    local profile = player:profile()
 
                     -- Format name (host player, optionally)
                     local showHostPlayerRating = not controller:hideOwnRating()

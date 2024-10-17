@@ -8,6 +8,8 @@ local function init(controller)
 
         local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
         local profile = player:profile()
+        if not profile then return end
+
         local platform = playerInfo:platform()
         local platformId = playerInfo:platform_user_id()
         local uid = controller:uid(platform, platformId)
@@ -17,7 +19,6 @@ local function init(controller)
         local slotId = self:_player_slot_id(unique_id)
         local slot = spawnSlots[slotId]
         local content = slot.panel_widget.content
-        local characterId = profile and profile.character_id
         content.character_name, _ = controller:formatPlayerName(content.character_name, uid, profile.current_level)
     end)
 end

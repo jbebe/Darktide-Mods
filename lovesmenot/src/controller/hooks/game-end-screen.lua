@@ -9,13 +9,13 @@ local function init(controller)
         if spawn_slots then
             for _, slot in ipairs(spawn_slots) do
                 local widget = slot.widget
-                if widget then
-                    ---@type PlayerInfo
-                    local player_info = slot.player_info
+                ---@type PlayerInfo
+                local player_info = slot.player_info
+                local profile = player_info:profile()
+                if widget and profile then
                     local platform = player_info:platform()
                     local platformId = player_info:platform_user_id()
                     local uid = controller:uid(platform, platformId)
-                    local profile = player_info:profile()
 
                     -- show formatted player name
                     if uid ~= controller.ownUid then
