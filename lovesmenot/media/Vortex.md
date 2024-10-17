@@ -110,14 +110,14 @@ A positive player is not a
 [list]
 [*]player on (true) level 9999+
 [*]very skilled player with no remarkable acts towards the team
-[*]player that always tries to help but without situation awareness
+[*]player that always tries to help but without situational awareness
 [*]guy that showed you how to get some secret
 [/list]
-To wrap it up, a good attitude towards the Loves Me Not mod is to rate people when you are especially shocked by their behavior. That shock should happen at most once a day, normally.
+To wrap it up, a good attitude towards the Loves Me Not mod is to rate people when you are especially shocked by their behavior. That shock is not limited to but should happen at most once a day, normally.
 
 [size=4]Rules[/size]
-Let's talk a little about user behavior. In order to use the community mode of the mod, you have to posess a copy of Dartkide. Darktide is not cheap. In case you rate everyone during every mission, chances are you are getting banned soon and there's no coming back. Another rule is not to force a negative rating on someone by telling your friends to rate the target player. If you are all in a strike team and see someone toxic, that's fair, but if it's organized, chances are you are all banned soon after the stats come in.
-As rating cannot be fully objective, those two are the only rules. Just because you rated someone out of spite alone, it won't change the ratings anyway so you're good.
+Let's talk a little about user behavior. In order to use the community mode of the mod, you have to posess a copy of Darktide. Darktide is not cheap. In case you rate everyone during every mission, chances are you are getting banned soon and there's no coming back. Another rule is not to force a negative rating on someone by telling your friends to rate the target player. If you are all in a strike team and see someone toxic, that's fair, but if it's organized hate, chances are you are all banned soon after the stats come in.
+As rating cannot be fully objective, those two are the only rules. Just because you rate someone negative out of spite once in a while, it won't change the ratings anyway so you won't get banned. Doing so many times a day puts you at risk of a permanent ban.
 
 [size=4]Privacy Policy[/size]
 
@@ -132,10 +132,24 @@ The only object that the mod uploads to the server has the following fields:
 [*]rated player's current character level - used for scoring when ratings are created (e.g. level 2 player with a few negative ratings is ignored)
 [*]mod user's friends' hashed public platform id - used to detect coordinated collective rating
 [/list]
-The only thing that comes from a sensitive place, your gaming platform, is the hashed publicly available id. The reason I hash all ids is because I don't want to build a list of Darktide players that might be valuable for a malicious party somehow.
+The only thing that comes from a sensitive place, your gaming platform, is the hashed publicly available id. The reason I hash all ids is because I don't want to build a list of Darktide players that might be valuable for a malicious party in some way.
 
 
 [center][img]https://raw.githubusercontent.com/jbebe/Darktide-Mods/refs/heads/master/lovesmenot/media/images/description/separator.png[/img][/center]
 
 [center]Thanks for reading all that. It's important for you but it also helps me when you'll have problems.[/center]
+
+[size=5]Frequently Asked Questions[/size]
+
+WiP
+
+[size=5]Known Issues[/size]
+
+[list]
+[*]If you gave the mod an invalid access token, it will be stuck forever. You need to replace it in [font=Courier New]user_settings.config[/font] under the [font=Courier New]lovesmenot/[/font][font=Courier New]lovesmenot_settings_community_access_token[/font] path.
+[*]WiP...
+[/list]
+[size=5]For Developers[/size]
+
+[url=https://github.com/jbebe/Darktide-Mods/tree/master/lovesmenot][img]https://img.shields.io/badge/GitHub-100000?style=social&logo=github&logoColor=black[/img][/url]
 ```
