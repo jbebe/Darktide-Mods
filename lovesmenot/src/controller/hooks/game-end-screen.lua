@@ -11,20 +11,22 @@ local function init(controller)
                 local widget = slot.widget
                 ---@type PlayerInfo
                 local player_info = slot.player_info
-                local profile = player_info:profile()
-                if widget and profile then
-                    local platform = player_info:platform()
-                    local platformId = player_info:platform_user_id()
-                    local uid = controller:uid(platform, platformId)
+                if not player_info.__deleted then
+                    local profile = player_info:profile()
+                    if widget and profile then
+                        local platform = player_info:platform()
+                        local platformId = player_info:platform_user_id()
+                        local uid = controller:uid(platform, platformId)
 
-                    -- show formatted player name
-                    if uid ~= controller.ownUid then
-                        local content = widget.content
-                        local newName, isDirty =
-                            controller:formatPlayerName(content.character_name, uid, profile.current_level)
-                        if isDirty then
-                            content.character_name = newName
-                            widget.dirty = true
+                        -- show formatted player name
+                        if uid ~= controller.ownUid then
+                            local content = widget.content
+                            local newName, isDirty =
+                                controller:formatPlayerName(content.character_name, uid, profile.current_level)
+                            if isDirty then
+                                content.character_name = newName
+                                widget.dirty = true
+                            end
                         end
                     end
                 end

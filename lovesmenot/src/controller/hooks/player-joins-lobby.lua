@@ -4,7 +4,9 @@ local function init(controller)
     -- remarks: here we don't have to worry about bots because they join after the game has started
     ---@param player HumanPlayer | RemotePlayer
     controller.dmf:hook_safe(CLASS.LobbyView, '_sync_player', function(self, unique_id, player)
-        if not controller.initialized then return end
+        if not controller.initialized or player.__deleted then
+            return
+        end
 
         local playerInfo = Managers.data_service.social:get_player_info_by_account_id(player:account_id())
         local profile = player:profile()
