@@ -38,18 +38,18 @@ return {
 					return widgets
 				end)()
 			},
-			{
-				setting_id = 'lovesmenot_settings_community',
-				type = 'checkbox',
-				default_value = false,
-				sub_widgets = {
-					{
-						setting_id = 'lovesmenot_settings_community_hide_own_rating',
-						type = 'checkbox',
-						default_value = false,
-					}
-				}
-			},
+			-- {
+			-- 	setting_id = 'lovesmenot_settings_community',
+			-- 	type = 'checkbox',
+			-- 	default_value = false,
+			-- 	sub_widgets = {
+			-- 		{
+			-- 			setting_id = 'lovesmenot_settings_community_hide_own_rating',
+			-- 			type = 'checkbox',
+			-- 			default_value = false,
+			-- 		}
+			-- 	}
+			-- },
 			{
 				setting_id = 'lovesmenot_settings_loglevel',
 				type = 'dropdown',

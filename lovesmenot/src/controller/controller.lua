@@ -59,17 +59,17 @@ local controller = {
 
 ---@return boolean
 function controller:isCommunity()
-    local isCommunity = self.dmf:get('lovesmenot_settings_community') == true
-    return isCommunity
+    -- local isCommunity = self.dmf:get('lovesmenot_settings_community') == true
+    return false -- isCommunity
 end
 
 ---@return string | nil
 function controller:getAccessToken()
-    return self.dmf:get('lovesmenot_settings_community_access_token')
+    return nil -- self.dmf:get('lovesmenot_settings_community_access_token')
 end
 
 function controller:hideOwnRating()
-    return self.dmf:get('lovesmenot_settings_community_hide_own_rating')
+    return nil -- self.dmf:get('lovesmenot_settings_community_hide_own_rating')
 end
 
 -- Initializer
