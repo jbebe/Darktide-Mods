@@ -16,30 +16,17 @@ local function init(controller)
         [RATINGS.POSITIVE] = SYMBOLS.WEB .. styleUtils.colorize(COLORS.GREEN, SYMBOLS.WREATH) .. ' ',
     }
 
-    local function cleanRating(text)
+    ---@param text string
+    ---@param isCommunityRated boolean | nil
+    local function cleanRating(text, isCommunityRated)
         local result = text
-        for _, prefix in pairs(NAME_PREFIX) do
+        for _, prefix in pairs(isCommunityRated and COMMUNITY_NAME_PREFIX or NAME_PREFIX) do
             if langUtils.startsWith(text, prefix) then
                 result = text:sub(#prefix)
                 break
             end
         end
-
-        -- strip icon from vanilla name: '{color}<unicode>{reset} <name>' -> '<name>'
-        -- TODO: remove all smybols
-        -- {#color(255,75,20)}{#reset()} Martack {#color(216,229,207,120)}[BOT]{#reset()} - 1 
-        result = result
-            :gsub('^' .. SYMBOLS.WEB, '')
-            :gsub('^%b{}', '')
-            :gsub('^' .. SYMBOLS.VETERAN, '')
-            :gsub('^' .. SYMBOLS.ZEALOT, '')
-            :gsub('^' .. SYMBOLS.PSYKER, '')
-            :gsub('^' .. SYMBOLS.OGRYN, '')
-            :gsub('^' .. SYMBOLS.TORSO, '')
-            :gsub('^' .. SYMBOLS.FLAME, '')
-            :gsub('^' .. SYMBOLS.WREATH, '')
-            :gsub('^%b{}', '')
-            :gsub('^ ', '')
+        result = result:gsub('^ +', '')
 
         return result
     end
@@ -48,7 +35,7 @@ local function init(controller)
         local rating, isCommunityRated = self:getRating(uid, overrideLevel)
         if not rating then
             -- show default name without any prefixes
-            local cleanedText = cleanRating(originalText)
+            local cleanedText = cleanRating(originalText, isCommunityRated)
             if originalText == cleanedText then
                 -- default player name, unchanged
                 return originalText, false
@@ -64,7 +51,7 @@ local function init(controller)
             return originalText, false
         else
             -- prefix is different, replace it, mark it dirty
-            local textRaw = cleanRating(originalText)
+            local textRaw = cleanRating(originalText, isCommunityRated)
 
             return ratingPrefix .. textRaw, true
         end
